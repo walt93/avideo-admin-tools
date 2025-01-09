@@ -46,18 +46,126 @@ try {
     displayError("Database test query failed: " . $e->getMessage());
 }
 
-// Handle AJAX sanitize request
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'sanitize') {
-    header('Content-Type: application/json');
-    
-    $openaiKey = getenv('OPENAI_API_KEY');
-    if (!$openaiKey) {
-        echo json_encode(['success' => false, 'error' => 'OpenAI API key not configured']);
+// Handle AJAX write description request
+// Add this to your PHP handlers section
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+    if ($_POST['action'] === 'generate_description') {
+        error_log("DEBUG: Hit generate_description endpoint with POST data: " . print_r($_POST, true));
+        header('Content-Type: application/json');
+      
+        // Debug logging
+        error_log("Generate description request received for filename: " . $_POST['filename']);
+
+        $filename = $_POST['filename'];
+        $transcript_path = "/var/www/html/conspyre.tv/videos/{$filename}/{$filename}.txt";
+
+        if (!file_exists($transcript_path)) {
+           error_log("Transcript file not found: " . $transcript_path);
+            echo json_encode(['success' => false, 'error' => 'Transcript file not found']);
+            exit;
+        }
+
+        error_log("Reading transcript from: " . $transcript_path);
+        $transcript = file_get_contents($transcript_path);
+        if ($transcript === false) {
+            error_log("Failed to read transcript file");
+            echo json_encode(['success' => false, 'error' => 'Failed to read transcript file']);
+            exit;
+        }
+        $word_count = str_word_count($transcript);
+
+        // Sample strategy: Take first ~500 words and last ~200 words
+        // This gives context but doesn't overwhelm
+        $words = str_word_count($transcript, 1); // get array of words
+        $start_sample = implode(' ', array_slice($words, 0, 500));
+        $end_sample = implode(' ', array_slice($words, -200));
+        $content_sample = $start_sample . "\n[...]\n" . $end_sample;
+
+$prompt = <<<EOT
+You are writing for Truth Tide TV, a channel dedicated to exposing suppressed truths and shining light on issues the mainstream media misrepresents or ignores.
+
+Context: When covering medical topics, we emphasize:
+- The dangers of experimental genetic technologies
+- Corporate/government collusion in medical mandates
+- Defense of bodily autonomy and informed consent
+- Exposing corruption in regulatory bodies
+- Real-world harm from medical experimentation
+
+Write a single compelling 250-character max description (including spaces) that:
+1. Warns viewers about the real implications
+2. Uses strong, direct language that acknowledges the gravity of the situation
+3. Connects to broader patterns of medical overreach
+4. Avoids neutral/promotional framing of dangerous developments
+
+Below is a sample from the content - write a description that aligns with our editorial stance:
+
+{$content_sample}
+
+Return ONLY the description, no explanations. Must be under 250 characters.
+EOT;
+
+        $data = [
+            'model' => 'gpt-4o',
+            'messages' => [
+                [
+                    'role' => 'system',
+                    'content' => 'You are Truth Tide TV\'s lead editor. You write hard-hitting descriptions that expose concerning developments and wake people up to hidden truths.'
+                ],
+                [
+                    'role' => 'user',
+                    'content' => $prompt
+                ]
+            ],
+            'temperature' => 0.3,
+            'max_tokens' => 100  // 250 chars is roughly 50-75 tokens, add some buffer
+        ];
+  
+        $openaiKey = getenv('OPENAI_API_KEY');
+        if (!$openaiKey) {
+            echo json_encode(['success' => false, 'error' => 'OpenAI API key not configured']);
+            exit;
+        }
+
+        $ch = curl_init('https://api.openai.com/v1/chat/completions');
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_HTTPHEADER => [
+                'Authorization: Bearer ' . $openaiKey,
+                'Content-Type: application/json'
+            ],
+            CURLOPT_POSTFIELDS => json_encode($data)
+        ]);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($httpCode !== 200) {
+            echo json_encode(['success' => false, 'error' => 'OpenAI API request failed']);
+            exit;
+        }
+
+        $result = json_decode($response, true);
+        if (isset($result['choices'][0]['message']['content'])) {
+            echo json_encode(['success' => true, 'description' => $result['choices'][0]['message']['content']]);
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Invalid response from OpenAI API']);
+        }
         exit;
     }
+    // Handle AJAX sanitize request
+    if ($_POST['action'] === 'sanitize') {
+        header('Content-Type: application/json');
 
-    $description = $_POST['description'] ?? '';
-    
+        $openaiKey = getenv('OPENAI_API_KEY');
+        if (!$openaiKey) {
+            echo json_encode(['success' => false, 'error' => 'OpenAI API key not configured']);
+            exit;
+        }
+
+        $description = $_POST['description'] ?? '';
+
 $prompt = <<<EOT
 You must preserve the exact meaning and information from the original text. Your only tasks are:
 1. Fix basic capitalization (beginning of sentences)
@@ -82,48 +190,58 @@ Original text:
 Return ONLY the formatted text with no explanations.
 EOT;
 
-    $data = [
-        'model' => 'gpt-4-0125-preview',
-        'messages' => [
-            [
-                'role' => 'system',
-                'content' => 'You are a helpful assistant that sanitizes and formats video descriptions.'
+        $data = [
+            'model' => 'gpt-4-0125-preview',
+            'messages' => [
+                [
+                    'role' => 'system',
+                    'content' => 'You are a helpful assistant that sanitizes and formats video descriptions.'
+                ],
+                [
+                    'role' => 'user',
+                    'content' => $prompt
+                ]
             ],
-            [
-                'role' => 'user',
-                'content' => $prompt
-            ]
-        ],
-        'temperature' => 0.3
-    ];
+            'temperature' => 0.3
+        ];
 
-    $ch = curl_init('https://api.openai.com/v1/chat/completions');
-    curl_setopt_array($ch, [
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_POST => true,
-        CURLOPT_HTTPHEADER => [
-            'Authorization: Bearer ' . $openaiKey,
-            'Content-Type: application/json'
-        ],
-        CURLOPT_POSTFIELDS => json_encode($data)
-    ]);
+        $ch = curl_init('https://api.openai.com/v1/chat/completions');
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_HTTPHEADER => [
+                'Authorization: Bearer ' . $openaiKey,
+                'Content-Type: application/json'
+            ],
+            CURLOPT_POSTFIELDS => json_encode($data)
+        ]);
 
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
 
-    if ($httpCode !== 200) {
-        echo json_encode(['success' => false, 'error' => 'OpenAI API request failed']);
+        if ($httpCode !== 200) {
+            echo json_encode(['success' => false, 'error' => 'OpenAI API request failed']);
+            exit;
+        }
+
+        $result = json_decode($response, true);
+        if (isset($result['choices'][0]['message']['content'])) {
+            echo json_encode(['success' => true, 'sanitized' => $result['choices'][0]['message']['content']]);
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Invalid response from OpenAI API']);
+        }
         exit;
     }
+}
 
-    $result = json_decode($response, true);
-    if (isset($result['choices'][0]['message']['content'])) {
-        echo json_encode(['success' => true, 'sanitized' => $result['choices'][0]['message']['content']]);
-    } else {
-        echo json_encode(['success' => false, 'error' => 'Invalid response from OpenAI API']);
-    }
-    exit;
+// Helper function to check for subtitle and transcript files
+function checkMediaFiles($filename) {
+    $basePath = '/var/www/html/conspyre.tv/videos/' . $filename . '/' . $filename;
+    return [
+        'has_vtt' => file_exists($basePath . '.vtt'),
+        'has_txt' => file_exists($basePath . '.txt')
+    ];
 }
 
 // Helper function to build category tree
@@ -202,17 +320,19 @@ try {
 
     // Handle AJAX update
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update') {
-        try {
-            $stmt = $db->prepare('UPDATE videos SET title = ?, description = ? WHERE id = ?');
-            $stmt->execute([$_POST['title'], $_POST['description'], $_POST['id']]);
-            header('Content-Type: application/json');
-            echo json_encode(['success' => true]);
-            exit;
-        } catch (PDOException $e) {
-            header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
-            exit;
-        }
+    error_log("DEBUG: Hit update endpoint with POST data: " . print_r($_POST, true));
+      try {
+          $stmt = $db->prepare('UPDATE videos SET title = ?, description = ? WHERE id = ?');
+          $stmt->execute([$_POST['title'], $_POST['description'], $_POST['id']]);
+          header('Content-Type: application/json');
+          echo json_encode(['success' => true]);
+          exit;
+      } catch (PDOException $e) {
+          error_log("DEBUG: Database error during update: " . $e->getMessage());
+          header('Content-Type: application/json');
+          echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
+          exit;
+      }
     }
 
     // Pagination
@@ -243,7 +363,7 @@ try {
     $totalPages = ceil($totalVideos / $perPage);
 
     // Get videos
-    $query = "SELECT id, title, description, created FROM videos
+    $query = "SELECT id, title, description, created, filename FROM videos
               WHERE $whereClause
               ORDER BY created DESC
               LIMIT ? OFFSET ?";
@@ -253,6 +373,11 @@ try {
     $stmt = $db->prepare($query);
     $stmt->execute($params);
     $videos = $stmt->fetchAll();
+    // Add file presence info to each video
+    foreach ($videos as &$video) {
+        $video['media_files'] = checkMediaFiles($video['filename']);
+    }
+
 
 } catch (Exception $e) {
     ob_end_clean();
@@ -265,50 +390,55 @@ try {
     <title>Video CMS Editor</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-/* Add to your existing style section */
-.loading-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(255, 255, 255, 0.8);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
-}
-
-.cell-content {
-    position: relative; /* For the loading overlay positioning */
-}
-
-.description-loading {
-    color: #666;
-    font-style: italic;
-}
-
-/* Spinner animation */
-.spinner {
-    width: 24px;
-    height: 24px;
-    border: 3px solid #f3f3f3;
-    border-top: 3px solid #3498db;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* Disabled state for the entire row */
-tr.processing {
-    opacity: 0.7;
-    pointer-events: none;
-}
-
+        /* Add to your existing style section */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+        
+        .cell-content {
+            position: relative; /* For the loading overlay positioning */
+        }
+        
+        .description-loading {
+            color: #666;
+            font-style: italic;
+        }
+        
+        /* Spinner animation */
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Disabled state for the entire row */
+        tr.processing {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        
+        .file-icon {
+            margin-left: 4px;
+            cursor: help;
+            opacity: 0.7;
+        }
         .table-responsive {
             overflow-x: auto;
             max-width: 100%;
@@ -361,7 +491,13 @@ tr.processing {
     min-width: 40px;
     text-align: center;
 }
-
+.col-actions span {
+    margin-right: 4px;
+    cursor: help;
+}
+.col-actions {
+    width: 160px;  /* Increased to accommodate icons */
+}
     </style>
 </head>
 <body>
@@ -396,14 +532,13 @@ tr.processing {
                 </select>
             </div>
         </div>
-
         <table class="table table-striped">
             <thead>
                 <tr>
                     <th class="col-id">ID</th>
                     <th class="col-created">Created</th>
                     <th class="col-title">Content</th>
-                    <th class="col-actions">Action</th>
+                    <th class="col-actions">Files / Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -413,8 +548,18 @@ tr.processing {
                     <td class="col-created"><?= date('M j, Y', strtotime($video['created'])) ?></td>
                     <td class="col-title">
                         <div class="cell-content">
-                            <div class="video-title"><?= htmlspecialchars($video['title']) ?></div>
-                            <div class="video-description"><?= htmlspecialchars($video['description']) ?></div>
+                          <div class="video-title">
+                              <span class="pure-title"><?= htmlspecialchars($video['title']) ?></span>
+                              <?php 
+                                  if ($video['media_files']['has_vtt']) {
+                                      echo '<span title="Has Subtitles" class="file-icon">📝</span>';
+                                  }
+                                  if ($video['media_files']['has_txt']) {
+                                      echo '<span title="Has Transcript" class="file-icon">📄</span>';
+                                  }
+                              ?>    
+                          </div>
+                          <div class="video-description"><?= htmlspecialchars($video['description']) ?></div>
                         </div>
                     </td>
                     <td class="col-actions">
@@ -427,11 +572,10 @@ tr.processing {
                             Sanitize
                         </button>
                     </td>
-                </tr>
+                  </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
-
         <!-- Pagination -->
 <nav class="d-flex justify-content-center mt-4">
     <ul class="pagination">
@@ -440,7 +584,7 @@ tr.processing {
         $range = 5; // Show 5 pages before and after current page
         $start = max(1, $page - $range);
         $end = min($totalPages, $page + $range);
-        
+
         // Build the current URL without page parameter
         $urlParams = $_GET;
         unset($urlParams['page']);
@@ -487,7 +631,7 @@ tr.processing {
 
     <!-- Edit Modal -->
     <div class="modal fade" id="editModal" tabindex="-1">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Edit Video</h5>
@@ -496,24 +640,27 @@ tr.processing {
                 <div class="modal-body">
                     <form id="editForm">
                         <input type="hidden" id="videoId">
+                        <input type="hidden" id="videoFilename">
                         <div class="mb-3">
                             <label class="form-label">Title</label>
                             <input type="text" class="form-control" id="videoTitle" maxlength="100">
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Description</label>
-                            <textarea class="form-control" id="videoDescription" rows="5"></textarea>
+                            <textarea class="form-control" id="videoDescription" rows="12" style="font-family: monospace;"></textarea>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="button" class="btn btn-warning" onclick="sanitizeDescription()">Sanitize</button>
+                    <button type="button" id="generateBtn" class="btn btn-success" onclick="generateDescription()">AI Description 🤖</button>
                     <button type="button" class="btn btn-primary" onclick="saveVideo()">Save</button>
                 </div>
             </div>
         </div>
     </div>
+    
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -614,8 +761,19 @@ tr.processing {
 
         function editVideo(video) {
             document.getElementById('videoId').value = video.id;
-            document.getElementById('videoTitle').value = video.title;
+            document.getElementById('videoTitle').value = video.title; // Use the direct title from video object
             document.getElementById('videoDescription').value = video.description;
+            document.getElementById('videoFilename').value = video.filename;
+            
+            // Enable/disable AI Description button based on transcript availability
+            const generateBtn = document.getElementById('generateBtn');
+            generateBtn.disabled = !video.media_files.has_txt;
+            if (!video.media_files.has_txt) {
+                generateBtn.title = 'No transcript available';
+            } else {
+                generateBtn.title = 'Generate AI description from transcript';
+            }
+            
             editModal.show();
         }
 
@@ -650,10 +808,10 @@ async function quickSanitize(videoId, button) {
     const cellContent = row.querySelector('.cell-content');
     const descriptionDiv = row.querySelector('.video-description');
     const originalDescription = descriptionDiv.textContent;
-    
+
     // Disable the entire row and show loading
     row.classList.add('processing');
-    
+
     // Create and append loading overlay
     const loadingOverlay = document.createElement('div');
     loadingOverlay.className = 'loading-overlay';
@@ -664,22 +822,22 @@ async function quickSanitize(videoId, button) {
         </div>
     `;
     cellContent.appendChild(loadingOverlay);
-    
+
     // Disable all buttons in the row
     row.querySelectorAll('button').forEach(btn => btn.disabled = true);
-    
+
     try {
         const formData = new FormData();
         formData.append('action', 'sanitize');
         formData.append('description', originalDescription);
-        
+
         const response = await fetch(window.location.href, {
             method: 'POST',
             body: formData
         });
-        
+
         const data = await response.json();
-        
+
         if (!data.success) {
             throw new Error(data.error);
         }
@@ -700,14 +858,14 @@ async function quickSanitize(videoId, button) {
         });
 
         const saveData = await saveResponse.json();
-        
+        console.log("Save response:", saveData);  // Add this line
         if (!saveData.success) {
             throw new Error('Failed to save sanitized description');
         }
 
         // Update the description in the list
         descriptionDiv.textContent = data.sanitized;
-        
+
     } catch (error) {
         console.error('Error sanitizing description:', error);
         alert('Error: ' + error.message);
@@ -726,12 +884,12 @@ async function sanitizeDescription() {
     const sanitizeButton = document.querySelector('.modal-footer .btn-warning');
     const saveButton = document.querySelector('.modal-footer .btn-primary');
     const modalBody = document.querySelector('.modal-body');
-    
+
     // Disable buttons and add loading overlay
     sanitizeButton.disabled = true;
     saveButton.disabled = true;
     description.disabled = true;
-    
+
     const loadingOverlay = document.createElement('div');
     loadingOverlay.className = 'loading-overlay';
     loadingOverlay.innerHTML = `
@@ -741,26 +899,26 @@ async function sanitizeDescription() {
         </div>
     `;
     modalBody.appendChild(loadingOverlay);
-    
+
     try {
         const formData = new FormData();
         formData.append('action', 'sanitize');
         formData.append('description', description.value);
-        
+
         const response = await fetch(window.location.href, {
             method: 'POST',
             body: formData
         });
-        
+
         const data = await response.json();
-        
+
         if (!data.success) {
             throw new Error(data.error);
         }
-        
+
         // Update the description field with the sanitized content
         description.value = data.sanitized;
-        
+
     } catch (error) {
         console.error('Error sanitizing description:', error);
         alert('Error sanitizing description: ' + error.message);
@@ -774,7 +932,56 @@ async function sanitizeDescription() {
     }
 }
 
+async function generateDescription() {
+    const modalBody = document.querySelector('.modal-body');
+    const description = document.getElementById('videoDescription');
+    const filename = document.getElementById('videoFilename').value;
+    const buttons = document.querySelectorAll('.modal-footer button');
+    
+    // Disable all buttons and add loading overlay
+    buttons.forEach(btn => btn.disabled = true);
+    description.disabled = true;
 
+    const loadingOverlay = document.createElement('div');
+    loadingOverlay.className = 'loading-overlay';
+    loadingOverlay.innerHTML = `
+        <div>
+            <div class="spinner mb-2"></div>
+            <div class="description-loading">Writing news-style description...</div>
+        </div>
+    `;
+    modalBody.appendChild(loadingOverlay);
+
+    try {
+        const formData = new FormData();
+        formData.append('action', 'generate_description');
+        formData.append('filename', filename);
+
+        const response = await fetch(window.location.href, {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+        
+        if (!data.success) {
+            throw new Error(data.error || 'Failed to generate description');
+        }
+
+        // Update the description field with the generated content
+        description.value = data.description;
+
+    } catch (error) {
+        console.error('Error generating description:', error);
+        alert('Error: ' + error.message);
+    } finally {
+        // Remove loading overlay
+        loadingOverlay.remove();
+        // Re-enable all controls
+        buttons.forEach(btn => btn.disabled = false);
+        description.disabled = false;
+    }
+}
     </script>
 </body>
 </html>
