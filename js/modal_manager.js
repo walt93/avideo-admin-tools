@@ -42,23 +42,16 @@ class ModalManager {
     }
 }
 
-// Create and expose the instance to window immediately
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        window.modalManager = new ModalManager();
-    });
-} else {
-    window.modalManager = new ModalManager();
-}
+// Initialize and expose the instance
+modalManager = new ModalManager();
 
-
-function saveVideo() {
+// Expose the save function globally
+saveVideo = function() {
     const formData = new FormData();
     formData.append('action', 'update');
     formData.append('id', document.getElementById('videoId').value);
     formData.append('title', document.getElementById('videoTitle').value);
     formData.append('description', document.getElementById('videoDescription').value);
-    console.log("formData: ", formData);
 
     fetch(window.location.href, {
         method: 'POST',
@@ -67,7 +60,7 @@ function saveVideo() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            //modalManager.hideEditModal();
+            modalManager.hideEditModal();
             window.location.reload();
         } else if (data.error) {
             alert('Error saving: ' + data.error);
@@ -75,6 +68,6 @@ function saveVideo() {
     })
     .catch(error => {
         console.error('Error saving:', error);
-        alert('Error saving video. Please try again. ', error);
+        alert('Error saving video. Please try again.');
     });
-}
+};
