@@ -59,7 +59,7 @@ function saveVideo() {
     formData.append('title', document.getElementById('videoTitle').value);
     formData.append('description', document.getElementById('videoDescription').value);
     console.log("formData: ", formData);
-    
+
     fetch(window.location.href, {
         method: 'POST',
         body: formData
@@ -67,7 +67,7 @@ function saveVideo() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            modalManager.hideEditModal();
+            //modalManager.hideEditModal();
             window.location.reload();
         } else if (data.error) {
             alert('Error saving: ' + data.error);
