@@ -1,5 +1,7 @@
 // js/modal_manager.js
 
+let modalManager;
+
 // Create the class
 class ModalManager {
     constructor() {
@@ -40,34 +42,37 @@ class ModalManager {
     hideEditModal() {
         this.editModal.hide();
     }
+
+    saveVideo() {
+        const formData = new FormData();
+        formData.append('action', 'update');
+        formData.append('id', document.getElementById('videoId').value);
+        formData.append('title', document.getElementById('videoTitle').value);
+        formData.append('description', document.getElementById('videoDescription').value);
+
+        fetch(window.location.href, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                this.hideEditModal();  // Now 'this' refers to the ModalManager instance
+                window.location.reload();
+            } else if (data.error) {
+                alert('Error saving: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error saving:', error);
+            alert('Error saving video. Please try again.');
+        });
+    }
 }
 
-// Initialize and expose the instance
 modalManager = new ModalManager();
 
 // Expose the save function globally
 saveVideo = function() {
-    const formData = new FormData();
-    formData.append('action', 'update');
-    formData.append('id', document.getElementById('videoId').value);
-    formData.append('title', document.getElementById('videoTitle').value);
-    formData.append('description', document.getElementById('videoDescription').value);
-
-    fetch(window.location.href, {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            modalManager.hideEditModal();
-            window.location.reload();
-        } else if (data.error) {
-            alert('Error saving: ' + data.error);
-        }
-    })
-    .catch(error => {
-        console.error('Error saving:', error);
-        alert('Error saving video. Please try again.');
-    });
+    modalManager.saveVideo();
 };
