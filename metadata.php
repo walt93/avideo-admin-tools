@@ -983,6 +983,7 @@ async function generateDescription() {
     }
 }
     </script>
+    <script src="/management/js/category_navigation.js"></script>
 </body>
 </html>
 <?php
