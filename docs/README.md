@@ -50,8 +50,6 @@ AVIDEO_DATABASE_PW=your_password_here
 AVIDEO_DATABASE_NAME=your_database_name_here
 AVIDEO_DATABASE_USER=your_database_user_here
 AVIDEO_DATABASE_HOST=your_database_host_here e.g. localhost
-OPENAI_API_KEY=your open AI api key goes here
-AVIDEO_ENDPOINT_API_KEY=make up some secure secret and use it on both sides
 ```
 
 ## Security Considerations
@@ -77,50 +75,6 @@ The tool interacts with these AVideo tables:
 - `categories`: Category hierarchy
 - `playlists`: Playlist information
 - `playlists_has_videos`: Playlist-video relationships
-
-## Subtitle and Transcript Management
-
-The subtitle management system provides tools for handling video subtitles (VTT) and transcripts (TXT) within your AVideo installation. This system includes:
-
-### Features
-- Secure API endpoint for uploading subtitle and transcript files
-- Automatic file organization matching video structure
-- Support for both VTT (subtitles) and TXT (transcript) formats
-- Database-validated file management
-
-### Upload Endpoint
-The system provides a secure endpoint for uploading subtitle and transcript files:
-```bash
-POST /management/upload_subtitle.php
-```
-
-Required authentication:
-- Basic HTTP Authentication
-- API Key via X-Api-Key header
-
-Files are automatically stored in the correct video directory:
-```
-/videos/[video_filename]/[video_filename].[vtt|txt]
-```
-
-For detailed endpoint documentation, see `docs/upload_subtitle.md`.
-
-### Environment Configuration
-Required environment variables:
-```bash
-AVIDEO_DATABASE_PW=your_db_password
-AVIDEO_DATABASE_NAME=your_db_name
-AVIDEO_DATABASE_USER=your_db_user
-AVIDEO_DATABASE_HOST=your_db_host
-AVIDEO_ENDPOINT_API_KEY=your_api_key
-```
-
-### Security
-- API key authentication required
-- Basic HTTP authentication required
-- Extension validation (.vtt and .txt only)
-- Database validation of video filenames
-- Secure file handling and storage
 
 ## Contributing
 
