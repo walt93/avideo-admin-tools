@@ -58,7 +58,8 @@ function saveVideo() {
     formData.append('id', document.getElementById('videoId').value);
     formData.append('title', document.getElementById('videoTitle').value);
     formData.append('description', document.getElementById('videoDescription').value);
-
+    console.log("formData: ", formData);
+    
     fetch(window.location.href, {
         method: 'POST',
         body: formData
