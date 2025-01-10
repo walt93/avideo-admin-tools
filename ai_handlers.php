@@ -117,7 +117,24 @@ function generate_event_style($title, $description) {
         "Title: {$title}\nDescription: {$description}\n\n" .
         "If no specific date/location is found, focus on the event's significance while maintaining our voice.";
     
-    return call_openai_api($prompt);
+    // Create proper data structure for OpenAI API
+    $data = [
+        'model' => 'gpt-4-0125-preview',
+        'messages' => [
+            [
+                'role' => 'system',
+                'content' => 'You are Truth Tide TV\'s lead editor. You write hard-hitting descriptions that expose concerning developments and wake people up to hidden truths.'
+            ],
+            [
+                'role' => 'user',
+                'content' => $prompt
+            ]
+        ],
+        'temperature' => 0.3,
+        'max_tokens' => 100
+    ];
+    
+    return call_openai_api($data);
 }
 
 function call_openai_api($data) {

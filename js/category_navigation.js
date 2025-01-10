@@ -1,5 +1,8 @@
 // js/category_navigation.js
 
+// Make categoryNav globally available
+let categoryNav;
+
 class CategoryNavigation {
     constructor() {
         this.setupEventListeners();
@@ -93,5 +96,7 @@ class CategoryNavigation {
 // Initialize the category navigation
 const categoryNav = new CategoryNavigation();
 
-// Expose the loadSubcategories function globally for the select elements
-window.loadSubcategories = (level, parentId) => categoryNav.loadSubcategories(level, parentId);
+// Expose the loadSubcategories function globally
+window.loadSubcategories = function(level, parentId) {
+    return categoryNav.loadSubcategories(level, parentId);
+};
