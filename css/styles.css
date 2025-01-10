@@ -1,0 +1,138 @@
+/* css/styles.css */
+
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+
+.cell-content {
+    position: relative;
+}
+
+.description-loading {
+    color: #666;
+    font-style: italic;
+}
+
+.spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+tr.processing {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.file-icon {
+    margin-left: 4px;
+    cursor: help;
+    opacity: 0.7;
+}
+
+.table-responsive {
+    overflow-x: auto;
+    max-width: 100%;
+}
+
+.table-wrapper {
+    min-width: 800px;
+    max-width: 100%;
+}
+
+.table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+.col-id { width: 70px; }
+.col-created { width: 120px; }
+.col-actions { width: 160px; }
+.col-title, .col-description { min-width: 200px; }
+
+.video-title {
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.video-description {
+    color: #666;
+    font-size: 0.9em;
+    padding: 8px 0;
+    white-space: pre-wrap;
+}
+
+.cell-content {
+    padding: 8px 0;
+}
+
+.category-dropdowns {
+    display: flex;
+    gap: 1rem;
+}
+
+.category-dropdowns select {
+    flex: 1;
+}
+
+.btn-group {
+    display: flex;
+    gap: 4px;
+}
+
+.pagination {
+    flex-wrap: wrap;
+    gap: 2px;
+}
+
+.pagination .page-link {
+    min-width: 40px;
+    text-align: center;
+}
+
+.col-actions span {
+    margin-right: 4px;
+    cursor: help;
+}
+
+/* Style for disabled AI options */
+.dropdown-item.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Dropdown menu styling */
+.dropdown-menu {
+    padding: 0.5rem;
+}
+
+.dropdown-item {
+    padding: 0.5rem;
+    border-radius: 4px;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+.dropdown-item small {
+    display: block;
+    margin-top: 2px;
+}
