@@ -180,5 +180,16 @@ async function makeRequest(formData) {
         method: 'POST',
         body: formData
     });
-    return await response.json();
+
+    // Debug: Log the raw response
+    const responseText = await response.text();
+    console.log('Raw server response:', responseText);
+
+    try {
+        // Try to parse the text as JSON
+        return JSON.parse(responseText);
+    } catch (error) {
+        console.error('Failed to parse server response as JSON:', responseText);
+        throw new Error('Server returned invalid JSON: ' + error.message);
+    }
 }
