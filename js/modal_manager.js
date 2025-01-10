@@ -74,6 +74,6 @@ function saveVideo() {
     })
     .catch(error => {
         console.error('Error saving:', error);
-        alert('Error saving video. Please try again.');
+        alert('Error saving video. Please try again. ', error);
     });
 }
