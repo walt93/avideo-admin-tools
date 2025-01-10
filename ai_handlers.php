@@ -159,28 +159,28 @@ function handleSanitize($post) {
             'role' => 'user',
             'content' => <<<EOT
             You must preserve the exact meaning and information from the original text. Your only tasks are:
-        1. Fix basic capitalization (beginning of sentences)
-        2. Add correct punctuation if missing
-            3. Remove emojis
-        4. Remove email addresses and URLs
-        5. Split into paragraphs where appropriate
+            1. Fix basic capitalization (beginning of sentences)
+            2. Add correct punctuation if missing
+                3. Remove emojis
+            4. Remove email addresses and URLs
+            5. Split into paragraphs where appropriate
 
-        Rules:
-        - DO NOT rewrite or paraphrase any content
-        - DO NOT add or remove information
-        - DO NOT change word choice
-        - DO NOT remove hashtags
-        - DO NOT "improve" the text
-        - Keep line breaks where they exist in the original
-        - Preserve ALL original terminology and phrasing
-        - If something looks like a formatting error but you're not sure, leave it as is
+            Rules:
+            - DO NOT rewrite or paraphrase any content
+            - DO NOT add or remove information
+            - DO NOT change word choice
+            - DO NOT remove hashtags
+            - DO NOT "improve" the text
+            - Keep line breaks where they exist in the original
+            - Preserve ALL original terminology and phrasing
+            - If something looks like a formatting error but you're not sure, leave it as is
 
-        Original text:
-        {$post['description']}
+            Original text:
+            {$post['description']}
 
-        Return ONLY the formatted text with no explanations.
+            Return ONLY the formatted text with no explanations.
             EOT
-    ]
+        ]
     ],
         'temperature' => 0.3
     ];
