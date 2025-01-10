@@ -159,14 +159,14 @@ function handleSanitize($post) {
             'role' => 'user',
             'content' => <<<EOT
             You must preserve the exact meaning and information from the original text. Your only tasks are:
-1. Fix basic capitalization (beginning of sentences)
+        1. Fix basic capitalization (beginning of sentences)
         2. Add correct punctuation if missing
             3. Remove emojis
         4. Remove email addresses and URLs
         5. Split into paragraphs where appropriate
 
         Rules:
-            - DO NOT rewrite or paraphrase any content
+        - DO NOT rewrite or paraphrase any content
         - DO NOT add or remove information
         - DO NOT change word choice
         - DO NOT remove hashtags
