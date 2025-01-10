@@ -86,29 +86,18 @@ function generate_event_style($title, $description) {
     return call_openai_api($prompt);
 }
 
-function call_openai_api($prompt) {
+function call_openai_api($data) {
     $openaiKey = getenv('OPENAI_API_KEY');
     if (!$openaiKey) {
+        error_log("OpenAI API key not found");
         throw new Exception('OpenAI API key not configured');
     }
 
-    $data = [
-        'model' => 'gpt-4o',
-        'messages' => [
-            [
-                'role' => 'system',
-                'content' => 'You are Truth Tide TV\'s lead editor. You write hard-hitting descriptions that expose concerning developments and wake people up to hidden truths.'
-            ],
-            [
-                'role' => 'user',
-                'content' => $prompt
-            ]
-        ],
-        'temperature' => 0.3,
-        'max_tokens' => 100
-    ];
-
     $ch = curl_init('https://api.openai.com/v1/chat/completions');
+    
+    $jsonData = json_encode($data);
+    error_log("Sending request to OpenAI API with data: " . $jsonData);
+    
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_POST => true,
@@ -116,19 +105,31 @@ function call_openai_api($prompt) {
             'Authorization: Bearer ' . $openaiKey,
             'Content-Type: application/json'
         ],
-        CURLOPT_POSTFIELDS => json_encode($data)
+        CURLOPT_POSTFIELDS => $jsonData
     ]);
 
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    
+    if ($response === false) {
+        error_log("Curl error: " . curl_error($ch));
+        curl_close($ch);
+        throw new Exception('Curl error: ' . curl_error($ch));
+    }
+    
+    error_log("OpenAI API response code: " . $httpCode);
+    error_log("OpenAI API response: " . $response);
+    
     curl_close($ch);
 
     if ($httpCode !== 200) {
+        error_log("OpenAI API request failed with status " . $httpCode . ": " . $response);
         throw new Exception('OpenAI API request failed');
     }
 
     $result = json_decode($response, true);
     if (!isset($result['choices'][0]['message']['content'])) {
+        error_log("Invalid response structure from OpenAI: " . $response);
         throw new Exception('Invalid response from OpenAI API');
     }
 
