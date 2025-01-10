@@ -68,7 +68,24 @@ function generate_from_transcript($filename) {
 
     $prompt = get_base_prompt() . "\n\nSample from content to categorize and describe:\n{$content_sample}";
     
-    return call_openai_api($prompt);
+    // Create proper data structure for OpenAI API
+    $data = [
+        'model' => 'gpt-4-0125-preview',
+        'messages' => [
+            [
+                'role' => 'system',
+                'content' => 'You are Truth Tide TV\'s lead editor. You write hard-hitting descriptions that expose concerning developments and wake people up to hidden truths.'
+            ],
+            [
+                'role' => 'user',
+                'content' => $prompt
+            ]
+        ],
+        'temperature' => 0.3,
+        'max_tokens' => 100
+    ];
+    
+    return call_openai_api($data);
 }
 
 function rewrite_existing($title, $description) {
