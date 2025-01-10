@@ -97,6 +97,6 @@ class CategoryNavigation {
 const categoryNav = new CategoryNavigation();
 
 // Expose the loadSubcategories function globally
-window.loadSubcategories = function(level, parentId) {
+loadSubcategories = function(level, parentId) {
     return categoryNav.loadSubcategories(level, parentId);
 };
