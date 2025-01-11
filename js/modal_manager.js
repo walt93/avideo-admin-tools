@@ -1,17 +1,12 @@
 // js/modal_manager.js
 
-let modalManager;
-
-// Wait for the DOM to load
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('Initializing ModalManager...');
-    modalManager = new ModalManager();
-});
-
 // Create the class
 class ModalManager {
     constructor() {
-        this.editModal = new bootstrap.Modal(document.getElementById('editModal'));
+        console.log('ModalManager constructor running...');
+        const modalElement = document.getElementById('editModal');
+        console.log('Modal element:', modalElement);
+        this.editModal = new bootstrap.Modal(modalElement);
         this.setupEventListeners();
     }
 
@@ -25,11 +20,12 @@ class ModalManager {
     }
 
     showEditModal(video) {
+        console.log('showEditModal called with:', video);
         document.getElementById('videoId').value = video.id;
         document.getElementById('videoTitle').value = video.title;
         document.getElementById('videoDescription').value = video.description;
         document.getElementById('videoFilename').value = video.filename;
-        
+
         // Configure AI options based on available files
         const transcriptOption = document.getElementById('transcriptOption');
         if (transcriptOption) {
@@ -41,10 +37,9 @@ class ModalManager {
                 transcriptOption.title = '';
             }
         }
-        
+
         this.editModal.show();
     }
-
 
     async saveVideo() {
         try {
@@ -62,7 +57,7 @@ class ModalManager {
             const data = await response.json();
 
             if (data.success) {
-                this.editModal.hide(); // Using Bootstrap modal instance directly
+                this.editModal.hide();
                 window.location.reload();
             } else if (data.error) {
                 alert('Error saving: ' + data.error);
@@ -72,16 +67,20 @@ class ModalManager {
             alert('Error saving video. Please try again.');
         }
     }
-
 }
 
+// Single initialization when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Initializing ModalManager...');
-    modalManager = new ModalManager();
-    window.modalManager = modalManager;
+    console.log('DOM Content Loaded - initializing ModalManager...');
+    window.modalManager = new ModalManager();
+    console.log('ModalManager initialized:', window.modalManager);
 });
 
-// Expose the save function globally
-saveVideo = function() {
-    modalManager.saveVideo();
+// Global save function
+window.saveVideo = function() {
+    if (window.modalManager) {
+        window.modalManager.saveVideo();
+    } else {
+        console.error('Modal manager not initialized');
+    }
 };
