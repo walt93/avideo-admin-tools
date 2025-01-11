@@ -1,240 +1,247 @@
 // js/modal_manager.js
+(function(window) {
+    'use strict';
 
-class ModalManager {
-    constructor() {
-        console.log('ModalManager constructor running...');
+    console.log('modal_manager.js loading...');
 
-        // Debug: Log modal elements as we find them
-        const modalElement = document.getElementById('editModal');
-        const playerModalElement = document.getElementById('videoPlayerModal');
-        const subtitleModalElement = document.getElementById('subtitleModal');
-        const transcriptModalElement = document.getElementById('transcriptModal');
+    window.ModalManager = class ModalManager {
+        constructor() {
+            console.log('ModalManager constructor running...');
 
-        console.log('Found modal elements:', {
-            editModal: modalElement,
-            playerModal: playerModalElement,
-            subtitleModal: subtitleModalElement,
-            transcriptModal: transcriptModalElement
-        });
+            // Initialize modals
+            this.editModal = new bootstrap.Modal(document.getElementById('editModal'));
+            this.playerModal = new bootstrap.Modal(document.getElementById('videoPlayerModal'));
+            this.subtitleModal = new bootstrap.Modal(document.getElementById('subtitleModal'));
+            this.transcriptModal = new bootstrap.Modal(document.getElementById('transcriptModal'));
 
-        // Initialize Bootstrap modals
-        this.editModal = modalElement ? new bootstrap.Modal(modalElement) : null;
-        this.playerModal = playerModalElement ? new bootstrap.Modal(playerModalElement) : null;
-        this.subtitleModal = subtitleModalElement ? new bootstrap.Modal(subtitleModalElement) : null;
-        this.transcriptModal = transcriptModalElement ? new bootstrap.Modal(transcriptModalElement) : null;
+            this.setupEventListeners();
+            this.setupVideoPlayerEvents();
 
-        this.setupEventListeners();
-        this.setupVideoPlayerEvents();
-    }
+            console.log('ModalManager initialized with modals:', {
+                editModal: this.editModal,
+                playerModal: this.playerModal,
+                subtitleModal: this.subtitleModal,
+                transcriptModal: this.transcriptModal
+            });
+        }
 
-    setupEventListeners() {
-        // Restore original click handlers for buttons
-        document.addEventListener('click', (event) => {
-            const target = event.target;
-            console.log('Click detected on:', target);
+        setupEventListeners() {
+            // Global click handler for all modal-related actions
+            document.addEventListener('click', (event) => {
+                const target = event.target.closest('[data-action]');
+                if (!target) return;
 
-            // Edit button handler
-            if (target.matches('[data-action="edit"]') || target.closest('[data-action="edit"]')) {
-                console.log('Edit button clicked');
-                const videoData = JSON.parse(target.closest('[data-action="edit"]').dataset.video);
-                this.showEditModal(videoData);
-            }
+                console.log('Click handler - action:', target.dataset.action);
+                const action = target.dataset.action;
 
-            // Play button handler
-            if (target.matches('[data-action="play"]') || target.closest('[data-action="play"]')) {
-                console.log('Play button clicked');
-                const videoData = JSON.parse(target.closest('[data-action="play"]').dataset.video);
-                this.showVideoPlayer(videoData);
-            }
+                switch (action) {
+                    case 'edit':
+                        try {
+                            const videoData = JSON.parse(target.dataset.video);
+                            console.log('Edit clicked with data:', videoData);
+                            this.showEditModal(videoData);
+                        } catch (error) {
+                            console.error('Error parsing video data for edit:', error);
+                        }
+                        break;
 
-            // Subtitle button handler
-            if (target.matches('[data-action="view-subtitles"]')) {
-                console.log('Subtitle button clicked');
-                const filename = target.dataset.filename;
-                this.showSubtitles(filename);
-            }
+                    case 'play':
+                        try {
+                            const videoData = JSON.parse(target.dataset.video);
+                            console.log('Play clicked with data:', videoData);
+                            this.showVideoPlayer(videoData);
+                        } catch (error) {
+                            console.error('Error parsing video data for play:', error);
+                        }
+                        break;
 
-            // Transcript button handler
-            if (target.matches('[data-action="view-transcript"]')) {
-                console.log('Transcript button clicked');
-                const filename = target.dataset.filename;
-                this.showTranscript(filename);
-            }
-        });
+                    case 'view-subtitles':
+                        const subtitleFilename = target.dataset.filename;
+                        console.log('View subtitles clicked for:', subtitleFilename);
+                        this.showSubtitles(subtitleFilename);
+                        break;
 
-        // Handle ESC key
-        document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape' && this.editModal && this.editModal._isShown) {
-                this.editModal.hide();
-            }
-        });
-    }
-
-    setupVideoPlayerEvents() {
-        const qualitySelect = document.getElementById('videoQualitySelect');
-        const videoPlayer = document.getElementById('videoPlayer');
-
-        if (qualitySelect && videoPlayer) {
-            qualitySelect.addEventListener('change', (e) => {
-                console.log('Quality changed:', e.target.value);
-                const currentTime = videoPlayer.currentTime;
-                const wasPlaying = !videoPlayer.paused;
-                videoPlayer.src = e.target.value;
-                videoPlayer.currentTime = currentTime;
-                if (wasPlaying) videoPlayer.play();
+                    case 'view-transcript':
+                        const transcriptFilename = target.dataset.filename;
+                        console.log('View transcript clicked for:', transcriptFilename);
+                        this.showTranscript(transcriptFilename);
+                        break;
+                }
             });
 
-            // Clean up video when modal is closed
-            const playerModal = document.getElementById('videoPlayerModal');
-            if (playerModal) {
-                playerModal.addEventListener('hidden.bs.modal', () => {
+            // ESC key handler
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    if (this.editModal._isShown) this.editModal.hide();
+                    if (this.playerModal._isShown) this.playerModal.hide();
+                    if (this.subtitleModal._isShown) this.subtitleModal.hide();
+                    if (this.transcriptModal._isShown) this.transcriptModal.hide();
+                }
+            });
+        }
+
+        setupVideoPlayerEvents() {
+            const qualitySelect = document.getElementById('videoQualitySelect');
+            const videoPlayer = document.getElementById('videoPlayer');
+
+            if (qualitySelect && videoPlayer) {
+                qualitySelect.addEventListener('change', (e) => {
+                    console.log('Quality changed:', e.target.value);
+                    const currentTime = videoPlayer.currentTime;
+                    const wasPlaying = !videoPlayer.paused;
+                    videoPlayer.src = e.target.value;
+                    videoPlayer.currentTime = currentTime;
+                    if (wasPlaying) videoPlayer.play();
+                });
+
+                document.getElementById('videoPlayerModal').addEventListener('hidden.bs.modal', () => {
                     console.log('Video player modal closed');
                     videoPlayer.pause();
                     videoPlayer.src = '';
                 });
             }
         }
-    }
 
-    async showSubtitles(filename) {
-        console.log('Showing subtitles for:', filename);
-        try {
-            const response = await fetch('?action=get_subtitles&filename=' + encodeURIComponent(filename));
-            const data = await response.json();
+        showEditModal(video) {
+            console.log('Showing edit modal for:', video);
 
-            if (data.success && this.subtitleModal) {
-                document.querySelector('.subtitle-content').textContent = data.content;
-                this.subtitleModal.show();
-            } else {
-                console.error('Error loading subtitles:', data.error);
-                alert('Error loading subtitles: ' + (data.error || 'Unknown error'));
+            const videoId = document.getElementById('videoId');
+            const videoTitle = document.getElementById('videoTitle');
+            const videoDescription = document.getElementById('videoDescription');
+            const videoFilename = document.getElementById('videoFilename');
+            const transcriptOption = document.getElementById('transcriptOption');
+
+            if (!videoId || !videoTitle || !videoDescription || !videoFilename) {
+                console.error('Required edit form elements not found');
+                return;
             }
-        } catch (error) {
-            console.error('Error loading subtitles:', error);
-            alert('Error loading subtitles. Please try again.');
-        }
-    }
 
-    async showTranscript(filename) {
-        console.log('Showing transcript for:', filename);
-        try {
-            const response = await fetch('?action=get_transcript&filename=' + encodeURIComponent(filename));
-            const data = await response.json();
+            videoId.value = video.id;
+            videoTitle.value = video.title;
+            videoDescription.value = video.description;
+            videoFilename.value = video.filename;
 
-            if (data.success && this.transcriptModal) {
-                document.querySelector('.transcript-content').textContent = data.content;
-                this.transcriptModal.show();
-            } else {
-                console.error('Error loading transcript:', data.error);
-                alert('Error loading transcript: ' + (data.error || 'Unknown error'));
+            if (transcriptOption) {
+                if (!video.media_files.has_txt) {
+                    transcriptOption.classList.add('disabled');
+                    transcriptOption.title = 'No transcript available';
+                } else {
+                    transcriptOption.classList.remove('disabled');
+                    transcriptOption.title = '';
+                }
             }
-        } catch (error) {
-            console.error('Error loading transcript:', error);
-            alert('Error loading transcript. Please try again.');
-        }
-    }
 
-    showEditModal(video) {
-        console.log('Showing edit modal for:', video);
-        if (!this.editModal) {
-            console.error('Edit modal not initialized');
-            return;
+            this.editModal.show();
         }
 
-        document.getElementById('videoId').value = video.id;
-        document.getElementById('videoTitle').value = video.title;
-        document.getElementById('videoDescription').value = video.description;
-        document.getElementById('videoFilename').value = video.filename;
+        async showSubtitles(filename) {
+            console.log('Loading subtitles for:', filename);
+            try {
+                const response = await fetch('?action=get_subtitles&filename=' + encodeURIComponent(filename));
+                const data = await response.json();
 
-        // Configure AI options based on available files
-        const transcriptOption = document.getElementById('transcriptOption');
-        if (transcriptOption) {
-            if (!video.media_files.has_txt) {
-                transcriptOption.classList.add('disabled');
-                transcriptOption.title = 'No transcript available';
-            } else {
-                transcriptOption.classList.remove('disabled');
-                transcriptOption.title = '';
+                if (data.success) {
+                    const contentElement = document.querySelector('.subtitle-content');
+                    if (contentElement) {
+                        contentElement.textContent = data.content;
+                        this.subtitleModal.show();
+                    } else {
+                        console.error('Subtitle content element not found');
+                    }
+                } else {
+                    console.error('Error loading subtitles:', data.error);
+                    alert('Error loading subtitles: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error loading subtitles:', error);
+                alert('Error loading subtitles. Please try again.');
             }
         }
 
-        this.editModal.show();
-    }
+        async showTranscript(filename) {
+            console.log('Loading transcript for:', filename);
+            try {
+                const response = await fetch('?action=get_transcript&filename=' + encodeURIComponent(filename));
+                const data = await response.json();
 
-    showVideoPlayer(videoData) {
-        console.log('Showing video player for:', videoData);
-        if (!this.playerModal) {
-            console.error('Player modal not initialized');
-            return;
+                if (data.success) {
+                    const contentElement = document.querySelector('.transcript-content');
+                    if (contentElement) {
+                        contentElement.textContent = data.content;
+                        this.transcriptModal.show();
+                    } else {
+                        console.error('Transcript content element not found');
+                    }
+                } else {
+                    console.error('Error loading transcript:', data.error);
+                    alert('Error loading transcript: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error loading transcript:', error);
+                alert('Error loading transcript. Please try again.');
+            }
         }
 
-        const qualitySelect = document.getElementById('videoQualitySelect');
-        const videoPlayer = document.getElementById('videoPlayer');
-        const playerTitle = document.getElementById('videoPlayerTitle');
+        showVideoPlayer(videoData) {
+            console.log('Setting up video player for:', videoData);
 
-        playerTitle.textContent = videoData.title;
-        qualitySelect.innerHTML = '';
+            const qualitySelect = document.getElementById('videoQualitySelect');
+            const videoPlayer = document.getElementById('videoPlayer');
+            const playerTitle = document.getElementById('videoPlayerTitle');
 
-        // Sort resolutions
-        const resOrder = ['1080', '720', '540', '480', '360', '240', 'ext', 'original'];
-        const sortedResolutions = Object.entries(videoData.resolutions)
-            .sort(([resA], [resB]) => resOrder.indexOf(resA) - resOrder.indexOf(resB));
+            if (!qualitySelect || !videoPlayer || !playerTitle) {
+                console.error('Required video player elements not found');
+                return;
+            }
 
-        sortedResolutions.forEach(([quality, path]) => {
-            const option = document.createElement('option');
-            option.value = path;
-            option.textContent = quality === 'original' ? 'Original' :
-                quality === 'ext' ? 'Extended' : `${quality}p`;
-            qualitySelect.appendChild(option);
-        });
+            playerTitle.textContent = videoData.title;
+            qualitySelect.innerHTML = '';
 
-        videoPlayer.src = sortedResolutions[0][1];
-        this.playerModal.show();
-    }
+            const resOrder = ['1080', '720', '540', '480', '360', '240', 'ext', 'original'];
+            const sortedResolutions = Object.entries(videoData.resolutions)
+                .sort(([resA], [resB]) => resOrder.indexOf(resA) - resOrder.indexOf(resB));
 
-    async saveVideo() {
-        console.log('Saving video...');
-        try {
-            const formData = new FormData();
-            formData.append('action', 'update');
-            formData.append('id', document.getElementById('videoId').value);
-            formData.append('title', document.getElementById('videoTitle').value);
-            formData.append('description', document.getElementById('videoDescription').value);
-
-            const response = await fetch(window.location.href, {
-                method: 'POST',
-                body: formData
+            sortedResolutions.forEach(([quality, path]) => {
+                const option = document.createElement('option');
+                option.value = path;
+                option.textContent = quality === 'original' ? 'Original' :
+                    quality === 'ext' ? 'Extended' : `${quality}p`;
+                qualitySelect.appendChild(option);
             });
 
-            const data = await response.json();
-
-            if (data.success) {
-                this.editModal.hide();
-                window.location.reload();
-            } else {
-                console.error('Error saving:', data.error);
-                alert('Error saving: ' + (data.error || 'Unknown error'));
-            }
-        } catch (error) {
-            console.error('Error saving:', error);
-            alert('Error saving video. Please try again.');
+            videoPlayer.src = sortedResolutions[0][1];
+            this.playerModal.show();
         }
-    }
-}
 
-// Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM Content Loaded - initializing ModalManager...');
-    window.modalManager = new ModalManager();
-    console.log('ModalManager initialized:', window.modalManager);
-});
+        async saveVideo() {
+            console.log('Saving video...');
+            try {
+                const formData = new FormData();
+                formData.append('action', 'update');
+                formData.append('id', document.getElementById('videoId').value);
+                formData.append('title', document.getElementById('videoTitle').value);
+                formData.append('description', document.getElementById('videoDescription').value);
 
-// Global save function
-window.saveVideo = function() {
-    console.log('Global saveVideo called');
-    if (window.modalManager) {
-        window.modalManager.saveVideo();
-    } else {
-        console.error('Modal manager not initialized');
-    }
-};
+                const response = await fetch(window.location.href, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    this.editModal.hide();
+                    window.location.reload();
+                } else {
+                    console.error('Error saving:', data.error);
+                    alert('Error saving: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error saving:', error);
+                alert('Error saving video. Please try again.');
+            }
+        }
+    };
+
+    console.log('modal_manager.js loaded');
+})(window);
