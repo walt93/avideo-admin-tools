@@ -56,26 +56,6 @@
                         </li>
                     </ul>
                 </div>
-                <!-- Video Player Modal -->
-                <div class="modal fade" id="videoPlayerModal" tabindex="-1">
-                    <div class="modal-dialog modal-xl">
-                        <div class="modal-content bg-dark">
-                            <div class="modal-header border-secondary">
-                                <h5 class="modal-title text-light" id="videoPlayerTitle"></h5>
-                                <div class="ms-auto d-flex align-items-center">
-                                    <select class="form-select form-select-sm me-2" id="videoQualitySelect" style="width: auto;">
-                                    </select>
-                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                                </div>
-                            </div>
-                            <div class="modal-body p-0">
-                                <video id="videoPlayer" class="w-100" controls>
-                                    Your browser doesn't support HTML5 video.
-                                </video>
-                            </div>
-                        </div>
-                    </div>
-                </div>
                 <button type="button" class="btn btn-primary" onclick="saveVideo()">Save</button>
             </div>
         </div>
