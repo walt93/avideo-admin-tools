@@ -176,7 +176,11 @@ try {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- Application JavaScript with error checking -->
-    <script src="js/modal_manager.js"></script>
+<script src="/js/modal_manager.js" onerror="console.error('Failed to load from /js/')"></script>
+<script src="/management/js/modal_manager.js" onerror="console.error('Failed to load from /management/js/')"></script>
+<script src="./js/modal_manager.js" onerror="console.error('Failed to load from ./js/')"></script>
+<script src="../js/modal_manager.js" onerror="console.error('Failed to load from ../js/')"></script>
+
     <script src="js/category_navigation.js"></script>
     <script src="js/ai_handlers.js"></script>
 
