@@ -67,7 +67,26 @@ function getTranscriptContent($filename) {
         $path = "/var/www/html/conspyre.tv/videos/{$filename}/{$filename}_ext.txt";
     }
 
-    return file_exists($path) ? file_get_contents($path) : null;
+    if (file_exists($path)) {
+        $content = file_get_contents($path);
+
+        // Clean up the content
+        $content = trim($content);
+
+        // Replace multiple newlines with double newlines to create paragraphs
+        $content = preg_replace('/\n{3,}/', "\n\n", $content);
+
+        // Split into paragraphs and clean each paragraph
+        $paragraphs = explode("\n\n", $content);
+        $paragraphs = array_map(function($p) {
+            // Remove excess whitespace within paragraphs
+            return preg_replace('/\s+/', ' ', trim($p));
+        }, $paragraphs);
+
+        // Rejoin with proper paragraph spacing
+        return implode("\n\n", $paragraphs);
+    }
+    return null;
 }
 
 // Helper function to check for video file resolutions
