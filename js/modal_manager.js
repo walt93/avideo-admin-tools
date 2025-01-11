@@ -204,8 +204,6 @@
     // Initialize when DOM is ready
     document.addEventListener('DOMContentLoaded', () => {
         window.modalManager = new ModalManager();
-        console.log('ModalManager initialized globally');
     });
 
-    console.log('modal_manager.js loaded');
 })(window);

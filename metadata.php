@@ -185,7 +185,6 @@ try {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- Load JavaScript through PHP handler -->
-    <script>console.log('Loading scripts through PHP handler...');</script>
     <script src="serve-js.php?file=modal_manager.js"></script>
     <script src="serve-js.php?file=category_navigation.js"></script>
     <script src="serve-js.php?file=ai_handlers.js"></script>
