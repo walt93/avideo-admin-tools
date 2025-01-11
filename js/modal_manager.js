@@ -69,6 +69,7 @@ class ModalManager {
             alert('Error saving video. Please try again.');
         }
     }
+
 }
 
 modalManager = new ModalManager();

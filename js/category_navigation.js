@@ -1,8 +1,5 @@
 // js/category_navigation.js
 
-// Make categoryNav globally available
-let categoryNav;
-
 class CategoryNavigation {
     constructor() {
         this.setupEventListeners();
