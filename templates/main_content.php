@@ -63,16 +63,28 @@
                         </div>
                         <div class="video-description"><?= htmlspecialchars($video['description']) ?></div>
                     </div>
-                </td>
                 <td class="col-actions">
-<button class="btn btn-sm btn-primary"
-     onclick="console.log('Edit clicked'); console.log(window.modalManager); window.modalManager && window.modalManager.showEditModal(<?= htmlspecialchars(json_encode(array_merge($video, ['media_files' => $mediaFiles]))) ?>)">
-    Edit
-</button>
+                    <button class="btn btn-sm btn-primary"
+                         onclick="window.modalManager && window.modalManager.showEditModal(<?= htmlspecialchars(json_encode(array_merge($video, ['media_files' => $mediaFiles]))) ?>)">
+                        Edit
+                    </button>
                     <button class="btn btn-sm btn-warning"
                             onclick="quickSanitize(<?= $video['id'] ?>, this)">
                         Sanitize
                     </button>
+                    <?php
+                    $resolutions = getVideoResolutions($video['filename']);
+                    if (!empty($resolutions)):
+                    ?>
+                    <button class="btn btn-sm btn-success"
+                            onclick="window.modalManager && window.modalManager.showVideoPlayer(<?= htmlspecialchars(json_encode([
+                                'title' => $video['title'],
+                                'filename' => $video['filename'],
+                                'resolutions' => $resolutions
+                            ])) ?>)">
+                        <i class="bi bi-play-fill"></i> Play
+                    </button>
+                    <?php endif; ?>
                 </td>
             </tr>
             <?php endforeach; ?>

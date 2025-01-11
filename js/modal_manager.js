@@ -1,13 +1,19 @@
 // js/modal_manager.js
 
 // Create the class
+// Create the class
 class ModalManager {
     constructor() {
         console.log('ModalManager constructor running...');
         const modalElement = document.getElementById('editModal');
-        console.log('Modal element:', modalElement);
+        const playerModalElement = document.getElementById('videoPlayerModal');
+        console.log('Modal elements:', modalElement, playerModalElement);
+
         this.editModal = new bootstrap.Modal(modalElement);
+        this.playerModal = new bootstrap.Modal(playerModalElement);
+
         this.setupEventListeners();
+        this.setupVideoPlayerEvents();
     }
 
     setupEventListeners() {
@@ -16,6 +22,25 @@ class ModalManager {
             if (event.key === 'Escape' && this.editModal._isShown) {
                 this.editModal.hide();
             }
+        });
+    }
+
+    setupVideoPlayerEvents() {
+        const qualitySelect = document.getElementById('videoQualitySelect');
+        const videoPlayer = document.getElementById('videoPlayer');
+
+        qualitySelect.addEventListener('change', (e) => {
+            const currentTime = videoPlayer.currentTime;
+            const wasPlaying = !videoPlayer.paused;
+            videoPlayer.src = e.target.value;
+            videoPlayer.currentTime = currentTime;
+            if (wasPlaying) videoPlayer.play();
+        });
+
+        // Clean up video when modal is closed
+        document.getElementById('videoPlayerModal').addEventListener('hidden.bs.modal', () => {
+            videoPlayer.pause();
+            videoPlayer.src = '';
         });
     }
 
@@ -39,6 +64,40 @@ class ModalManager {
         }
 
         this.editModal.show();
+    }
+
+    showVideoPlayer(videoData) {
+        console.log('Showing video player for:', videoData);
+        const qualitySelect = document.getElementById('videoQualitySelect');
+        const videoPlayer = document.getElementById('videoPlayer');
+        const playerTitle = document.getElementById('videoPlayerTitle');
+
+        // Set title
+        playerTitle.textContent = videoData.title;
+
+        // Clear and populate quality options
+        qualitySelect.innerHTML = '';
+
+        // Sort resolutions by quality (highest first)
+        const resOrder = ['1080', '720', '540', '480', '360', '240', 'ext', 'original'];
+        const sortedResolutions = Object.entries(videoData.resolutions)
+            .sort(([resA], [resB]) => {
+                return resOrder.indexOf(resA) - resOrder.indexOf(resB);
+            });
+
+        sortedResolutions.forEach(([quality, path]) => {
+            const option = document.createElement('option');
+            option.value = path;
+            option.textContent = quality === 'original' ? 'Original' :
+                quality === 'ext' ? 'Extended' :
+                    `${quality}p`;
+            qualitySelect.appendChild(option);
+        });
+
+        // Set initial video source to highest quality
+        videoPlayer.src = sortedResolutions[0][1];
+
+        this.playerModal.show();
     }
 
     async saveVideo() {

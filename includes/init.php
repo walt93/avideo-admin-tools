@@ -11,6 +11,32 @@ function displayError($message) {
     exit;
 }
 
+// Helper function to check for video file resolutions
+function getVideoResolutions($filename) {
+    $basePath = '/var/www/html/videos/' . $filename . '/' . $filename;
+    $resolutions = [];
+
+    // Check for base file
+    if (file_exists($basePath . '.mp4')) {
+        $resolutions['original'] = $basePath . '.mp4';
+    }
+
+    // Check for resolution variants
+    $res_variants = ['1080', '720', '540', '480', '360', '240'];
+    foreach ($res_variants as $res) {
+        if (file_exists($basePath . '_' . $res . '.mp4')) {
+            $resolutions[$res] = $basePath . '_' . $res . '.mp4';
+        }
+    }
+
+    // Also check for _ext variant
+    if (file_exists($basePath . '_ext.mp4')) {
+        $resolutions['ext'] = $basePath . '_ext.mp4';
+    }
+
+    return $resolutions;
+}
+
 // Helper function to check for subtitle and transcript files
 function checkMediaFiles($filename) {
     $basePath = '/var/www/html/conspyre.tv/videos/' . $filename . '/' . $filename;
