@@ -73,8 +73,9 @@
                         Sanitize
                     </button>
                     <?php
-                    $resolutions = getVideoResolutions($video['filename']);
-                    if (!empty($resolutions)):
+                        $resolutions = getVideoResolutions($video['filename']);
+                        var_dump($video['filename'], $resolutions); // Debug output
+                        if (!empty($resolutions)):
                     ?>
                     <button class="btn btn-sm btn-success"
                             onclick="window.modalManager && window.modalManager.showVideoPlayer(<?= htmlspecialchars(json_encode([
