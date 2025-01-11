@@ -172,21 +172,46 @@ try {
         </div>
     </div>
 
-<!-- JavaScript Dependencies -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- JavaScript Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- Application JavaScript -->
-<script>
-    // Add error handlers for our scripts
-    window.onerror = function(msg, url, lineNo, columnNo, error) {
-        console.error('Error: ' + msg + '\nURL: ' + url + '\nLine: ' + lineNo + '\nColumn: ' + columnNo + '\nError: ' + error);
-        return false;
-    };
-</script>
-<script src="./js/modal_manager.js" onerror="console.error('Failed to load modal_manager.js')"></script>
-<script src="./js/category_navigation.js" onerror="console.error('Failed to load category_navigation.js')"></script>
-<script src="./js/ai_handlers.js" onerror="console.error('Failed to load ai_handlers.js')"></script>
+    <!-- Application JavaScript with error checking -->
+    <script src="js/modal_manager.js"></script>
+    <script src="js/category_navigation.js"></script>
+    <script src="js/ai_handlers.js"></script>
 
+    <!-- Initialization script -->
+    <script>
+    console.log('Checking script loading...');
+
+    // Function to retry initialization
+    function initializeModalManager() {
+        console.log('Attempting to initialize ModalManager...');
+
+        if (typeof ModalManager === 'undefined') {
+            console.error('ModalManager class not loaded yet, retrying in 100ms');
+            setTimeout(initializeModalManager, 100);
+            return;
+        }
+
+        try {
+            console.log('ModalManager class found, creating instance');
+            if (!window.modalManager) {
+                window.modalManager = new ModalManager();
+                console.log('ModalManager initialized:', window.modalManager);
+            }
+        } catch (error) {
+            console.error('Error initializing ModalManager:', error);
+        }
+    }
+
+    // Start initialization when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeModalManager);
+    } else {
+        initializeModalManager();
+    }
+    </script>
 <!-- Test if ModalManager loaded -->
 <script>
 console.log('ModalManager class available:', typeof ModalManager !== 'undefined');
