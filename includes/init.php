@@ -13,7 +13,7 @@ function displayError($message) {
 
 // Helper function to check for video file resolutions
 function getVideoResolutions($filename) {
-    $basePath = '/var/www/html/videos/' . $filename . '/' . $filename;
+    $basePath = '/var/www/html/conspyre.tv/videos/' . $filename . '/' . $filename;
     $resolutions = [];
 
     // Check for base file
