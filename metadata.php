@@ -179,6 +179,17 @@ try {
     <script src="/management/js/modal_manager.js"></script>
     <script src="/management/js/category_navigation.js"></script>
     <script src="/management/js/ai_handlers.js"></script>
+    <script>
+    console.log('Page loaded - Testing JavaScript...');
+    // Test that we can find our modal elements
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('DOM Content Loaded');
+        console.log('Edit Modal:', document.getElementById('editModal'));
+        console.log('Bootstrap:', typeof bootstrap);
+        console.log('Testing script paths...');
+    });
+    </script>
+
 </body>
 </html>
 <?php
