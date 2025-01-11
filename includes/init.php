@@ -26,12 +26,6 @@ function displayError($message) {
     exit;
 }
 
-// Function to display errors in HTML
-function displayError($message) {
-    echo "<!DOCTYPE html><html><body><h1>Error</h1><pre>$message</pre></body></html>";
-    exit;
-}
-
 // Helper function to check for video file resolutions
 function getVideoResolutions($filename) {
     $basePath = '/var/www/html/conspyre.tv/videos/' . $filename . '/' . $filename;
