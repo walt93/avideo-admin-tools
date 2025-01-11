@@ -1,50 +1,71 @@
 // js/modal_manager.js
 
-// Create the class
-// Create the class
 class ModalManager {
     constructor() {
         console.log('ModalManager constructor running...');
+
+        // Debug: Log modal elements as we find them
         const modalElement = document.getElementById('editModal');
         const playerModalElement = document.getElementById('videoPlayerModal');
-        console.log('Modal elements:', modalElement, playerModalElement);
+        const subtitleModalElement = document.getElementById('subtitleModal');
+        const transcriptModalElement = document.getElementById('transcriptModal');
 
-        this.editModal = new bootstrap.Modal(modalElement);
-        this.playerModal = new bootstrap.Modal(playerModalElement);
-        this.subtitleModal = new bootstrap.Modal(document.getElementById('subtitleModal'));
-        this.transcriptModal = new bootstrap.Modal(document.getElementById('transcriptModal'));
+        console.log('Found modal elements:', {
+            editModal: modalElement,
+            playerModal: playerModalElement,
+            subtitleModal: subtitleModalElement,
+            transcriptModal: transcriptModalElement
+        });
+
+        // Initialize Bootstrap modals
+        this.editModal = modalElement ? new bootstrap.Modal(modalElement) : null;
+        this.playerModal = playerModalElement ? new bootstrap.Modal(playerModalElement) : null;
+        this.subtitleModal = subtitleModalElement ? new bootstrap.Modal(subtitleModalElement) : null;
+        this.transcriptModal = transcriptModalElement ? new bootstrap.Modal(transcriptModalElement) : null;
 
         this.setupEventListeners();
         this.setupVideoPlayerEvents();
-        this.setupMediaFileHandlers();
     }
 
     setupEventListeners() {
-        // Handle ESC key
-        document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape' && this.editModal._isShown) {
-                this.editModal.hide();
+        // Restore original click handlers for buttons
+        document.addEventListener('click', (event) => {
+            const target = event.target;
+            console.log('Click detected on:', target);
+
+            // Edit button handler
+            if (target.matches('[data-action="edit"]') || target.closest('[data-action="edit"]')) {
+                console.log('Edit button clicked');
+                const videoData = JSON.parse(target.closest('[data-action="edit"]').dataset.video);
+                this.showEditModal(videoData);
+            }
+
+            // Play button handler
+            if (target.matches('[data-action="play"]') || target.closest('[data-action="play"]')) {
+                console.log('Play button clicked');
+                const videoData = JSON.parse(target.closest('[data-action="play"]').dataset.video);
+                this.showVideoPlayer(videoData);
+            }
+
+            // Subtitle button handler
+            if (target.matches('[data-action="view-subtitles"]')) {
+                console.log('Subtitle button clicked');
+                const filename = target.dataset.filename;
+                this.showSubtitles(filename);
+            }
+
+            // Transcript button handler
+            if (target.matches('[data-action="view-transcript"]')) {
+                console.log('Transcript button clicked');
+                const filename = target.dataset.filename;
+                this.showTranscript(filename);
             }
         });
-    }
 
-    setupMediaFileHandlers() {
-        // Use event delegation for subtitle and transcript clicks
-        document.addEventListener('click', async (event) => {
-            const target = event.target;
-
-            // Handle subtitle clicks
-            if (target.matches('[data-action="view-subtitles"]')) {
-                event.preventDefault();
-                const filename = target.dataset.filename;
-                await this.showSubtitles(filename);
-            }
-
-            // Handle transcript clicks
-            if (target.matches('[data-action="view-transcript"]')) {
-                event.preventDefault();
-                const filename = target.dataset.filename;
-                await this.showTranscript(filename);
+        // Handle ESC key
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && this.editModal && this.editModal._isShown) {
+                this.editModal.hide();
             }
         });
     }
@@ -53,23 +74,73 @@ class ModalManager {
         const qualitySelect = document.getElementById('videoQualitySelect');
         const videoPlayer = document.getElementById('videoPlayer');
 
-        qualitySelect.addEventListener('change', (e) => {
-            const currentTime = videoPlayer.currentTime;
-            const wasPlaying = !videoPlayer.paused;
-            videoPlayer.src = e.target.value;
-            videoPlayer.currentTime = currentTime;
-            if (wasPlaying) videoPlayer.play();
-        });
+        if (qualitySelect && videoPlayer) {
+            qualitySelect.addEventListener('change', (e) => {
+                console.log('Quality changed:', e.target.value);
+                const currentTime = videoPlayer.currentTime;
+                const wasPlaying = !videoPlayer.paused;
+                videoPlayer.src = e.target.value;
+                videoPlayer.currentTime = currentTime;
+                if (wasPlaying) videoPlayer.play();
+            });
 
-        // Clean up video when modal is closed
-        document.getElementById('videoPlayerModal').addEventListener('hidden.bs.modal', () => {
-            videoPlayer.pause();
-            videoPlayer.src = '';
-        });
+            // Clean up video when modal is closed
+            const playerModal = document.getElementById('videoPlayerModal');
+            if (playerModal) {
+                playerModal.addEventListener('hidden.bs.modal', () => {
+                    console.log('Video player modal closed');
+                    videoPlayer.pause();
+                    videoPlayer.src = '';
+                });
+            }
+        }
+    }
+
+    async showSubtitles(filename) {
+        console.log('Showing subtitles for:', filename);
+        try {
+            const response = await fetch('?action=get_subtitles&filename=' + encodeURIComponent(filename));
+            const data = await response.json();
+
+            if (data.success && this.subtitleModal) {
+                document.querySelector('.subtitle-content').textContent = data.content;
+                this.subtitleModal.show();
+            } else {
+                console.error('Error loading subtitles:', data.error);
+                alert('Error loading subtitles: ' + (data.error || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Error loading subtitles:', error);
+            alert('Error loading subtitles. Please try again.');
+        }
+    }
+
+    async showTranscript(filename) {
+        console.log('Showing transcript for:', filename);
+        try {
+            const response = await fetch('?action=get_transcript&filename=' + encodeURIComponent(filename));
+            const data = await response.json();
+
+            if (data.success && this.transcriptModal) {
+                document.querySelector('.transcript-content').textContent = data.content;
+                this.transcriptModal.show();
+            } else {
+                console.error('Error loading transcript:', data.error);
+                alert('Error loading transcript: ' + (data.error || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Error loading transcript:', error);
+            alert('Error loading transcript. Please try again.');
+        }
     }
 
     showEditModal(video) {
-        console.log('showEditModal called with:', video);
+        console.log('Showing edit modal for:', video);
+        if (!this.editModal) {
+            console.error('Edit modal not initialized');
+            return;
+        }
+
         document.getElementById('videoId').value = video.id;
         document.getElementById('videoTitle').value = video.title;
         document.getElementById('videoDescription').value = video.description;
@@ -92,74 +163,37 @@ class ModalManager {
 
     showVideoPlayer(videoData) {
         console.log('Showing video player for:', videoData);
+        if (!this.playerModal) {
+            console.error('Player modal not initialized');
+            return;
+        }
+
         const qualitySelect = document.getElementById('videoQualitySelect');
         const videoPlayer = document.getElementById('videoPlayer');
         const playerTitle = document.getElementById('videoPlayerTitle');
 
-        // Set title
         playerTitle.textContent = videoData.title;
-
-        // Clear and populate quality options
         qualitySelect.innerHTML = '';
 
-        // Sort resolutions by quality (highest first)
+        // Sort resolutions
         const resOrder = ['1080', '720', '540', '480', '360', '240', 'ext', 'original'];
         const sortedResolutions = Object.entries(videoData.resolutions)
-            .sort(([resA], [resB]) => {
-                return resOrder.indexOf(resA) - resOrder.indexOf(resB);
-            });
+            .sort(([resA], [resB]) => resOrder.indexOf(resA) - resOrder.indexOf(resB));
 
         sortedResolutions.forEach(([quality, path]) => {
             const option = document.createElement('option');
             option.value = path;
             option.textContent = quality === 'original' ? 'Original' :
-                quality === 'ext' ? 'Extended' :
-                    `${quality}p`;
+                quality === 'ext' ? 'Extended' : `${quality}p`;
             qualitySelect.appendChild(option);
         });
 
-        // Set initial video source to highest quality
         videoPlayer.src = sortedResolutions[0][1];
-
         this.playerModal.show();
     }
 
-    async showSubtitles(filename) {
-        try {
-            const response = await fetch('?action=get_subtitles&filename=' + encodeURIComponent(filename));
-            const data = await response.json();
-
-            if (data.success) {
-                document.querySelector('.subtitle-content').textContent = data.content;
-                this.subtitleModal.show();
-            } else {
-                alert('Error loading subtitles: ' + data.error);
-            }
-        } catch (error) {
-            console.error('Error loading subtitles:', error);
-            alert('Error loading subtitles. Please try again.');
-        }
-    }
-
-    async showTranscript(filename) {
-        try {
-            const response = await fetch('?action=get_transcript&filename=' + encodeURIComponent(filename));
-            const data = await response.json();
-
-            if (data.success) {
-                document.querySelector('.transcript-content').textContent = data.content;
-                this.transcriptModal.show();
-            } else {
-                alert('Error loading transcript: ' + data.error);
-            }
-        } catch (error) {
-            console.error('Error loading transcript:', error);
-            alert('Error loading transcript. Please try again.');
-        }
-    }
-
-
     async saveVideo() {
+        console.log('Saving video...');
         try {
             const formData = new FormData();
             formData.append('action', 'update');
@@ -177,8 +211,9 @@ class ModalManager {
             if (data.success) {
                 this.editModal.hide();
                 window.location.reload();
-            } else if (data.error) {
-                alert('Error saving: ' + data.error);
+            } else {
+                console.error('Error saving:', data.error);
+                alert('Error saving: ' + (data.error || 'Unknown error'));
             }
         } catch (error) {
             console.error('Error saving:', error);
@@ -187,7 +222,7 @@ class ModalManager {
     }
 }
 
-// Single initialization when DOM is ready
+// Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM Content Loaded - initializing ModalManager...');
     window.modalManager = new ModalManager();
@@ -196,6 +231,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Global save function
 window.saveVideo = function() {
+    console.log('Global saveVideo called');
     if (window.modalManager) {
         window.modalManager.saveVideo();
     } else {
