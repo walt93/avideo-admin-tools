@@ -172,35 +172,26 @@ try {
         </div>
     </div>
 
-    <!-- JavaScript Dependencies -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Application JavaScript -->
-    <script src="js/modal_manager.js"></script>
-    <script src="js/category_navigation.js"></script>
-    <script src="js/ai_handlers.js"></script>
-    <script>
-    console.log('Page loaded - Testing JavaScript...');
-    // Test that we can find our modal elements
-    document.addEventListener('DOMContentLoaded', () => {
-        console.log('DOM Content Loaded');
-        console.log('Edit Modal:', document.getElementById('editModal'));
-        console.log('Bootstrap:', typeof bootstrap);
-        console.log('Testing script paths...');
-    });
-    </script>
-    <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // Add a test click handler
-        document.addEventListener('click', (event) => {
-            console.log('Click detected on:', event.target);
-            if (event.target.matches('button') || event.target.matches('span')) {
-                console.log('Button/span clicked:', event.target);
-                console.log('Button/span dataset:', event.target.dataset);
-            }
-        });
-    });
-    </script>
+<!-- JavaScript Dependencies -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Application JavaScript -->
+<script>
+    // Add error handlers for our scripts
+    window.onerror = function(msg, url, lineNo, columnNo, error) {
+        console.error('Error: ' + msg + '\nURL: ' + url + '\nLine: ' + lineNo + '\nColumn: ' + columnNo + '\nError: ' + error);
+        return false;
+    };
+</script>
+<script src="./js/modal_manager.js" onerror="console.error('Failed to load modal_manager.js')"></script>
+<script src="./js/category_navigation.js" onerror="console.error('Failed to load category_navigation.js')"></script>
+<script src="./js/ai_handlers.js" onerror="console.error('Failed to load ai_handlers.js')"></script>
+
+<!-- Test if ModalManager loaded -->
+<script>
+console.log('ModalManager class available:', typeof ModalManager !== 'undefined');
+console.log('window.modalManager available:', typeof window.modalManager !== 'undefined');
+</script>
 
 </body>
 </html>
