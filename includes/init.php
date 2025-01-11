@@ -16,8 +16,6 @@ function getVideoResolutions($filename) {
      $basePath = '/var/www/html/conspyre.tv/videos/' . $filename . '/' . $filename;
      $resolutions = [];
 
-     echo "<!-- Checking for videos at: $basePath -->\n"; // Debug output
-
      // Check for base file
      if (file_exists($basePath . '.mp4')) {
          $resolutions['original'] = $basePath . '.mp4';
@@ -29,7 +27,6 @@ function getVideoResolutions($filename) {
          $testPath = $basePath . '_' . $res . '.mp4';
          if (file_exists($testPath)) {
              $resolutions[$res] = $testPath;
-             echo "<!-- Found resolution: $res at $testPath -->\n";
          }
      }
 

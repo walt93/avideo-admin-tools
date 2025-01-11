@@ -74,7 +74,6 @@
                     </button>
                     <?php
                         $resolutions = getVideoResolutions($video['filename']);
-                        var_dump($video['filename'], $resolutions); // Debug output
                         if (!empty($resolutions)):
                     ?>
                     <button class="btn btn-sm btn-success"
