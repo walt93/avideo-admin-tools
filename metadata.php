@@ -176,9 +176,9 @@ try {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     
     <!-- Application JavaScript -->
-    <script src="/management/js/modal_manager.js"></script>
-    <script src="/management/js/category_navigation.js"></script>
-    <script src="/management/js/ai_handlers.js"></script>
+    <script src="js/modal_manager.js"></script>
+    <script src="js/category_navigation.js"></script>
+    <script src="js/ai_handlers.js"></script>
     <script>
     console.log('Page loaded - Testing JavaScript...');
     // Test that we can find our modal elements
@@ -187,6 +187,18 @@ try {
         console.log('Edit Modal:', document.getElementById('editModal'));
         console.log('Bootstrap:', typeof bootstrap);
         console.log('Testing script paths...');
+    });
+    </script>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Add a test click handler
+        document.addEventListener('click', (event) => {
+            console.log('Click detected on:', event.target);
+            if (event.target.matches('button') || event.target.matches('span')) {
+                console.log('Button/span clicked:', event.target);
+                console.log('Button/span dataset:', event.target.dataset);
+            }
+        });
     });
     </script>
 
