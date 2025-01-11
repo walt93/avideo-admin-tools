@@ -73,17 +73,39 @@ function getTranscriptContent($filename) {
         // Clean up the content
         $content = trim($content);
 
-        // Replace multiple newlines with double newlines to create paragraphs
-        $content = preg_replace('/\n{3,}/', "\n\n", $content);
+        // Remove any existing multiple newlines
+        $content = preg_replace('/\n+/', ' ', $content);
 
-        // Split into paragraphs and clean each paragraph
-        $paragraphs = explode("\n\n", $content);
-        $paragraphs = array_map(function($p) {
-            // Remove excess whitespace within paragraphs
-            return preg_replace('/\s+/', ' ', trim($p));
-        }, $paragraphs);
+        // Remove excess whitespace
+        $content = preg_replace('/\s+/', ' ', $content);
 
-        // Rejoin with proper paragraph spacing
+        // Split into sentences (basic splitting - handles common sentence endings)
+        $sentences = preg_split('/(?<=[.!?])\s+/', $content, -1, PREG_SPLIT_NO_EMPTY);
+
+        // Group sentences into paragraphs (3-4 sentences per paragraph)
+        $paragraphs = array();
+        $current_paragraph = array();
+        $sentences_per_paragraph = rand(3, 4); // Vary paragraph length slightly for natural feel
+
+        foreach ($sentences as $sentence) {
+            $current_paragraph[] = $sentence;
+
+            // When we reach our target sentence count or if sentence ends with multiple punctuation marks
+            // (like "!!!" or "???"), create a new paragraph
+            if (count($current_paragraph) >= $sentences_per_paragraph ||
+                preg_match('/[.!?]{2,}$/', $sentence)) {
+                $paragraphs[] = implode(' ', $current_paragraph);
+                $current_paragraph = array();
+                $sentences_per_paragraph = rand(3, 4); // Randomize next paragraph length
+            }
+        }
+
+        // Add any remaining sentences as the last paragraph
+        if (!empty($current_paragraph)) {
+            $paragraphs[] = implode(' ', $current_paragraph);
+        }
+
+        // Join paragraphs with double newlines
         return implode("\n\n", $paragraphs);
     }
     return null;
