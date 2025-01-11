@@ -39,9 +39,6 @@ class ModalManager {
         this.editModal.show();
     }
 
-    hideEditModal() {
-        this.editModal.hide();
-    }
 
     async saveVideo() {
         try {
