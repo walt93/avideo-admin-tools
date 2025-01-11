@@ -16,6 +16,7 @@ class ModalManager {
 
         this.setupEventListeners();
         this.setupVideoPlayerEvents();
+        this.setupMediaFileHandlers();
     }
 
     setupEventListeners() {
@@ -23,6 +24,27 @@ class ModalManager {
         document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape' && this.editModal._isShown) {
                 this.editModal.hide();
+            }
+        });
+    }
+
+    setupMediaFileHandlers() {
+        // Use event delegation for subtitle and transcript clicks
+        document.addEventListener('click', async (event) => {
+            const target = event.target;
+
+            // Handle subtitle clicks
+            if (target.matches('[data-action="view-subtitles"]')) {
+                event.preventDefault();
+                const filename = target.dataset.filename;
+                await this.showSubtitles(filename);
+            }
+
+            // Handle transcript clicks
+            if (target.matches('[data-action="view-transcript"]')) {
+                event.preventDefault();
+                const filename = target.dataset.filename;
+                await this.showTranscript(filename);
             }
         });
     }
