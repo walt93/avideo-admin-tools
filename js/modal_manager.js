@@ -43,30 +43,31 @@ class ModalManager {
         this.editModal.hide();
     }
 
-    saveVideo() {
-        const formData = new FormData();
-        formData.append('action', 'update');
-        formData.append('id', document.getElementById('videoId').value);
-        formData.append('title', document.getElementById('videoTitle').value);
-        formData.append('description', document.getElementById('videoDescription').value);
+    async saveVideo() {
+        try {
+            const formData = new FormData();
+            formData.append('action', 'update');
+            formData.append('id', document.getElementById('videoId').value);
+            formData.append('title', document.getElementById('videoTitle').value);
+            formData.append('description', document.getElementById('videoDescription').value);
 
-        fetch(window.location.href, {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
+            const response = await fetch(window.location.href, {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
             if (data.success) {
-                this.hideEditModal();  // Now 'this' refers to the ModalManager instance
+                this.editModal.hide(); // Using Bootstrap modal instance directly
                 window.location.reload();
             } else if (data.error) {
                 alert('Error saving: ' + data.error);
             }
-        })
-        .catch(error => {
+        } catch (error) {
             console.error('Error saving:', error);
             alert('Error saving video. Please try again.');
-        });
+        }
     }
 }
 
