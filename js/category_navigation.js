@@ -52,6 +52,7 @@ class CategoryNavigation {
 
         try {
             const response = await fetch(`?ajax=subcategories&parent=${parentId}`);
+            console.log("the response: ", response);
             const categories = await response.json();
 
             // Populate the next level
