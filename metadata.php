@@ -218,6 +218,40 @@ console.log('ModalManager class available:', typeof ModalManager !== 'undefined'
 console.log('window.modalManager available:', typeof window.modalManager !== 'undefined');
 </script>
 
+<!-- Add this after the existing test script -->
+<script>
+// Test direct event binding on specific elements
+document.querySelectorAll('[data-action="view-subtitles"]').forEach(el => {
+    console.log('Found subtitle element:', el);
+    el.addEventListener('click', function(e) {
+        console.log('Direct subtitle click handler');
+    });
+});
+
+document.querySelectorAll('[data-action="view-transcript"]').forEach(el => {
+    console.log('Found transcript element:', el);
+    el.addEventListener('click', function(e) {
+        console.log('Direct transcript click handler');
+    });
+});
+</script>
+
+<!-- Add this right before the closing </body> tag -->
+<script>
+console.log('Setting up test click handler...');
+
+document.addEventListener('click', function(event) {
+    const target = event.target.closest('[data-action]');
+    if (target) {
+        console.log('Click detected on element with data-action:', {
+            action: target.dataset.action,
+            element: target,
+            dataset: target.dataset
+        });
+    }
+});
+</script>
+
 </body>
 </html>
 <?php
