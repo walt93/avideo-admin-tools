@@ -5,6 +5,27 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
+// Validate required environment variables
+$requiredEnvVars = [
+    'VIDEO_CDN_BASE_URL',
+    'AVIDEO_DATABASE_PW',
+    'AVIDEO_DATABASE_NAME',
+    'AVIDEO_DATABASE_USER',
+    'AVIDEO_DATABASE_HOST'
+];
+
+foreach ($requiredEnvVars as $var) {
+    if (getenv($var) === false) {
+        die("Required environment variable {$var} is not set");
+    }
+}
+
+// Function to display errors in HTML
+function displayError($message) {
+    echo "<!DOCTYPE html><html><body><h1>Error</h1><pre>$message</pre></body></html>";
+    exit;
+}
+
 // Function to display errors in HTML
 function displayError($message) {
     echo "<!DOCTYPE html><html><body><h1>Error</h1><pre>$message</pre></body></html>";
@@ -15,25 +36,25 @@ function displayError($message) {
 function getVideoResolutions($filename) {
     $basePath = '/var/www/html/conspyre.tv/videos/' . $filename . '/' . $filename;
     $resolutions = [];
-    $cdnBase = 'https://truthtide.net/';
+    $cdnBase = rtrim(getenv('VIDEO_CDN_BASE_URL'), '/') . '/';
 
     // Check for base file
     if (file_exists($basePath . '.mp4')) {
-        $resolutions['original'] = $cdnBase . $filename . '.mp4';
+    $resolutions['original'] = $cdnBase . $filename . '.mp4';
     }
 
     // Check for resolution variants
     $res_variants = ['1080', '720', '540', '480', '360', '240'];
     foreach ($res_variants as $res) {
-        $testPath = $basePath . '_' . $res . '.mp4';
-        if (file_exists($testPath)) {
-            $resolutions[$res] = $cdnBase . $filename . '_' . $res . '.mp4';
-        }
+    $testPath = $basePath . '_' . $res . '.mp4';
+    if (file_exists($testPath)) {
+      $resolutions[$res] = $cdnBase . $filename . '_' . $res . '.mp4';
+    }
     }
 
     // Also check for _ext variant
     if (file_exists($basePath . '_ext.mp4')) {
-        $resolutions['ext'] = $cdnBase . $filename . '_ext.mp4';
+    $resolutions['ext'] = $cdnBase . $filename . '_ext.mp4';
     }
 
     return $resolutions;
