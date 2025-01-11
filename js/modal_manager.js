@@ -2,11 +2,8 @@
 (function(window) {
     'use strict';
 
-    console.log('modal_manager.js loading...');
-
     window.ModalManager = class ModalManager {
         constructor() {
-            console.log('ModalManager constructor running...');
 
             // Initialize all modals
             this.initializeModals();
@@ -21,13 +18,6 @@
                 this.playerModal = new bootstrap.Modal(document.getElementById('videoPlayerModal'));
                 this.subtitleModal = new bootstrap.Modal(document.getElementById('subtitleModal'));
                 this.transcriptModal = new bootstrap.Modal(document.getElementById('transcriptModal'));
-
-                console.log('All modals initialized:', {
-                    editModal: this.editModal,
-                    playerModal: this.playerModal,
-                    subtitleModal: this.subtitleModal,
-                    transcriptModal: this.transcriptModal
-                });
             } catch (error) {
                 console.error('Error initializing modals:', error);
             }
@@ -40,31 +30,26 @@
                 if (!target) return;
 
                 const action = target.dataset.action;
-                console.log('Action clicked:', action);
 
                 try {
                     switch (action) {
                         case 'edit':
                             const editData = JSON.parse(target.dataset.video);
-                            console.log('Edit video data:', editData);
                             this.showEditModal(editData);
                             break;
 
                         case 'play':
                             const playData = JSON.parse(target.dataset.video);
-                            console.log('Play video data:', playData);
                             this.showVideoPlayer(playData);
                             break;
 
                         case 'view-subtitles':
                             const subtitlesFilename = target.dataset.filename;
-                            console.log('View subtitles:', subtitlesFilename);
                             this.showSubtitles(subtitlesFilename);
                             break;
 
                         case 'view-transcript':
                             const transcriptFilename = target.dataset.filename;
-                            console.log('View transcript:', transcriptFilename);
                             this.showTranscript(transcriptFilename);
                             break;
                     }
