@@ -33,31 +33,80 @@ function getSubtitleContent($filename) {
         $path = "/var/www/html/conspyre.tv/videos/{$filename}/{$filename}_ext.vtt";
     }
 
-    if (file_exists($path)) {
-        $content = file_get_contents($path);
-        // Format VTT content
-        $lines = explode("\n", $content);
-        $formatted = [];
-        $time = null;
+    if (!file_exists($path)) {
+        error_log("Subtitle file not found: $path");
+        return null;
+    }
 
-        foreach ($lines as $line) {
-            // Skip WEBVTT header and empty lines
-            if (trim($line) === 'WEBVTT' || empty(trim($line))) {
-                continue;
+    $content = file_get_contents($path);
+    if ($content === false) {
+        error_log("Failed to read subtitle file: $path");
+        return null;
+    }
+
+    // Log the first 500 characters to help debug format issues
+    error_log("First 500 chars of subtitle file: " . substr($content, 0, 500));
+
+    // Format VTT content
+    $lines = explode("\n", $content);
+    $formatted = [];
+    $currentEntry = [
+        'timestamp' => null,
+        'text' => []
+    ];
+
+    foreach ($lines as $lineNum => $line) {
+        $line = trim($line);
+
+        // Skip WEBVTT header and empty lines
+        if ($line === 'WEBVTT' || empty($line)) {
+            continue;
+        }
+
+        // Skip numeric lines (could be subtitle numbers)
+        if (is_numeric($line)) {
+            continue;
+        }
+
+        // Check for timestamp line - more flexible pattern
+        if (preg_match('/^\d{2}:\d{2}:\d{2}[.,]\d{3}\s*-->\s*\d{2}:\d{2}:\d{2}[.,]\d{3}/', $line) ||  // 00:00:00.000 --> 00:00:00.000
+            preg_match('/^\d{2}:\d{2}:\d{2}\s*-->\s*\d{2}:\d{2}:\d{2}/', $line)) {                     // 00:00:00 --> 00:00:00
+
+            // If we have a complete previous entry, add it to formatted output
+            if ($currentEntry['timestamp'] && !empty($currentEntry['text'])) {
+                $formatted[] = $currentEntry['timestamp'] . "\n" . implode(" ", $currentEntry['text']);
             }
-            // Timestamp line
-            if (preg_match('/^\d{2}:\d{2}:\d{2}/', $line)) {
-                $time = $line;
-            }
-            // Text line with corresponding timestamp
-            else if ($time && trim($line)) {
-                $formatted[] = $time . "\n" . trim($line);
-                $time = null;
+
+            // Start new entry
+            $currentEntry = [
+                'timestamp' => $line,
+                'text' => []
+            ];
+        }
+        // If not a timestamp and not empty, it's subtitle text
+        else if ($line !== "") {
+            // Remove any XML/HTML-style tags that might be present
+            $line = preg_replace('/<[^>]+>/', '', $line);
+            if (trim($line) !== "") {
+                $currentEntry['text'][] = $line;
             }
         }
-        return implode("\n\n", $formatted);
     }
-    return null;
+
+    // Add the last entry if exists
+    if ($currentEntry['timestamp'] && !empty($currentEntry['text'])) {
+        $formatted[] = $currentEntry['timestamp'] . "\n" . implode(" ", $currentEntry['text']);
+    }
+
+    $result = implode("\n\n", $formatted);
+
+    // Log if we got no formatted output despite having content
+    if (empty($result) && !empty($content)) {
+        error_log("Warning: No formatted output generated from non-empty subtitle file: $path");
+        error_log("Original content length: " . strlen($content));
+    }
+
+    return $result;
 }
 
 // Helper function to get video transcript
