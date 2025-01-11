@@ -44,6 +44,11 @@
         </thead>
         <tbody>
             <?php foreach ($videos['videos'] as $video): ?>
+            <?php
+                // Get media files info for this video
+                $mediaFiles = checkMediaFiles($video['filename']);
+                $resolutions = getVideoResolutions($video['filename']);
+            ?>
             <tr>
                 <td class="col-id"><?= $video['id'] ?></td>
                 <td class="col-created"><?= date('M j, Y', strtotime($video['created'])) ?></td>
@@ -68,11 +73,6 @@
                         </div>
                     </div>
                 <td class="col-actions">
-                    <?php
-                        // Get media files info for this video
-                        $mediaFiles = checkMediaFiles($video['filename']);
-                        $resolutions = getVideoResolutions($video['filename']);
-                    ?>
                     <!-- Edit button -->
                     <button class="btn btn-sm btn-primary" data-action="edit"
                             data-video='<?= htmlspecialchars(json_encode(array_merge($video, ['media_files' => $mediaFiles])), ENT_QUOTES) ?>'>
