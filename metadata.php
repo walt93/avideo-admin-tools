@@ -1,31 +1,65 @@
 <?php
 require_once __DIR__ . '/includes/init.php';
-require_once __DIR__ . '/includes/CategoryManager.php';
 
 // Start capturing output in case of errors later
 ob_start();
 
 try {
-    // Handle AJAX requests
-    if (isset($_GET['ajax'])) {
+    // Handle AJAX requests and actions
+    if (isset($_GET['ajax']) || isset($_GET['action'])) {
         header('Content-Type: application/json');
-        $categoryManager = new CategoryManager($db);
 
-        if ($_GET['ajax'] === 'subcategories' && isset($_GET['parent'])) {
-            echo json_encode($db->getSubcategories($_GET['parent']));
-            exit;
+        // Handle file content requests
+        if (isset($_GET['action'])) {
+            switch ($_GET['action']) {
+                case 'get_subtitles':
+                    if (!isset($_GET['filename'])) {
+                        echo json_encode(['success' => false, 'error' => 'Filename required']);
+                        exit;
+                    }
+                    $content = getSubtitleContent($_GET['filename']);
+                    if ($content !== null) {
+                        echo json_encode(['success' => true, 'content' => $content]);
+                    } else {
+                        echo json_encode(['success' => false, 'error' => 'Subtitle file not found']);
+                    }
+                    exit;
+
+                case 'get_transcript':
+                    if (!isset($_GET['filename'])) {
+                        echo json_encode(['success' => false, 'error' => 'Filename required']);
+                        exit;
+                    }
+                    $content = getTranscriptContent($_GET['filename']);
+                    if ($content !== null) {
+                        echo json_encode(['success' => true, 'content' => $content]);
+                    } else {
+                        echo json_encode(['success' => false, 'error' => 'Transcript file not found']);
+                    }
+                    exit;
+            }
         }
 
-        if ($_GET['ajax'] === 'category_path' && isset($_GET['id'])) {
-            echo json_encode($categoryManager->getCategoryPath($_GET['id']));
-            exit;
+        // Handle other AJAX requests
+        if (isset($_GET['ajax'])) {
+            $categoryManager = new CategoryManager($db);
+
+            if ($_GET['ajax'] === 'subcategories' && isset($_GET['parent'])) {
+                echo json_encode($db->getSubcategories($_GET['parent']));
+                exit;
+            }
+
+            if ($_GET['ajax'] === 'category_path' && isset($_GET['id'])) {
+                echo json_encode($categoryManager->getCategoryPath($_GET['id']));
+                exit;
+            }
         }
     }
 
     // Handle POST requests
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         header('Content-Type: application/json');
-        
+
         switch ($_POST['action']) {
             case 'update':
                 try {
@@ -35,12 +69,12 @@ try {
                     echo json_encode(['success' => false, 'error' => $e->getMessage()]);
                 }
                 exit;
-                
+
             case 'generate_description':
                 require_once __DIR__ . '/ai_handlers.php';
                 handleDescriptionGeneration($_POST);
                 exit;
-                
+
             case 'sanitize':
                 require_once __DIR__ . '/ai_handlers.php';
                 handleSanitize($_POST);
@@ -79,10 +113,10 @@ try {
     </style>
 </head>
 <body>
-    <?php 
+    <?php
     // Include main content template
     include 'templates/main_content.php';
-    
+
     // Include modals
     include 'modals/edit_modal.php';
     ?>
@@ -103,6 +137,36 @@ try {
                     <video id="videoPlayer" class="w-100" controls>
                         Your browser doesn't support HTML5 video.
                     </video>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subtitle Viewer Modal -->
+    <div class="modal fade" id="subtitleModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Subtitles</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <pre class="subtitle-content" style="max-height: 70vh; overflow-y: auto;"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transcript Viewer Modal -->
+    <div class="modal fade" id="transcriptModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Transcript</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <pre class="transcript-content" style="max-height: 70vh; overflow-y: auto;"></pre>
                 </div>
             </div>
         </div>

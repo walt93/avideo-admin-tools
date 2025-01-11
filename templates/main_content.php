@@ -51,16 +51,15 @@
                     <div class="cell-content">
                         <div class="video-title">
                             <span class="pure-title"><?= htmlspecialchars($video['title']) ?></span>
-                            <?php 
+                            <?php
                                 $mediaFiles = checkMediaFiles($video['filename']);
                                 if ($mediaFiles['has_vtt']) {
-                                    echo '<span title="Has Subtitles" class="file-icon">📝</span>';
+                                    echo '<span title="View Subtitles" class="file-icon" style="cursor: pointer;" onclick="window.modalManager.showSubtitles(\'' . htmlspecialchars($video['filename']) . '\')">📝</span>';
                                 }
                                 if ($mediaFiles['has_txt']) {
-                                    echo '<span title="Has Transcript" class="file-icon">📄</span>';
+                                    echo '<span title="View Transcript" class="file-icon" style="cursor: pointer;" onclick="window.modalManager.showTranscript(\'' . htmlspecialchars($video['filename']) . '\')">📄</span>';
                                 }
-                            ?>    
-                        </div>
+                            ?>                        </div>
                         <div class="video-description"><?= htmlspecialchars($video['description']) ?></div>
                     </div>
                 <td class="col-actions">

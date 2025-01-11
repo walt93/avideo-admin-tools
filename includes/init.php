@@ -26,6 +26,50 @@ function displayError($message) {
     exit;
 }
 
+// Helper function to get video formatted subtitles with timecode
+function getSubtitleContent($filename) {
+    $path = "/var/www/html/conspyre.tv/videos/{$filename}/{$filename}.vtt";
+    if (!file_exists($path)) {
+        $path = "/var/www/html/conspyre.tv/videos/{$filename}/{$filename}_ext.vtt";
+    }
+
+    if (file_exists($path)) {
+        $content = file_get_contents($path);
+        // Format VTT content
+        $lines = explode("\n", $content);
+        $formatted = [];
+        $time = null;
+
+        foreach ($lines as $line) {
+            // Skip WEBVTT header and empty lines
+            if (trim($line) === 'WEBVTT' || empty(trim($line))) {
+                continue;
+            }
+            // Timestamp line
+            if (preg_match('/^\d{2}:\d{2}:\d{2}/', $line)) {
+                $time = $line;
+            }
+            // Text line with corresponding timestamp
+            else if ($time && trim($line)) {
+                $formatted[] = $time . "\n" . trim($line);
+                $time = null;
+            }
+        }
+        return implode("\n\n", $formatted);
+    }
+    return null;
+}
+
+// Helper function to get video transcript
+function getTranscriptContent($filename) {
+    $path = "/var/www/html/conspyre.tv/videos/{$filename}/{$filename}.txt";
+    if (!file_exists($path)) {
+        $path = "/var/www/html/conspyre.tv/videos/{$filename}/{$filename}_ext.txt";
+    }
+
+    return file_exists($path) ? file_get_contents($path) : null;
+}
+
 // Helper function to check for video file resolutions
 function getVideoResolutions($filename) {
     $basePath = '/var/www/html/conspyre.tv/videos/' . $filename . '/' . $filename;

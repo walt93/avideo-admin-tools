@@ -11,6 +11,8 @@ class ModalManager {
 
         this.editModal = new bootstrap.Modal(modalElement);
         this.playerModal = new bootstrap.Modal(playerModalElement);
+        this.subtitleModal = new bootstrap.Modal(document.getElementById('subtitleModal'));
+        this.transcriptModal = new bootstrap.Modal(document.getElementById('transcriptModal'));
 
         this.setupEventListeners();
         this.setupVideoPlayerEvents();
@@ -99,6 +101,41 @@ class ModalManager {
 
         this.playerModal.show();
     }
+
+    async showSubtitles(filename) {
+        try {
+            const response = await fetch('?action=get_subtitles&filename=' + encodeURIComponent(filename));
+            const data = await response.json();
+
+            if (data.success) {
+                document.querySelector('.subtitle-content').textContent = data.content;
+                this.subtitleModal.show();
+            } else {
+                alert('Error loading subtitles: ' + data.error);
+            }
+        } catch (error) {
+            console.error('Error loading subtitles:', error);
+            alert('Error loading subtitles. Please try again.');
+        }
+    }
+
+    async showTranscript(filename) {
+        try {
+            const response = await fetch('?action=get_transcript&filename=' + encodeURIComponent(filename));
+            const data = await response.json();
+
+            if (data.success) {
+                document.querySelector('.transcript-content').textContent = data.content;
+                this.transcriptModal.show();
+            } else {
+                alert('Error loading transcript: ' + data.error);
+            }
+        } catch (error) {
+            console.error('Error loading transcript:', error);
+            alert('Error loading transcript. Please try again.');
+        }
+    }
+
 
     async saveVideo() {
         try {
