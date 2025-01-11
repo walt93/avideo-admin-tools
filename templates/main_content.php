@@ -65,10 +65,10 @@
                     </div>
                 </td>
                 <td class="col-actions">
-                    <button class="btn btn-sm btn-primary"
-                         onclick="window.modalManager && window.modalManager.showEditModal(<?= htmlspecialchars(json_encode(array_merge($video, ['media_files' => $mediaFiles]))) ?>)">
-                        Edit
-                    </button>
+<button class="btn btn-sm btn-primary"
+     onclick="console.log('Edit clicked'); console.log(window.modalManager); window.modalManager && window.modalManager.showEditModal(<?= htmlspecialchars(json_encode(array_merge($video, ['media_files' => $mediaFiles]))) ?>)">
+    Edit
+</button>
                     <button class="btn btn-sm btn-warning"
                             onclick="quickSanitize(<?= $video['id'] ?>, this)">
                         Sanitize
