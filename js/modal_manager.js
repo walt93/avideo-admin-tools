@@ -75,7 +75,11 @@ class ModalManager {
 
 }
 
-modalManager = new ModalManager();
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Initializing ModalManager...');
+    modalManager = new ModalManager();
+    window.modalManager = modalManager;
+});
 
 // Expose the save function globally
 saveVideo = function() {
