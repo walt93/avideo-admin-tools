@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/init.php';
+require_once __DIR__ . '/includes/CategoryManager.php';
 
 // Start capturing output in case of errors later
 ob_start();
