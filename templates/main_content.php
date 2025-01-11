@@ -51,39 +51,43 @@
                     <div class="cell-content">
                         <div class="video-title">
                             <span class="pure-title"><?= htmlspecialchars($video['title']) ?></span>
-                            <?php
-                                $mediaFiles = checkMediaFiles($video['filename']);
-                                if ($mediaFiles['has_vtt']) {
-                                    echo '<span title="View Subtitles" class="file-icon" style="cursor: pointer;" data-action="view-subtitles" data-filename="' . htmlspecialchars($video['filename']) . '">📝</span>';
-                                }
-                                if ($mediaFiles['has_txt']) {
-                                    echo '<span title="View Transcript" class="file-icon" style="cursor: pointer;" data-action="view-transcript" data-filename="' . htmlspecialchars($video['filename']) . '">📄</span>';
-                                }
-                            ?>
+                            <!-- Subtitle icon -->
+                            <?php if ($mediaFiles['has_vtt']): ?>
+                                <span title="View Subtitles" class="file-icon" data-action="view-subtitles"
+                                      data-filename="<?= htmlspecialchars($video['filename']) ?>" style="cursor: pointer;">📝</span>
+                            <?php endif; ?>
+
+                            <!-- transcript icon -->
+                            <?php if ($mediaFiles['has_txt']): ?>
+                                <span title="View Transcript" class="file-icon" data-action="view-transcript"
+                                      data-filename="<?= htmlspecialchars($video['filename']) ?>" style="cursor: pointer;">📄</span>
+                            <?php endif; ?>
                         </div>
                         <div class="video-description">
                             <?= htmlspecialchars($video['description']) ?>
                         </div>
                     </div>
                 <td class="col-actions">
-                    <button class="btn btn-sm btn-primary"
-                         onclick="window.modalManager && window.modalManager.showEditModal(<?= htmlspecialchars(json_encode(array_merge($video, ['media_files' => $mediaFiles]))) ?>)">
+                    <!-- Edit button -->
+                    <button class="btn btn-sm btn-primary" data-action="edit"
+                            data-video='<?= htmlspecialchars(json_encode(array_merge($video, ['media_files' => $mediaFiles])), ENT_QUOTES) ?>'>
                         Edit
                     </button>
+
+                    <!-- Sanitize button remains the same as it uses a different mechanism -->
                     <button class="btn btn-sm btn-warning"
                             onclick="quickSanitize(<?= $video['id'] ?>, this)">
                         Sanitize
                     </button>
-                    <?php
-                        $resolutions = getVideoResolutions($video['filename']);
-                        if (!empty($resolutions)):
-                    ?>
-                    <button class="btn btn-sm btn-success"
-                            onclick="window.modalManager && window.modalManager.showVideoPlayer(<?= htmlspecialchars(json_encode([
+
+                    <!-- Play button -->
+                    <?php if (!empty($resolutions)): ?>
+                    <button class="btn btn-sm btn-success" data-action="play"
+                            data-video='<?= htmlspecialchars(json_encode([
                                 'title' => $video['title'],
                                 'filename' => $video['filename'],
                                 'resolutions' => $resolutions
-                            ])) ?>)">
+                            ]), ENT_QUOTES) ?>'>
                         <i class="bi bi-play-fill"></i> Play
                     </button>
                     <?php endif; ?>
