@@ -1,4 +1,13 @@
 <?php
+$jsPath = __DIR__ . '/js/modal_manager.js';
+$altJsPath = dirname(__DIR__) . '/js/modal_manager.js';
+error_log("Checking JS paths:");
+error_log("Direct path: " . $jsPath . " exists: " . (file_exists($jsPath) ? "yes" : "no"));
+error_log("Alt path: " . $altJsPath . " exists: " . (file_exists($altJsPath) ? "yes" : "no"));
+?>
+
+
+<?php
 require_once __DIR__ . '/includes/init.php';
 
 // Start capturing output in case of errors later
@@ -175,14 +184,11 @@ try {
     <!-- JavaScript Dependencies -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Application JavaScript with error checking -->
-<script src="/js/modal_manager.js" onerror="console.error('Failed to load from /js/')"></script>
-<script src="/management/js/modal_manager.js" onerror="console.error('Failed to load from /management/js/')"></script>
-<script src="./js/modal_manager.js" onerror="console.error('Failed to load from ./js/')"></script>
-<script src="../js/modal_manager.js" onerror="console.error('Failed to load from ../js/')"></script>
-
-    <script src="js/category_navigation.js"></script>
-    <script src="js/ai_handlers.js"></script>
+    <!-- Load JavaScript through PHP handler -->
+    <script>console.log('Loading scripts through PHP handler...');</script>
+    <script src="serve-js.php?file=modal_manager.js"></script>
+    <script src="serve-js.php?file=category_navigation.js"></script>
+    <script src="serve-js.php?file=ai_handlers.js"></script>
 
     <!-- Initialization script -->
     <script>
