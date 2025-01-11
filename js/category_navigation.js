@@ -18,6 +18,7 @@ class CategoryNavigation {
     async loadActiveCategoryPath(categoryId) {
         try {
             const response = await fetch(`?ajax=category_path&id=${categoryId}`);
+            console.log("the response: ", response);
             const path = await response.json();
 
             if (path.length > 0) {
