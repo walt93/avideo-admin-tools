@@ -2,6 +2,12 @@
 
 let modalManager;
 
+// Wait for the DOM to load
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Initializing ModalManager...');
+    modalManager = new ModalManager();
+});
+
 // Create the class
 class ModalManager {
     constructor() {
