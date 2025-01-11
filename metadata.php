@@ -250,8 +250,38 @@ document.addEventListener('click', function(event) {
         });
     }
 });
-</script>
 
+console.log('Bootstrap version:', bootstrap.Modal.VERSION);
+
+</script>
+<!-- Add this right before the closing </body> tag -->
+<script>
+console.log('Testing modal initialization...');
+
+// Function to initialize and test a modal
+function testModal(elementId, description) {
+    const element = document.getElementById(elementId);
+    console.log(`Testing ${description} modal:`, {
+        element: element,
+        bootstrapModal: new bootstrap.Modal(element)
+    });
+    return new bootstrap.Modal(element);
+}
+
+// Initialize each modal separately with error catching
+try {
+    const editModal = testModal('editModal', 'edit');
+    const playerModal = testModal('videoPlayerModal', 'player');
+    const subtitleModal = testModal('subtitleModal', 'subtitle');
+    const transcriptModal = testModal('transcriptModal', 'transcript');
+
+    // Test showing a modal directly
+    console.log('Attempting to show edit modal directly...');
+    editModal.show();
+} catch (error) {
+    console.error('Error initializing modals:', error);
+}
+</script>
 </body>
 </html>
 <?php
