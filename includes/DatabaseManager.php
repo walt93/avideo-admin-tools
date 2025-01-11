@@ -53,6 +53,12 @@ class DatabaseManager {
         return $stmt->fetchAll();
     }
 
+     public function getCategoryById($categoryId) {
+        $stmt = $this->db->prepare('SELECT id, name, parentId FROM categories WHERE id = ? LIMIT 1');
+        $stmt->execute([intval($categoryId)]);
+        return $stmt->fetch();
+    }
+
     public function getPlaylists() {
         $stmt = $this->db->prepare('SELECT id, name FROM playlists WHERE users_id = 1 ORDER BY name ASC');
         $stmt->execute();
