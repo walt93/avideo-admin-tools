@@ -157,8 +157,12 @@ async function generateWithLoading(generationFunc) {
             throw new Error(data.error || 'Processing failed');
         }
 
-        // Update the description field with the generated/processed content
-        description.value = data.description || data.sanitized;
+        // Strip quotation marks from the beginning and end of the generated text
+        let generatedText = data.description || data.sanitized;
+        generatedText = generatedText.replace(/^["']|["']$/g, '');
+
+        // Update the description field with the processed content
+        description.value = generatedText;
 
     } catch (error) {
         console.error('Error:', error);
