@@ -69,9 +69,9 @@ Unveiling, Unearthing, Peeling back the layers, Unlocking the secrets,
 Shedding light on, Lifting the veil, Explosive, Bombshell, Deep dive,
 Eye-opening, Groundbreaking
 
-Write a single compelling TV description. STRICT LIMIT: 250 characters maximum (including spaces).
+Write a single compelling TV description. STRICT LIMIT: 500 characters maximum (including spaces).
 Focus on answering "Why must I watch this?"
-The text must fit in 250 characters.
+The text must fit in 500 characters.
 EOT;
 }
 
@@ -89,8 +89,8 @@ function generate_from_transcript($filename) {
 
     // Sample strategy: Take first ~500 words and last ~200 words
     $words = str_word_count($transcript, 1);
-    $start_sample = implode(' ', array_slice($words, 0, 500));
-    $end_sample = implode(' ', array_slice($words, -200));
+    $start_sample = implode(' ', array_slice($words, 0, 1000));
+    $end_sample = implode(' ', array_slice($words, -500));
     $content_sample = $start_sample . "\n[...]\n" . $end_sample;
 
     $prompt = get_base_prompt() . "\n\nSample from content to categorize and describe:\n{$content_sample}";
