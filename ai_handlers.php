@@ -319,6 +319,13 @@ function handleDescriptionGeneration($post) {
                 $description = generate_event_style($post['title'], $post['description']);
                 break;
 
+            case 'speaker':
+                if (!isset($post['title']) || !isset($post['description']) || !isset($post['speaker'])) {
+                    throw new Exception('Title, description and speaker name required');
+                }
+                $description = generate_speaker_style($post['title'], $post['description'], $post['speaker']);
+                break;
+
             default:
                 throw new Exception('Invalid generation type');
         }
@@ -329,3 +336,24 @@ function handleDescriptionGeneration($post) {
     }
 }
 
+function generate_speaker_style($title, $description, $speakerName) {
+    $prompt = get_speaker_prompt($speakerName) . "\n\nTitle: {$title}\nDescription: {$description}";
+
+    $data = [
+        'model' => 'gpt-4-0125-preview',
+        'messages' => [
+            [
+                'role' => 'system',
+                'content' => 'You are Truth Tide TV\'s lead editor, specializing in speaker-focused content that emphasizes authority and expertise.'
+            ],
+            [
+                'role' => 'user',
+                'content' => $prompt
+            ]
+        ],
+        'temperature' => 0.3,
+        'max_tokens' => 200
+    ];
+
+    return call_openai_api($data);
+}
