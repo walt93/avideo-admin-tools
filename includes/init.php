@@ -44,9 +44,8 @@ function getSubtitleContent($filename) {
         return null;
     }
 
-    // Log the first 500 characters to help debug format issues
-    error_log("First 500 chars of subtitle file: " . substr($content, 0, 500));
-    error_log("wtf");
+    // Log file being processed
+    error_log("Processing VTT file: $path");
 
     // Format VTT content
     $lines = explode("\n", $content);
@@ -56,11 +55,7 @@ function getSubtitleContent($filename) {
         'text' => []
     ];
 
-    error_log("Processing VTT file: $path");
     foreach ($lines as $lineNum => $line) {
-        // Debug logging for problematic files
-        if (strpos($path, 'v_250108010616_v5025') !== false) {
-            error_log("Processing line $lineNum: " . trim($line));
         $line = trim($line);
 
         // Skip WEBVTT header and empty lines
@@ -73,11 +68,11 @@ function getSubtitleContent($filename) {
             continue;
         }
 
-        // Check for timestamp line - more flexible pattern
-        if (preg_match('/^\d{2}:\d{2}:\d{2}[.,]\d{3}\s*-->\s*\d{2}:\d{2}:\d{2}[.,]\d{3}/', $line) ||  // 00:00:00.000 --> 00:00:00.000
-            preg_match('/^\d{2}:\d{2}:\d{2}\s*-->\s*\d{2}:\d{2}:\d{2}/', $line) ||                     // 00:00:00 --> 00:00:00
-            preg_match('/^\d{2}:\d{2}[.,]\d{3}\s*-->\s*\d{2}:\d{2}[.,]\d{3}/', $line) ||              // 00:00.000 --> 00:00.000
-            preg_match('/^\d{2}:\d{2}\s*-->\s*\d{2}:\d{2}/', $line)) {                                 // 00:00 --> 00:00
+        // Check for timestamp line - handling multiple formats
+        if (preg_match('/^\d{2}:\d{2}[.,]\d{3}\s*-->\s*\d{2}:\d{2}[.,]\d{3}/', $line) ||    // 00:00.000 --> 00:24.800
+            preg_match('/^\d{2}:\d{2}\s*-->\s*\d{2}:\d{2}/', $line) ||                       // 00:00 --> 00:24
+            preg_match('/^\d{2}:\d{2}:\d{2}[.,]\d{3}\s*-->\s*\d{2}:\d{2}:\d{2}[.,]\d{3}/', $line) ||  // 00:00:00.000 --> 00:00:00.000
+            preg_match('/^\d{2}:\d{2}:\d{2}\s*-->\s*\d{2}:\d{2}:\d{2}/', $line)) {          // 00:00:00 --> 00:00:00
 
             // If we have a complete previous entry, add it to formatted output
             if ($currentEntry['timestamp'] && !empty($currentEntry['text'])) {
@@ -92,7 +87,6 @@ function getSubtitleContent($filename) {
         }
         // If not a timestamp and not empty, it's subtitle text
         else if ($line !== "") {
-            // Remove any XML/HTML-style tags that might be present
             $line = preg_replace('/<[^>]+>/', '', $line);
             if (trim($line) !== "") {
                 $currentEntry['text'][] = $line;
