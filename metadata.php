@@ -1,14 +1,7 @@
 <?php
-$jsPath = __DIR__ . '/js/modal_manager.js';
-$altJsPath = dirname(__DIR__) . '/js/modal_manager.js';
-error_log("Checking JS paths:");
-error_log("Direct path: " . $jsPath . " exists: " . (file_exists($jsPath) ? "yes" : "no"));
-error_log("Alt path: " . $altJsPath . " exists: " . (file_exists($altJsPath) ? "yes" : "no"));
-?>
-
-
-<?php
 require_once __DIR__ . '/includes/init.php';
+require_once __DIR__ . '/includes/CategoryManager.php';
+
 
 // Start capturing output in case of errors later
 ob_start();
