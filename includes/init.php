@@ -55,7 +55,11 @@ function getSubtitleContent($filename) {
         'text' => []
     ];
 
+    error_log("Processing VTT file: $path");
     foreach ($lines as $lineNum => $line) {
+        // Debug logging for problematic files
+        if (strpos($path, 'v_250108010616_v5025') !== false) {
+            error_log("Processing line $lineNum: " . trim($line));
         $line = trim($line);
 
         // Skip WEBVTT header and empty lines
@@ -70,7 +74,9 @@ function getSubtitleContent($filename) {
 
         // Check for timestamp line - more flexible pattern
         if (preg_match('/^\d{2}:\d{2}:\d{2}[.,]\d{3}\s*-->\s*\d{2}:\d{2}:\d{2}[.,]\d{3}/', $line) ||  // 00:00:00.000 --> 00:00:00.000
-            preg_match('/^\d{2}:\d{2}:\d{2}\s*-->\s*\d{2}:\d{2}:\d{2}/', $line)) {                     // 00:00:00 --> 00:00:00
+            preg_match('/^\d{2}:\d{2}:\d{2}\s*-->\s*\d{2}:\d{2}:\d{2}/', $line) ||                     // 00:00:00 --> 00:00:00
+            preg_match('/^\d{2}:\d{2}[.,]\d{3}\s*-->\s*\d{2}:\d{2}[.,]\d{3}/', $line) ||              // 00:00.000 --> 00:00.000
+            preg_match('/^\d{2}:\d{2}\s*-->\s*\d{2}:\d{2}/', $line)) {                                 // 00:00 --> 00:00
 
             // If we have a complete previous entry, add it to formatted output
             if ($currentEntry['timestamp'] && !empty($currentEntry['text'])) {
