@@ -32,6 +32,67 @@ async function rewriteExisting() {
     });
 }
 
+async function generateSpeakerStyle() {
+    // Create and show a Bootstrap modal dialog for speaker input
+    const modalHtml = `
+        <div class="modal fade" id="speakerInputModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Enter Speaker Details</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="speakerName" class="form-label">Speaker's Name</label>
+                            <input type="text" class="form-control" id="speakerName" placeholder="Enter speaker's full name">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="processSpeakerDescription()">Generate</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Add modal to document if it doesn't exist
+    if (!document.getElementById('speakerInputModal')) {
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+    }
+
+    // Show the modal
+    const speakerModal = new bootstrap.Modal(document.getElementById('speakerInputModal'));
+    speakerModal.show();
+}
+
+async function processSpeakerDescription() {
+    const speakerName = document.getElementById('speakerName').value.trim();
+    if (!speakerName) {
+        alert('Please enter a speaker name');
+        return;
+    }
+
+    // Hide the speaker input modal
+    const speakerModal = bootstrap.Modal.getInstance(document.getElementById('speakerInputModal'));
+    speakerModal.hide();
+
+    const title = document.getElementById('videoTitle').value;
+    const description = document.getElementById('videoDescription').value;
+
+    await generateWithLoading(async () => {
+        const formData = new FormData();
+        formData.append('action', 'generate_description');
+        formData.append('type', 'speaker');
+        formData.append('title', title);
+        formData.append('description', description);
+        formData.append('speaker', speakerName);
+
+        return await makeRequest(formData);
+    });
+}
+
 async function generateEventStyle() {
     const title = document.getElementById('videoTitle').value;
     const description = document.getElementById('videoDescription').value;

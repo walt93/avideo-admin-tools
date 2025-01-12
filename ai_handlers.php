@@ -1,6 +1,27 @@
 <?php
 // ai_handlers.php
 
+function get_speaker_prompt($speakerName) {
+    return <<<EOT
+You are writing for Truth Tide TV, describing a video featuring {$speakerName}. Focus on:
+1. Establishing {$speakerName}'s credibility and expertise in the first few words
+2. Use active voice with {$speakerName} as the subject
+3. Begin with "{$speakerName}" to immediately identify the speaker
+4. Describe what they're sharing/revealing/discussing rather than the video format
+5. Keep the format: "[Name] [credentials/role] [action verb] [subject matter]"
+6. Include their strongest credential if known from the content
+
+Guidelines:
+- Avoid passive constructions like "In this video..."
+- Focus on what the speaker is communicating
+- Use authoritative but measured tone
+- Keep to 300 characters maximum
+- Follow all standard content guidelines
+
+Write a single compelling speaker-focused description that fits within 300 characters.
+EOT;
+}
+
 function get_base_prompt() {
     return <<<EOT
 You are writing for Truth Tide TV, a Roku channel dedicated to exposing suppressed truths, hidden knowledge, and crimes against humanity that mainstream media won't cover.
@@ -307,3 +328,4 @@ function handleDescriptionGeneration($post) {
         echo json_encode(['success' => false, 'error' => $e->getMessage()]);
     }
 }
+

@@ -54,6 +54,14 @@
                                 </div>
                             </button>
                         </li>
+                        <li>
+                            <button class="dropdown-item" type="button" onclick="generateSpeakerStyle()">
+                                <div class="d-flex flex-column">
+                                    <span>Speaker Description</span>
+                                    <small class="text-muted">Generate description for a known speaker</small>
+                                </div>
+                            </button>
+                        </li>
                     </ul>
                 </div>
 
