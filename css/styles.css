@@ -73,9 +73,11 @@ tr.processing {
 }
 
 .video-description {
+    text-indent: 0 !important;
+    padding-left: 0 !important;
+    margin-left: 0 !important;
     color: #666;
     font-size: 0.9em;
-    padding: 8px 0;
     white-space: pre-wrap;
 }
 
