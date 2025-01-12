@@ -46,6 +46,7 @@ function getSubtitleContent($filename) {
 
     // Log the first 500 characters to help debug format issues
     error_log("First 500 chars of subtitle file: " . substr($content, 0, 500));
+    error_log("wtf");
 
     // Format VTT content
     $lines = explode("\n", $content);
