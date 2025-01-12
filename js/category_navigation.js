@@ -15,6 +15,14 @@ class CategoryNavigation {
         });
     }
 
+    updateCategoryFilter(categoryId) {
+        // Update URL with selected category
+        const urlParams = new URLSearchParams(window.location.search);
+        urlParams.delete('playlist'); // Clear playlist filter when changing category
+        urlParams.set('category', categoryId);
+        window.location.href = `?${urlParams.toString()}`;
+    }
+
     async loadActiveCategoryPath(categoryId) {
         try {
             const response = await fetch(`?ajax=category_path&id=${categoryId}`);
@@ -36,7 +44,7 @@ class CategoryNavigation {
         }
     }
 
-    async function loadSubcategories(level, parentId) {
+    async loadSubcategories(level, parentId) {
         // Clear and disable lower-level dropdowns first
         for (let i = level + 1; i <= 3; i++) {
             const select = document.getElementById(`categoryLevel${i}`);
@@ -88,20 +96,16 @@ class CategoryNavigation {
             alert('Failed to load subcategories. Please try again.');
         }
     }
-
-    updateCategoryFilter(categoryId) {
-        // Update URL with selected category
-        const urlParams = new URLSearchParams(window.location.search);
-        urlParams.delete('playlist'); // Clear playlist filter when changing category
-        urlParams.set('category', categoryId);
-        window.location.href = `?${urlParams.toString()}`;
-    }
 }
 
 // Initialize the category navigation
 const categoryNav = new CategoryNavigation();
 
-// Expose the loadSubcategories function globally
-loadSubcategories = function(level, parentId) {
+// Expose the functions globally
+window.loadSubcategories = function(level, parentId) {
     return categoryNav.loadSubcategories(level, parentId);
+};
+
+window.updateCategoryFilter = function(categoryId) {
+    return categoryNav.updateCategoryFilter(categoryId);
 };
