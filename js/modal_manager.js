@@ -204,6 +204,7 @@
     // Initialize when DOM is ready
     document.addEventListener('DOMContentLoaded', () => {
         window.modalManager = new ModalManager();
+        window.saveVideo = () => window.modalManager.saveVideo();
     });
 
 })(window);

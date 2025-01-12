@@ -7,6 +7,12 @@ A fast, efficient tool for AVideo administrators to bulk edit video metadata acr
 - Edit video titles and descriptions quickly through a modal interface
 - Filter videos by category (with nested subcategory support)
 - Filter by playlist
+- View and analyze video transcripts and subtitles directly in the interface
+- AI-powered description generation:
+    - Generate from video transcript
+    - Rewrite existing descriptions in channel voice
+    - Create event-focused descriptions with dates and locations
+- Automatic description sanitization and formatting
 - Paginated results (25 videos per page)
 - Responsive Bootstrap 5 interface
 - Direct database access with proper error handling
