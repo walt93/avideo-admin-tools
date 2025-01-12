@@ -48,9 +48,14 @@ class DatabaseManager {
     }
 
     public function getSubcategories($parentId) {
-        $stmt = $this->db->prepare('SELECT id, name FROM categories WHERE parentId = ? ORDER BY name ASC');
-        $stmt->execute([intval($parentId)]);
-        return $stmt->fetchAll();
+        try {
+            $stmt = $this->db->prepare('SELECT id, name FROM categories WHERE parentId = ? ORDER BY name ASC');
+            $stmt->execute([intval($parentId)]);
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            error_log("Database error in getSubcategories: " . $e->getMessage());
+            throw new Exception("Failed to fetch subcategories");
+        }
     }
 
      public function getCategoryById($categoryId) {

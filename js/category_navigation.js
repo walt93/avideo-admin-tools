@@ -36,15 +36,15 @@ class CategoryNavigation {
         }
     }
 
-    async loadSubcategories(level, parentId) {
+    async function loadSubcategories(level, parentId) {
+        // Clear and disable lower-level dropdowns first
+        for (let i = level + 1; i <= 3; i++) {
+            const select = document.getElementById(`categoryLevel${i}`);
+            select.innerHTML = '<option value="">Select Subcategory...</option>';
+            select.disabled = true;
+        }
+
         if (!parentId) {
-            // If no parent selected, disable and clear lower levels
-            for (let i = level + 1; i <= 3; i++) {
-                const select = document.getElementById(`categoryLevel${i}`);
-                select.innerHTML = '<option value="">Select Subcategory...</option>';
-                select.disabled = true;
-            }
-            // Update URL to remove category filter
             if (level === 1) {
                 window.location.href = '?';
             }
@@ -53,33 +53,39 @@ class CategoryNavigation {
 
         try {
             const response = await fetch(`?ajax=subcategories&parent=${parentId}`);
-            console.log("the response: ", response);
-            const categories = await response.json();
+            console.log("Subcategories response:", response);
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log("Parsed response:", result);
+
+            if (!result.success) {
+                throw new Error(result.error || 'Failed to load subcategories');
+            }
 
             // Populate the next level
             const nextLevel = level + 1;
             if (nextLevel <= 3) {
                 const select = document.getElementById(`categoryLevel${nextLevel}`);
                 select.innerHTML = '<option value="">Select Subcategory...</option>';
-                categories.forEach(cat => {
+
+                result.data.forEach(cat => {
                     select.innerHTML += `<option value="${cat.id}">${cat.name}</option>`;
                 });
                 select.disabled = false;
-
-                // Disable and clear any levels below
-                for (let i = nextLevel + 1; i <= 3; i++) {
-                    const select = document.getElementById(`categoryLevel${i}`);
-                    select.innerHTML = '<option value="">Select Subcategory...</option>';
-                    select.disabled = true;
-                }
             }
 
-            // If this is the final selection or there are no subcategories, update the filter
-            if (nextLevel > 3 || categories.length === 0) {
-                this.updateCategoryFilter(parentId);
+            // Update filter if this is the final selection or there are no subcategories
+            if (nextLevel > 3 || result.data.length === 0) {
+                updateCategoryFilter(parentId);
             }
+
         } catch (error) {
             console.error('Error loading subcategories:', error);
+            alert('Failed to load subcategories. Please try again.');
         }
     }
 

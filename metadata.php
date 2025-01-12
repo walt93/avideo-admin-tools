@@ -51,15 +51,44 @@ try {
 
         // Handle other AJAX requests
         if (isset($_GET['ajax'])) {
-            $categoryManager = new CategoryManager($db);
+            header('Content-Type: application/json');
 
-            if ($_GET['ajax'] === 'subcategories' && isset($_GET['parent'])) {
-                echo json_encode($db->getSubcategories($_GET['parent']));
-                exit;
-            }
+            try {
+                $categoryManager = new CategoryManager($db);
 
-            if ($_GET['ajax'] === 'category_path' && isset($_GET['id'])) {
-                echo json_encode($categoryManager->getCategoryPath($_GET['id']));
+                if ($_GET['ajax'] === 'subcategories' && isset($_GET['parent'])) {
+                    $parentId = filter_var($_GET['parent'], FILTER_VALIDATE_INT);
+                    if ($parentId === false) {
+                        throw new Exception('Invalid parent ID');
+                    }
+
+                    $subcategories = $db->getSubcategories($parentId);
+                    // Log the response for debugging
+                    error_log("Subcategories response for parent $parentId: " . json_encode($subcategories));
+                    echo json_encode(['success' => true, 'data' => $subcategories]);
+                    exit;
+                }
+
+                if ($_GET['ajax'] === 'category_path' && isset($_GET['id'])) {
+                    $categoryId = filter_var($_GET['id'], FILTER_VALIDATE_INT);
+                    if ($categoryId === false) {
+                        throw new Exception('Invalid category ID');
+                    }
+
+                    $path = $categoryManager->getCategoryPath($categoryId);
+                    echo json_encode(['success' => true, 'data' => $path]);
+                    exit;
+                }
+
+                throw new Exception('Invalid AJAX request');
+
+            } catch (Exception $e) {
+                error_log("Category AJAX error: " . $e->getMessage());
+                http_response_code(400);
+                echo json_encode([
+                    'success' => false,
+                    'error' => $e->getMessage()
+                ]);
                 exit;
             }
         }
