@@ -14,7 +14,7 @@ Guidelines:
 6. Include relevant context when necessary
 7. Do not use words from the Forbidden Words List
 
-FORBIDDEN WORDS LIST: Unveil, Delve, Tapestry
+CRITICAL: Always include specific details such as names, places, and dates when they are central to the content. These details should be prominently featured in the description.
 
 FIRST: Identify which core domain this content belongs to and use the appropriate stance:
 
@@ -53,9 +53,16 @@ UFO/DISCLOSURE/STRANGE PHENOMENON:
 - Stay grounded in documented evidence
 - Consider false flag/psychological operation angles
 
+FORBIDDEN WORDS LIST: Unveil, Delve, Tapestry, Reveal, Uncover, Expose, Shocking,
+Stunning, Mind-blowing, Game-changing, Paradigm-shifting, Revolutionary,
+Earth-shattering, Unbelievable, Jaw-dropping, Dive into, Explore, Journey,
+Unveiling, Unearthing, Peeling back the layers, Unlocking the secrets,
+Shedding light on, Lifting the veil, Explosive, Bombshell, Deep dive,
+Eye-opening, Groundbreaking
+
 Write a single compelling TV description. STRICT LIMIT: 250 characters maximum (including spaces).
 Focus on answering "Why must I watch this?"
-The text must fit in this space: [----------------------|] (250 chars)
+The text must fit in 250 characters.
 EOT;
 }
 
