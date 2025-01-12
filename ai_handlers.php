@@ -69,9 +69,9 @@ Unveiling, Unearthing, Peeling back the layers, Unlocking the secrets,
 Shedding light on, Lifting the veil, Explosive, Bombshell, Deep dive,
 Eye-opening, Groundbreaking
 
-Write a single compelling TV description. STRICT LIMIT: 350 characters maximum (including spaces).
+Write a single compelling TV description. STRICT LIMIT: 300 characters maximum (including spaces).
 Focus on answering "Why must I watch this?"
-The text must fit in 350 characters.
+The text must fit in 300 characters.
 EOT;
 }
 
@@ -109,7 +109,7 @@ function generate_from_transcript($filename) {
             ]
         ],
         'temperature' => 0.3,
-        'max_tokens' => 170
+        'max_tokens' => 200
     ];
     
     return call_openai_api($data);
