@@ -3,7 +3,7 @@
 
 function get_base_prompt() {
     return <<<EOT
-You are writing for Truth Tide TV, a channel dedicated to exposing suppressed truths, hidden knowledge, and crimes against humanity that mainstream media won't cover.
+You are writing for Truth Tide TV, a Roku channel dedicated to exposing suppressed truths, hidden knowledge, and crimes against humanity that mainstream media won't cover.
 
 Guidelines:
 1. Use clear, precise language without sensationalism or hyperbole
@@ -69,9 +69,9 @@ Unveiling, Unearthing, Peeling back the layers, Unlocking the secrets,
 Shedding light on, Lifting the veil, Explosive, Bombshell, Deep dive,
 Eye-opening, Groundbreaking
 
-Write a single compelling TV description. STRICT LIMIT: 500 characters maximum (including spaces).
+Write a single compelling TV description. STRICT LIMIT: 350 characters maximum (including spaces).
 Focus on answering "Why must I watch this?"
-The text must fit in 500 characters.
+The text must fit in 350 characters.
 EOT;
 }
 
@@ -97,7 +97,7 @@ function generate_from_transcript($filename) {
     
     // Create proper data structure for OpenAI API
     $data = [
-        'model' => 'gpt-4-0125-preview',
+        'model' => 'gpt-4o',
         'messages' => [
             [
                 'role' => 'system',
@@ -109,7 +109,7 @@ function generate_from_transcript($filename) {
             ]
         ],
         'temperature' => 0.3,
-        'max_tokens' => 100
+        'max_tokens' => 170
     ];
     
     return call_openai_api($data);
