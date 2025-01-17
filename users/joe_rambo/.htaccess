@@ -1,0 +1,41 @@
+# Disable directory listing
+Options -Indexes
+
+# Protect sensitive files
+<FilesMatch "^(users\.json|.*\.php)$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
+
+# Allow access to specific PHP files
+<Files "metadata.php">
+    Order Allow,Deny
+    Allow from all
+</Files>
+
+# Protect config and includes directories
+<DirectoryMatch "^/config/|^/includes/">
+    Order Deny,Allow
+    Deny from all
+</DirectoryMatch>
+
+# Enable rewrite engine
+RewriteEngine On
+RewriteBase /management/users/
+
+# Allow direct access to user directories
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^([^/]+)/metadata\.php$ $1/index.php [L]
+
+# Block access to dot files
+<FilesMatch "^\.">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
+
+# Additional security headers
+Header set X-Content-Type-Options "nosniff"
+Header set X-Frame-Options "SAMEORIGIN"
+Header set X-XSS-Protection "1; mode=block"
+Header set Content-Security-Policy "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; img-src 'self' data:;"
