@@ -137,7 +137,7 @@
 <style>
 
 .col-thumbnail {
-    width: 67px; /* 120px height * (9/16) aspect ratio */
+    width: 240px; /* 120px height * (9/16) aspect ratio */
 }
 
 .video-thumbnail {
