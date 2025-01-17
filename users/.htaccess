@@ -1,4 +1,4 @@
-# Inherit parent authentication
+# Inherit parent authentication settings
 AuthType Basic
 AuthName "Management Console"
 AuthUserFile /etc/apache2/.htpasswd
@@ -9,27 +9,45 @@ Require valid-user
     Deny from all
 </DirectoryMatch>
 
-# User-specific directory access
-<Directory "/var/www/html/conspyre.tv/management/users/joe_rambo">
+# User-specific access controls
+<DirectoryMatch "^/joe_rambo/">
     AuthType Basic
     AuthName "Restricted Access"
     AuthUserFile /etc/apache2/.htpasswd
     Require user joe_rambo walt
-</Directory>
+    
+    # Allow .php files
+    <Files "*.php">
+        Allow from all
+        Satisfy any
+    </Files>
+</DirectoryMatch>
 
-<Directory "/var/www/html/conspyre.tv/management/users/light_on_liberty">
+<DirectoryMatch "^/light_on_liberty/">
     AuthType Basic
     AuthName "Restricted Access"
     AuthUserFile /etc/apache2/.htpasswd
     Require user bridgitte walt
-</Directory>
+    
+    # Allow .php files
+    <Files "*.php">
+        Allow from all
+        Satisfy any
+    </Files>
+</DirectoryMatch>
 
-<Directory "/var/www/html/conspyre.tv/management/users/truthisknowledge">
+<DirectoryMatch "^/truthisknowledge/">
     AuthType Basic
     AuthName "Restricted Access"
     AuthUserFile /etc/apache2/.htpasswd
     Require user truthisknowledge walt
-</Directory>
+    
+    # Allow .php files
+    <Files "*.php">
+        Allow from all
+        Satisfy any
+    </Files>
+</DirectoryMatch>
 
 # Security headers
 <IfModule mod_headers.c>
