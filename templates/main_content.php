@@ -48,10 +48,11 @@
             <?php
                 $mediaFiles = checkMediaFiles($video['filename']);
                 $resolutions = getVideoResolutions($video['filename']);
-                $thumbnailPath = "/var/www/html/conspyre.tv/videos/{$video['filename']}/{$video['filename']}.jpg";
-                $thumbnailUrl = file_exists($thumbnailPath) 
-                    ? rtrim(getenv('VIDEO_CDN_BASE_URL'), '/') . "/{$video['filename']}/{$video['filename']}.jpg"
-                    : 'path/to/default/thumbnail.jpg'; // Replace with your default thumbnail path
+                <?php
+                    $mediaFiles = checkMediaFiles($video['filename']);
+                    $resolutions = getVideoResolutions($video['filename']);
+                    $thumbnailUrl = "https://conspyre.xyz/videos/{$video['filename']}/{$video['filename']}.jpg";
+                ?>
             ?>
             <tr>
                 <td class="col-thumbnail">
