@@ -122,14 +122,28 @@ try {
             <!-- ... modal content ... -->
         </div>
 
-        <!-- JavaScript Dependencies -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+        
+        <!-- Debug output for script loading -->
+        <script>
+            console.log('Loading JavaScript files...');
+        </script>
 
-        <?php
-        error_log("Including JavaScript files");
-        ?>
-        <script src="../users/js/modal_manager.js"></script>
-        <script src="../users/js/ai_handlers.js"></script>
+        <!-- Application Scripts -->
+        <script src="js/modal_manager.js"></script>
+        <script src="js/ai_handlers.js"></script>
+
+        <!-- Debug output for script initialization -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('DOM fully loaded');
+                if (window.modalManager) {
+                    console.log('Modal manager loaded');
+                } else {
+                    console.error('Modal manager not loaded');
+                }
+            });
+        </script>
     </body>
     </html>
     <?php
