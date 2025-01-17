@@ -36,6 +36,7 @@
     <table class="table table-striped">
         <thead>
             <tr>
+                <th class="col-thumbnail">Thumbnail</th>
                 <th class="col-id">ID</th>
                 <th class="col-created">Created</th>
                 <th class="col-title">Content</th>
@@ -45,11 +46,17 @@
         <tbody>
             <?php foreach ($videos['videos'] as $video): ?>
             <?php
-                // Get media files info for this video
                 $mediaFiles = checkMediaFiles($video['filename']);
                 $resolutions = getVideoResolutions($video['filename']);
+                $thumbnailPath = "/var/www/html/conspyre.tv/videos/{$video['filename']}/{$video['filename']}.jpg";
+                $thumbnailUrl = file_exists($thumbnailPath) 
+                    ? rtrim(getenv('VIDEO_CDN_BASE_URL'), '/') . "/{$video['filename']}/{$video['filename']}.jpg"
+                    : 'path/to/default/thumbnail.jpg'; // Replace with your default thumbnail path
             ?>
             <tr>
+                <td class="col-thumbnail">
+                    <img src="<?= htmlspecialchars($thumbnailUrl) ?>" alt="Thumbnail" class="video-thumbnail">
+                </td>
                 <td class="col-id"><?= $video['id'] ?></td>
                 <td class="col-created"><?= date('M j, Y', strtotime($video['created'])) ?></td>
                 <td class="col-title">

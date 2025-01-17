@@ -122,6 +122,7 @@ try {
             <!-- ... modal content ... -->
         </div>
 
+<!-- JavaScript Dependencies -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
         
         <!-- Debug output for script loading -->
@@ -129,9 +130,9 @@ try {
             console.log('Loading JavaScript files...');
         </script>
 
-        <!-- Application Scripts -->
-        <script src="js/modal_manager.js"></script>
-        <script src="js/ai_handlers.js"></script>
+        <!-- Application Scripts - Using absolute paths -->
+        <script src="/management/users/js/modal_manager.js"></script>
+        <script src="/management/users/js/ai_handlers.js"></script>
 
         <!-- Debug output for script initialization -->
         <script>
@@ -142,6 +143,13 @@ try {
                 } else {
                     console.error('Modal manager not loaded');
                 }
+                // Add detailed component checks
+                console.log('Available modals:', {
+                    editModal: !!document.getElementById('editModal'),
+                    videoPlayerModal: !!document.getElementById('videoPlayerModal'),
+                    subtitleModal: !!document.getElementById('subtitleModal'),
+                    transcriptModal: !!document.getElementById('transcriptModal')
+                });
             });
         </script>
     </body>
