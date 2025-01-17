@@ -4,7 +4,7 @@ if (!isset($USER_ID)) {
     die('Access denied: No user specified');
 }
 
-require_once __DIR__ . '/../../includes/init.php';
+require_once __DIR__ . '/includes/init.php';
 require_once __DIR__ . '/includes/UserManager.php';
 
 // Start capturing output for error handling
