@@ -20,6 +20,7 @@
         <table class="table table-striped table-dark">
             <thead>
                 <tr>
+                    <th class="col-thumbnail">Thumbnail</th>
                     <th class="col-id">ID</th>
                     <th class="col-created">Created</th>
                     <th class="col-title">Content</th>
@@ -31,8 +32,15 @@
                 <?php
                     $mediaFiles = checkMediaFiles($video['filename']);
                     $resolutions = getVideoResolutions($video['filename']);
+                    $thumbnailPath = "/var/www/html/conspyre.tv/videos/{$video['filename']}/{$video['filename']}.jpg";
+                    $thumbnailUrl = file_exists($thumbnailPath) 
+                        ? rtrim(getenv('VIDEO_CDN_BASE_URL'), '/') . "/{$video['filename']}/{$video['filename']}.jpg"
+                        : 'path/to/default/thumbnail.jpg'; // Replace with your default thumbnail path
                 ?>
                 <tr>
+                    <td class="col-thumbnail">
+                        <img src="<?= htmlspecialchars($thumbnailUrl) ?>" alt="Thumbnail" class="video-thumbnail">
+                    </td>
                     <td class="col-id"><?= $video['id'] ?></td>
                     <td class="col-created"><?= date('M j, Y', strtotime($video['created'])) ?></td>
                     <td class="col-title">
@@ -126,6 +134,24 @@
 </div>
 
 <style>
+
+.col-thumbnail {
+    width: 67px; /* 120px height * (9/16) aspect ratio */
+}
+
+.video-thumbnail {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+/* Ensure the table remains responsive */
+@media (max-width: 768px) {
+    .col-thumbnail {
+        display: none;
+    }
+}
 /* Dark theme specific styles */
 .pagination-dark .page-link {
     background-color: #343a40;
