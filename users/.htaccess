@@ -1,53 +1,27 @@
-# Inherit parent authentication settings
+# Base authentication
 AuthType Basic
 AuthName "Management Console"
 AuthUserFile /etc/apache2/.htpasswd
 Require valid-user
 
-# Protect config and includes directories
-<DirectoryMatch "^/(config|includes|logs)/">
+# Protect config and sensitive files
+<FilesMatch "^(config|.*\.json|.*\.log)$">
+    Order deny,allow
     Deny from all
-</DirectoryMatch>
+</FilesMatch>
 
-# User-specific access controls
-<DirectoryMatch "^/joe_rambo/">
+# User-specific access controls for index.php
+<Files "index.php">
     AuthType Basic
     AuthName "Restricted Access"
     AuthUserFile /etc/apache2/.htpasswd
-    Require user joe_rambo walt
     
-    # Allow .php files
-    <Files "*.php">
-        Allow from all
-        Satisfy any
-    </Files>
-</DirectoryMatch>
-
-<DirectoryMatch "^/light_on_liberty/">
-    AuthType Basic
-    AuthName "Restricted Access"
-    AuthUserFile /etc/apache2/.htpasswd
-    Require user bridgitte walt
+    SetEnvIf Request_URI "/joe_rambo/" ALLOWED_USERS=joe_rambo
+    SetEnvIf Request_URI "/light_on_liberty/" ALLOWED_USERS=bridgitte
+    SetEnvIf Request_URI "/truthisknowledge/" ALLOWED_USERS=truthisknowledge
     
-    # Allow .php files
-    <Files "*.php">
-        Allow from all
-        Satisfy any
-    </Files>
-</DirectoryMatch>
-
-<DirectoryMatch "^/truthisknowledge/">
-    AuthType Basic
-    AuthName "Restricted Access"
-    AuthUserFile /etc/apache2/.htpasswd
-    Require user truthisknowledge walt
-    
-    # Allow .php files
-    <Files "*.php">
-        Allow from all
-        Satisfy any
-    </Files>
-</DirectoryMatch>
+    Require expr %{ENV:ALLOWED_USERS} -strmatch %{REMOTE_USER} || %{REMOTE_USER} = 'walt'
+</Files>
 
 # Security headers
 <IfModule mod_headers.c>
@@ -58,3 +32,9 @@ Require valid-user
 
 # Disable directory browsing
 Options -Indexes
+
+# PHP files in includes directory
+<FilesMatch "^includes/.+\.php$">
+    Order deny,allow
+    Deny from all
+</FilesMatch>
