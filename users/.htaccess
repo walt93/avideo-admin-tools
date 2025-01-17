@@ -16,6 +16,7 @@ Require valid-user
     AuthName "Restricted Access"
     AuthUserFile /etc/apache2/.htpasswd
     
+    SetEnvIf Request_URI "/conspyre/" ALLOWED_USERS=conspyre
     SetEnvIf Request_URI "/joe_rambo/" ALLOWED_USERS=joe_rambo
     SetEnvIf Request_URI "/light_on_liberty/" ALLOWED_USERS=bridgitte
     SetEnvIf Request_URI "/truthisknowledge/" ALLOWED_USERS=truthisknowledge
