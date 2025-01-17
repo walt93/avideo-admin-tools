@@ -1,27 +1,24 @@
 {
   "users": {
+    "walt": {
+      "id": 1,
+      "name": "Conspyre",
+    },
     "light_on_liberty": {
       "id": 2500,
       "name": "Light on Liberty",
-      "allowed_ips": ["192.168.1.1"],
-      "auth_token": "REPLACE_WITH_SECURE_TOKEN"
     },
     "joe_rambo": {
       "id": 2280,
       "name": "Joe Rambo",
-      "allowed_ips": ["192.168.1.1"],
-      "auth_token": "REPLACE_WITH_SECURE_TOKEN"
     },
     "truthisknowledge": {
       "id": 691,
       "name": "TRUTHISKNOWLEDGE",
-      "allowed_ips": ["192.168.1.1"],
-      "auth_token": "REPLACE_WITH_SECURE_TOKEN"
     }
   },
   "settings": {
     "token_lifetime": 86400,
-    "require_ip_match": false,
     "log_access": true
   }
 }
