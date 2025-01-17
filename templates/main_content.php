@@ -55,8 +55,8 @@
                     <img src="<?= htmlspecialchars($thumbnailUrl) ?>" 
                          alt="Thumbnail" 
                          class="video-thumbnail" 
-                         width="68" 
-                         height="120">
+                         width="120" 
+                         height="68">
                 </td>
                 <td class="col-id"><?= $video['id'] ?></td>
                 <td class="col-created"><?= date('M j, Y', strtotime($video['created'])) ?></td>
