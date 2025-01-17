@@ -1,7 +1,11 @@
 <?php
-// Basic error handling
+// Maximum error reporting
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+
+// Log that we've entered init.php
+error_log("Entering init.php");
 
 // Validate required environment variables
 $requiredEnvVars = [
@@ -14,43 +18,53 @@ $requiredEnvVars = [
 
 foreach ($requiredEnvVars as $var) {
     if (getenv($var) === false) {
+        error_log("Missing required environment variable: " . $var);
         die("Required environment variable {$var} is not set");
     }
 }
 
+error_log("Environment variables validated");
+
 // Function to display errors in HTML
 function displayError($message) {
-    echo "<!DOCTYPE html><html><body><h1>Error</h1><pre>$message</pre></body></html>";
+    error_log("Error displayed: " . $message);
+    echo "<!DOCTYPE html><html><body><h1>Error</h1><pre>" . htmlspecialchars($message) . "</pre></body></html>";
     exit;
 }
 
-// Helper function to get video formatted subtitles with timecode
+// Helper functions for file operations
 function getSubtitleContent($filename) {
+    error_log("Getting subtitle content for: " . $filename);
     $path = "/var/www/html/conspyre.tv/videos/{$filename}/{$filename}.vtt";
     if (!file_exists($path)) {
         $path = "/var/www/html/conspyre.tv/videos/{$filename}/{$filename}_ext.vtt";
     }
 
     if (!file_exists($path)) {
-        error_log("Subtitle file not found: $path");
+        error_log("Subtitle file not found: " . $path);
         return null;
     }
 
     return file_get_contents($path);
 }
 
-// Helper function to get video transcript
 function getTranscriptContent($filename) {
+    error_log("Getting transcript content for: " . $filename);
     $path = "/var/www/html/conspyre.tv/videos/{$filename}/{$filename}.txt";
     if (!file_exists($path)) {
         $path = "/var/www/html/conspyre.tv/videos/{$filename}/{$filename}_ext.txt";
     }
 
-    return file_exists($path) ? file_get_contents($path) : null;
+    if (!file_exists($path)) {
+        error_log("Transcript file not found: " . $path);
+        return null;
+    }
+
+    return file_get_contents($path);
 }
 
-// Helper function to check for video file resolutions
 function getVideoResolutions($filename) {
+    error_log("Getting video resolutions for: " . $filename);
     $basePath = '/var/www/html/conspyre.tv/videos/' . $filename . '/' . $filename;
     $resolutions = [];
     $cdnBase = rtrim(getenv('VIDEO_CDN_BASE_URL'), '/') . '/';
@@ -74,11 +88,12 @@ function getVideoResolutions($filename) {
         $resolutions['ext'] = $cdnBase . $filename . '_ext.mp4';
     }
 
+    error_log("Found resolutions: " . json_encode($resolutions));
     return $resolutions;
 }
 
-// Helper function to check for subtitle and transcript files
 function checkMediaFiles($filename) {
+    error_log("Checking media files for: " . $filename);
     $basePath = '/var/www/html/conspyre.tv/videos/' . $filename . '/' . $filename;
     return [
         'has_vtt' => file_exists($basePath . '.vtt'),
@@ -87,11 +102,17 @@ function checkMediaFiles($filename) {
 }
 
 // Load required files
+error_log("Including DatabaseManager.php");
 require_once __DIR__ . '/DatabaseManager.php';
 
 // Initialize database connection
 try {
+    error_log("Initializing database connection");
     $db = new DatabaseManager();
+    error_log("Database connection initialized successfully");
 } catch (Exception $e) {
-    displayError($e->getMessage());
+    error_log("Database connection failed: " . $e->getMessage());
+    displayError("Database error: " . $e->getMessage());
 }
+
+error_log("init.php completed successfully");
