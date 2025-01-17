@@ -1,41 +1,42 @@
-# Disable directory listing
-Options -Indexes
-
-# Protect sensitive files
-<FilesMatch "^(users\.json|.*\.php)$">
-    Order Deny,Allow
-    Deny from all
-</FilesMatch>
-
-# Allow access to specific PHP files
-<Files "metadata.php">
-    Order Allow,Deny
-    Allow from all
-</Files>
+# Inherit parent authentication
+AuthType Basic
+AuthName "Management Console"
+AuthUserFile /etc/apache2/.htpasswd
+Require valid-user
 
 # Protect config and includes directories
-<DirectoryMatch "^/config/|^/includes/">
-    Order Deny,Allow
+<DirectoryMatch "^/(config|includes|logs)/">
     Deny from all
 </DirectoryMatch>
 
-# Enable rewrite engine
-RewriteEngine On
-RewriteBase /management/users/
+# User-specific directory access
+<Directory "/var/www/html/conspyre.tv/management/users/joe_rambo">
+    AuthType Basic
+    AuthName "Restricted Access"
+    AuthUserFile /etc/apache2/.htpasswd
+    Require user joe_rambo walt
+</Directory>
 
-# Allow direct access to user directories
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^([^/]+)/metadata\.php$ $1/index.php [L]
+<Directory "/var/www/html/conspyre.tv/management/users/light_on_liberty">
+    AuthType Basic
+    AuthName "Restricted Access"
+    AuthUserFile /etc/apache2/.htpasswd
+    Require user bridgitte walt
+</Directory>
 
-# Block access to dot files
-<FilesMatch "^\.">
-    Order Deny,Allow
-    Deny from all
-</FilesMatch>
+<Directory "/var/www/html/conspyre.tv/management/users/truthisknowledge">
+    AuthType Basic
+    AuthName "Restricted Access"
+    AuthUserFile /etc/apache2/.htpasswd
+    Require user truthisknowledge walt
+</Directory>
 
-# Additional security headers
-Header set X-Content-Type-Options "nosniff"
-Header set X-Frame-Options "SAMEORIGIN"
-Header set X-XSS-Protection "1; mode=block"
-Header set Content-Security-Policy "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; img-src 'self' data:;"
+# Security headers
+<IfModule mod_headers.c>
+    Header set X-Frame-Options "DENY"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set X-Content-Type-Options "nosniff"
+</IfModule>
+
+# Disable directory browsing
+Options -Indexes
