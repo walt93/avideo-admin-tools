@@ -39,8 +39,8 @@
                         <img src="<?= htmlspecialchars($thumbnailUrl) ?>" 
                              alt="Thumbnail" 
                              class="video-thumbnail" 
-                             width="120" 
-                             height="68">
+                             width="240" 
+                             height="135">
                     </td>
                     <td class="col-id"><?= $video['id'] ?></td>
                     <td class="col-created"><?= date('M j, Y', strtotime($video['created'])) ?></td>
