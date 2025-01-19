@@ -4,13 +4,13 @@ async function generateFromTranscript() {
     const modalBody = document.querySelector('.modal-body');
     const description = document.getElementById('videoDescription');
     const filename = document.getElementById('videoFilename').value;
-    
+
     await generateWithLoading(async () => {
         const formData = new FormData();
         formData.append('action', 'generate_description');
         formData.append('type', 'transcript');
         formData.append('filename', filename);
-        
+
         return await makeRequest(formData);
     });
 }
@@ -20,14 +20,14 @@ async function generateFromTranscript() {
 async function rewriteExisting() {
     const title = document.getElementById('videoTitle').value;
     const description = document.getElementById('videoDescription').value;
-    
+
     await generateWithLoading(async () => {
         const formData = new FormData();
         formData.append('action', 'generate_description');
         formData.append('type', 'rewrite');
         formData.append('title', title);
         formData.append('description', description);
-        
+
         return await makeRequest(formData);
     });
 }
@@ -96,14 +96,14 @@ async function processSpeakerDescription() {
 async function generateEventStyle() {
     const title = document.getElementById('videoTitle').value;
     const description = document.getElementById('videoDescription').value;
-    
+
     await generateWithLoading(async () => {
         const formData = new FormData();
         formData.append('action', 'generate_description');
         formData.append('type', 'event');
         formData.append('title', title);
         formData.append('description', description);
-        
+
         return await makeRequest(formData);
     });
 }
@@ -114,7 +114,7 @@ async function quickSanitize(videoId, button) {
     const descriptionDiv = row.querySelector('.video-description');
     const originalDescription = descriptionDiv.textContent;
 
-    // Disable the entire row and show loading
+    // Show loading state
     row.classList.add('processing');
 
     // Create and append loading overlay
@@ -139,7 +139,7 @@ async function quickSanitize(videoId, button) {
         const data = await makeRequest(formData);
 
         if (!data.success) {
-            throw new Error(data.error);
+            throw new Error(data.error || 'Sanitization failed');
         }
 
         // Update loading message
@@ -184,7 +184,7 @@ async function sanitizeDescription() {
         const formData = new FormData();
         formData.append('action', 'sanitize');
         formData.append('description', description.value);
-        
+
         return await makeRequest(formData);
     });
 }
@@ -196,7 +196,7 @@ async function generateWithLoading(generationFunc) {
     const modalBody = document.querySelector('.modal-body');
     const description = document.getElementById('videoDescription');
     const buttons = document.querySelectorAll('.modal-footer button');
-    
+
     // Disable all buttons and add loading overlay
     buttons.forEach(btn => btn.disabled = true);
     description.disabled = true;
@@ -213,7 +213,7 @@ async function generateWithLoading(generationFunc) {
 
     try {
         const data = await generationFunc();
-        
+
         if (!data.success) {
             throw new Error(data.error || 'Processing failed');
         }
@@ -239,6 +239,7 @@ async function generateWithLoading(generationFunc) {
 
 // Utility function for making requests
 async function makeRequest(formData) {
+    // Use current page URL as the endpoint
     const response = await fetch(window.location.href, {
         method: 'POST',
         body: formData
