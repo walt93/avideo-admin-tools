@@ -103,7 +103,21 @@ try {
     $videos = $db->getUserVideos($filters, $page, $perPage);
     error_log("Loaded videos: " . count($videos['videos']));
 
-    // Only continue with HTML output for non-AJAX requests
+    // Define template paths
+    $mainContentPath = __DIR__ . '/templates/main_content.php';
+    $editModalPath = __DIR__ . '/templates/modals/edit_modal.php';
+    $videoPlayerModalPath = __DIR__ . '/templates/modals/video_player_modal.php';
+    $subtitleModalPath = __DIR__ . '/templates/modals/subtitle_modal.php';
+    $transcriptModalPath = __DIR__ . '/templates/modals/transcript_modal.php';
+
+    // Verify template files exist
+    if (!file_exists($mainContentPath)) {
+        throw new Exception("Main content template not found at: " . $mainContentPath);
+    }
+    if (!file_exists($editModalPath)) {
+        throw new Exception("Edit modal template not found at: " . $editModalPath);
+    }
+
     ?>
     <!DOCTYPE html>
     <html>
@@ -117,9 +131,7 @@ try {
                 background-color: #121212;
                 color: #e0e0e0;
             }
-            /* Additional styles from the original will be included here */
-            <?php 
-            error_log("Including CSS...");
+            <?php
             if (file_exists(__DIR__ . '/css/styles.css')) {
                 include __DIR__ . '/css/styles.css';
             }
@@ -156,7 +168,7 @@ try {
             </div>
         </div>
 
-        <!-- Subtitle Viewer Modal -->
+        <!-- Subtitle and Transcript modals -->
         <div class="modal fade" id="subtitleModal" tabindex="-1">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content bg-dark text-light">
@@ -171,7 +183,6 @@ try {
             </div>
         </div>
 
-        <!-- Transcript Viewer Modal -->
         <div class="modal fade" id="transcriptModal" tabindex="-1">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content bg-dark text-light">
@@ -186,82 +197,25 @@ try {
             </div>
         </div>
 
-        <!-- Edit Modal -->
-        <div class="modal fade" id="editModal" tabindex="-1">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content bg-dark text-light">
-                    <div class="modal-header border-secondary">
-                        <h5 class="modal-title">Edit Video</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="editForm">
-                            <input type="hidden" id="videoId">
-                            <input type="hidden" id="videoFilename">
-                            <div class="mb-3">
-                                <label class="form-label">Title</label>
-                                <input type="text" class="form-control bg-dark text-light border-secondary" id="videoTitle" maxlength="100">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Description</label>
-                                <textarea class="form-control bg-dark text-light border-secondary" id="videoDescription" rows="12" style="font-family: monospace;"></textarea>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer border-secondary">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-outline-warning" onclick="sanitizeDescription()">Sanitize</button>
-                        <button type="button" class="btn btn-outline-primary" onclick="saveVideo()">Save</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- JavaScript Dependencies -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-        
-        <!-- Debug output for script loading -->
-        <script>
-            console.log('Loading JavaScript files...');
-        </script>
-
-        <!-- Application Scripts - Using absolute paths -->
         <script src="/management/users/js/modal_manager.js"></script>
         <script src="/management/users/js/ai_handlers.js"></script>
-
-        <!-- Debug output for script initialization -->
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                console.log('DOM fully loaded');
-                if (window.modalManager) {
-                    console.log('Modal manager loaded');
-                } else {
-                    console.error('Modal manager not loaded');
-                }
-                // Add detailed component checks
-                console.log('Available modals:', {
-                    editModal: !!document.getElementById('editModal'),
-                    videoPlayerModal: !!document.getElementById('videoPlayerModal'),
-                    subtitleModal: !!document.getElementById('subtitleModal'),
-                    transcriptModal: !!document.getElementById('transcriptModal')
-                });
-            });
-        </script>
     </body>
     </html>
     <?php
-    } catch (Exception $e) {
-        ob_end_clean();
-        if (isset($_POST['action']) || isset($_GET['action'])) {
-            // AJAX error response
-            header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
-        } else {
-            // Regular page error
-            displayError("Application error: " . $e->getMessage());
-        }
+} catch (Exception $e) {
+    ob_end_clean();
+    if (isset($_POST['action']) || isset($_GET['action'])) {
+        // AJAX error response
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    } else {
+        // Regular page error
+        displayError("Application error: " . $e->getMessage());
     }
+}
 
-    // If we got this far, flush the output buffer
-    ob_end_flush();
-    ?>
+// If we got this far, flush the output buffer
+ob_end_flush();
+?>
