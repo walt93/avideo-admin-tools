@@ -2,19 +2,138 @@
   "users": {
     "walt": {
       "id": 1,
-      "name": "Conspyre"
+      "name": "Conspyre",
+      "profile": {
+        "photo": null,
+        "display_name": "Conspyre",
+        "social_handle": null
+      },
+      "categories": [
+        {"name": "Antarctica", "categories_id": 565, "users_id": 1},
+        {"name": "Beyond the Matrix", "categories_id": 733, "users_id": 1},
+        {"name": "Dark, The", "categories_id": 182, "users_id": 1},
+        {"name": "Documentaries", "categories_id": 16, "users_id": 1},
+        {"name": "Drones", "categories_id": 834, "users_id": 1},
+        {"name": "Epstein, Jeffery & \"Jizz\"", "categories_id": 51, "users_id": 1},
+        {"name": "EMFs", "categories_id": 637, "users_id": 1},
+        {"name": "Fluoride", "categories_id": 112, "users_id": 1},
+        {"name": "Fog, the", "categories_id": 836, "users_id": 1},
+        {"name": "Food", "categories_id": 20, "users_id": 1},
+        {"name": "Free Energy", "categories_id": 634, "users_id": 1},
+        {"name": "Health", "categories_id": 629, "users_id": 1},
+        {"name": "Homeland Incidents", "categories_id": 837, "users_id": 1},
+        {"name": "Human Trafficking & Elite Pedophilia", "categories_id": 553, "users_id": 1},
+        {"name": "Humor", "categories_id": 23, "users_id": 1},
+        {"name": "Lectures", "categories_id": 375, "users_id": 1},
+        {"name": "News & Politics", "categories_id": 183, "users_id": 1},
+        {"name": "Quantum Human Capabilities", "categories_id": 632, "users_id": 1},
+        {"name": "Signals&Shadows", "categories_id": 835, "users_id": 1},
+        {"name": "Shorts", "categories_id": 30, "users_id": 1},
+        {"name": "Transhumanism", "categories_id": 301, "users_id": 1},
+        {"name": "UAP / USAP", "categories_id": 38, "users_id": 1},
+        {"name": "[Their] Words", "categories_id": 735, "users_id": 1}
+      ]
     },
     "light_on_liberty": {
       "id": 2500,
-      "name": "Light on Liberty"
+      "name": "Light on Liberty",
+      "profile": {
+        "photo": "/videos/userPhoto/photo2500.png",
+        "display_name": "Light on Liberty",
+        "social_handle": "@LightOnLiberty"
+      },
+      "categories": [
+        {"name": "Antarctica", "categories_id": 565, "users_id": 2500},
+        {"name": "Beyond the Matrix", "categories_id": 733, "users_id": 2500},
+        {"name": "Dark, The", "categories_id": 182, "users_id": 2500},
+        {"name": "Documentaries", "categories_id": 16, "users_id": 2500},
+        {"name": "Drones", "categories_id": 834, "users_id": 2500},
+        {"name": "Epstein, Jeffery & \"Jizz\"", "categories_id": 51, "users_id": 2500},
+        {"name": "EMFs", "categories_id": 637, "users_id": 2500},
+        {"name": "Fluoride", "categories_id": 112, "users_id": 2500},
+        {"name": "Fog, the", "categories_id": 836, "users_id": 2500},
+        {"name": "Food", "categories_id": 20, "users_id": 2500},
+        {"name": "Free Energy", "categories_id": 634, "users_id": 2500},
+        {"name": "Health", "categories_id": 629, "users_id": 2500},
+        {"name": "Homeland Incidents", "categories_id": 837, "users_id": 2500},
+        {"name": "Human Trafficking & Elite Pedophilia", "categories_id": 553, "users_id": 2500},
+        {"name": "Humor", "categories_id": 23, "users_id": 2500},
+        {"name": "Lectures", "categories_id": 375, "users_id": 2500},
+        {"name": "News & Politics", "categories_id": 183, "users_id": 2500},
+        {"name": "Quantum Human Capabilities", "categories_id": 632, "users_id": 2500},
+        {"name": "Signals&Shadows", "categories_id": 835, "users_id": 2500},
+        {"name": "Shorts", "categories_id": 30, "users_id": 2500},
+        {"name": "Transhumanism", "categories_id": 301, "users_id": 2500},
+        {"name": "UAP / USAP", "categories_id": 38, "users_id": 2500},
+        {"name": "[Their] Words", "categories_id": 735, "users_id": 2500}
+      ]
     },
     "joe_rambo": {
       "id": 2280,
-      "name": "Joe Rambo"
+      "name": "Joe Rambo",
+      "profile": {
+        "photo": "/videos/userPhoto/photo2280.png",
+        "display_name": "Joe Rambo",
+        "social_handle": "@JoeRambo"
+      },
+      "categories": [
+        {"name": "News & Politics", "categories_id": 183, "users_id": 2280},
+        {"name": "Shorts", "categories_id": 30, "users_id": 2280},
+        {"name": "Dark, The", "categories_id": 182, "users_id": 2280},
+        {"name": "Drones", "categories_id": 834, "users_id": 2280},
+        {"name": "Epstein, Jeffery", "categories_id": 51, "users_id": 2280},
+        {"name": "Fog, the", "categories_id": 836, "users_id": 2280},
+        {"name": "Food", "categories_id": 20, "users_id": 2280},
+        {"name": "Free Energy", "categories_id": 634, "users_id": 2280},
+        {"name": "Health", "categories_id": 629, "users_id": 2280},
+        {"name": "Homeland Incidents", "categories_id": 837, "users_id": 2280},
+        {"name": "Human Trafficking & Elite Pedophilia", "categories_id": 553, "users_id": 2280},
+        {"name": "Humor", "categories_id": 23, "users_id": 2280},
+        {"name": "Transhumanism", "categories_id": 301, "users_id": 2280},
+        {"name": "UAP / USAP", "categories_id": 38, "users_id": 2280},
+        {"name": "[Their] Words", "categories_id": 735, "users_id": 2280},
+      ]
     },
     "truthisknowledge": {
       "id": 691,
-      "name": "TRUTHISKNOWLEDGE"
+      "name": "TRUTHISKNOWLEDGE",
+      "profile": {
+        "photo": "/videos/userPhoto/photo691.png",
+        "display_name": "TRUTHISKNOWLEDGE",
+        "social_handle": "@MuchLove88"
+      },
+      "categories": [
+        {
+          "name": "CLONES | MKULTRA | MIND CONTROL",
+          "categories_id": 757,
+          "users_id": 691
+        },
+        {
+          "name": "THE PLAN | AWAKENING | Q",
+          "categories_id": 844,
+          "users_id": 691
+        },
+        {
+          "name": "SPIRITUALITY | EXTRATERRESTRIAL | GALACTICS",
+          "categories_id": 760,
+          "users_id": 691
+        },
+        {
+          "name": "ILLUMINATI | MASONRY | DEEP STATE",
+          "categories_id": 758,
+          "users_id": 691
+        },
+        {
+          "name": "ITS ABOUT THE CHILDREN",
+          "categories_id": 759,
+          "users_id": 691
+        },
+        {
+          "name": "DID YOU KNOW",
+          "categories_id": 756,
+          "users_id": 691
+        }
+      ]
     }
   },
   "settings": {
