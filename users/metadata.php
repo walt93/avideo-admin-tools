@@ -138,6 +138,67 @@ try {
             </div>
         </div>
 
+        <!-- Subtitle Viewer Modal -->
+        <div class="modal fade" id="subtitleModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content bg-dark text-light">
+                    <div class="modal-header border-secondary">
+                        <h5 class="modal-title">Subtitles</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <pre class="subtitle-content" style="max-height: 70vh; overflow-y: auto;"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transcript Viewer Modal -->
+        <div class="modal fade" id="transcriptModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content bg-dark text-light">
+                    <div class="modal-header border-secondary">
+                        <h5 class="modal-title">Transcript</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <pre class="transcript-content" style="max-height: 70vh; overflow-y: auto;"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Modal -->
+        <div class="modal fade" id="editModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content bg-dark text-light">
+                    <div class="modal-header border-secondary">
+                        <h5 class="modal-title">Edit Video</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="editForm">
+                            <input type="hidden" id="videoId">
+                            <input type="hidden" id="videoFilename">
+                            <div class="mb-3">
+                                <label class="form-label">Title</label>
+                                <input type="text" class="form-control bg-dark text-light border-secondary" id="videoTitle" maxlength="100">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Description</label>
+                                <textarea class="form-control bg-dark text-light border-secondary" id="videoDescription" rows="12" style="font-family: monospace;"></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer border-secondary">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-outline-warning" onclick="sanitizeDescription()">Sanitize</button>
+                        <button type="button" class="btn btn-outline-primary" onclick="saveVideo()">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- JavaScript Dependencies -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
         
