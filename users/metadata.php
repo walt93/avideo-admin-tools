@@ -143,6 +143,9 @@ try {
     </head>
     <body>
         <?php
+        // Include navigation
+        require_once __DIR__ . '/templates/nav.php';
+
         error_log("Including main_content.php");
         include $mainContentPath;
 
