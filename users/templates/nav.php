@@ -11,7 +11,7 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
                 Media
             </a>
             <a class="nav-link <?= $current_page === 'upload' ? 'active fw-bold' : '' ?>"
-               href="/management/users/<?= basename(dirname($_SERVER['PHP_SELF'])) ?>/upload.html">
+               href="/management/users/<?= basename(dirname($_SERVER['PHP_SELF'])) ?>/upload.php">
                 Upload
             </a>
         </div>
