@@ -1,18 +1,29 @@
 <!-- templates/main_content.php -->
 <div class="container-fluid p-4">
-    <!-- Filters Section -->
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <label class="form-label">Filter by Playlist</label>
-            <select class="form-select dark-select" id="playlistFilter" onchange="window.location.href = this.value ? `?playlist=${this.value}` : '?'">
+    <!-- Header with count -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0 text-light">
+            <?= htmlspecialchars($videos['current_filter']) ?>
+            <span class="ms-2 badge bg-secondary">
+                <?= number_format($videos['total']) ?> video<?= $videos['total'] !== 1 ? 's' : '' ?>
+            </span>
+        </h4>
+
+        <!-- Playlist filter -->
+        <?php if (!empty($playlists)): ?>
+        <div style="width: 300px;">
+            <select class="form-select dark-select" id="playlistFilter"
+                    onchange="window.location.href = this.value ? `?playlist=${this.value}` : '?'">
                 <option value="">All Videos</option>
                 <?php foreach ($playlists as $playlist): ?>
-                    <option value="<?= $playlist['id'] ?>" <?= isset($_GET['playlist']) && $_GET['playlist'] == $playlist['id'] ? 'selected' : '' ?>>
+                    <option value="<?= $playlist['id'] ?>"
+                            <?= isset($_GET['playlist']) && $_GET['playlist'] == $playlist['id'] ? 'selected' : '' ?>>
                         <?= htmlspecialchars($playlist['name']) ?>
                     </option>
                 <?php endforeach; ?>
             </select>
         </div>
+        <?php endif; ?>
     </div>
 
     <!-- Videos Table -->
