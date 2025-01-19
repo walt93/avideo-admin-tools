@@ -1,41 +1,41 @@
-# Disable directory listing
-Options -Indexes
+# Base authentication
+AuthType Basic
+AuthName "Management Console"
+AuthUserFile /etc/apache2/.htpasswd
+Require valid-user
 
-# Protect sensitive files
-<FilesMatch "^(users\.json|.*\.php)$">
-    Order Deny,Allow
+# Protect config and sensitive files
+<FilesMatch "^(config|.*\.json|.*\.log)$">
+    Order deny,allow
     Deny from all
 </FilesMatch>
 
-# Allow access to specific PHP files
-<Files "metadata.php">
-    Order Allow,Deny
-    Allow from all
+# User-specific access controls for index.php
+<Files "index.php">
+    AuthType Basic
+    AuthName "Restricted Access"
+    AuthUserFile /etc/apache2/.htpasswd
+
+    SetEnvIf Request_URI "/conspyre/" ALLOWED_USERS=conspyre
+    SetEnvIf Request_URI "/joe_rambo/" ALLOWED_USERS=joe_rambo
+    SetEnvIf Request_URI "/light_on_liberty/" ALLOWED_USERS=bridgitte
+    SetEnvIf Request_URI "/truthisknowledge/" ALLOWED_USERS=truthisknowledge
+
+    Require expr %{ENV:ALLOWED_USERS} -strmatch %{REMOTE_USER} || %{REMOTE_USER} = 'walt'
 </Files>
 
-# Protect config and includes directories
-<DirectoryMatch "^/config/|^/includes/">
-    Order Deny,Allow
-    Deny from all
-</DirectoryMatch>
+# Security headers
+<IfModule mod_headers.c>
+    Header set X-Frame-Options "DENY"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set X-Content-Type-Options "nosniff"
+</IfModule>
 
-# Enable rewrite engine
-RewriteEngine On
-RewriteBase /management/users/
+# Disable directory browsing
+Options -Indexes
 
-# Allow direct access to user directories
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^([^/]+)/metadata\.php$ $1/index.php [L]
-
-# Block access to dot files
-<FilesMatch "^\.">
-    Order Deny,Allow
+# PHP files in includes directory
+<FilesMatch "^includes/.+\.php$">
+    Order deny,allow
     Deny from all
 </FilesMatch>
-
-# Additional security headers
-Header set X-Content-Type-Options "nosniff"
-Header set X-Frame-Options "SAMEORIGIN"
-Header set X-XSS-Protection "1; mode=block"
-Header set Content-Security-Policy "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; img-src 'self' data:;"
