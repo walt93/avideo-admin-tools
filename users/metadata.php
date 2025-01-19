@@ -16,11 +16,43 @@ require_once __DIR__ . '/includes/DatabaseManager.php';
 ob_start();
 
 try {
-    // Handle AJAX requests and actions
-    if (isset($_GET['ajax']) || isset($_GET['action'])) {
+    // Handle AJAX requests and actions first
+    if (isset($_POST['action']) || isset($_GET['action'])) {
         header('Content-Type: application/json');
 
-        // Handle file content requests
+        // Handle POST actions
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            switch ($_POST['action']) {
+                case 'update':
+                    try {
+                        $db->updateVideo($_POST['id'], $_POST['title'], $_POST['description']);
+                        echo json_encode(['success' => true]);
+                    } catch (Exception $e) {
+                        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+                    }
+                    exit;
+
+                case 'sanitize':
+                    try {
+                        error_log("Sanitize request received: " . print_r($_POST, true));
+                        require_once __DIR__ . '/includes/ai_handlers.php';
+                        $result = handleSanitize($_POST);
+                        error_log("Sanitize result: " . print_r($result, true));
+                        echo json_encode($result);
+                    } catch (Exception $e) {
+                        error_log("Sanitize error: " . $e->getMessage());
+                        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+                    }
+                    exit;
+
+                case 'generate_description':
+                    require_once __DIR__ . '/includes/ai_handlers.php';
+                    handleDescriptionGeneration($_POST);
+                    exit;
+            }
+        }
+
+        // Handle GET actions
         if (isset($_GET['action'])) {
             switch ($_GET['action']) {
                 case 'get_subtitles':
@@ -52,14 +84,14 @@ try {
         }
     }
 
-    // Get page parameters
+    // Regular page load - continue with normal processing
     $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
     $perPage = 25;
 
-    // Get filters - only playlist filter for user content
+    // Get filters
     $filters = [
         'playlist' => $_GET['playlist'] ?? null,
-        'user_id' => $USER_ID // Add user ID filter
+        'user_id' => $USER_ID
     ];
 
     error_log("Loading data for user_id: " . $USER_ID);
@@ -71,21 +103,7 @@ try {
     $videos = $db->getUserVideos($filters, $page, $perPage);
     error_log("Loaded videos: " . count($videos['videos']));
 
-    // Debug template paths
-    $mainContentPath = __DIR__ . '/templates/main_content.php';
-    $editModalPath = __DIR__ . '/templates/modals/edit_modal.php';
-
-    error_log("Main content template path: " . $mainContentPath);
-    error_log("Edit modal template path: " . $editModalPath);
-
-    // Verify template files exist
-    if (!file_exists($mainContentPath)) {
-        throw new Exception("Main content template not found at: " . $mainContentPath);
-    }
-    if (!file_exists($editModalPath)) {
-        throw new Exception("Edit modal template not found at: " . $editModalPath);
-    }
-
+    // Only continue with HTML output for non-AJAX requests
     ?>
     <!DOCTYPE html>
     <html>
@@ -232,13 +250,18 @@ try {
     </body>
     </html>
     <?php
+    } catch (Exception $e) {
+        ob_end_clean();
+        if (isset($_POST['action']) || isset($_GET['action'])) {
+            // AJAX error response
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        } else {
+            // Regular page error
+            displayError("Application error: " . $e->getMessage());
+        }
+    }
 
-} catch (Exception $e) {
-    ob_end_clean();
-    error_log("Error in metadata.php: " . $e->getMessage());
-    displayError("Application error: " . $e->getMessage());
-}
-
-// If we got this far, flush the output buffer
-ob_end_flush();
-?>
+    // If we got this far, flush the output buffer
+    ob_end_flush();
+    ?>
