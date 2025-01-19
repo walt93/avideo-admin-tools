@@ -18,11 +18,11 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
 
         <!-- External Links -->
         <div class="navbar-nav">
-            <a class="nav-link" href="https://conspyre.tv" target="_blank">
+            <a class="nav-link" href="https://conspyre.xyz" target="_blank">
                 Conspyre.tv
                 <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 0.8em;"></i>
             </a>
-            <a class="nav-link" href="https://encoder1.conspyre.tv" target="_blank">
+            <a class="nav-link" href="https://encoder1.conspyre.xyz" target="_blank">
                 Encoder
                 <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 0.8em;"></i>
             </a>
