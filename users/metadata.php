@@ -12,6 +12,9 @@ error_log("Looking for init.php in: " . __DIR__ . '/includes/init.php');
 require_once __DIR__ . '/includes/init.php';
 require_once __DIR__ . '/includes/DatabaseManager.php';
 
+// Initialize database with user ID
+$db = new DatabaseManager($USER_ID);
+
 // Start capturing output for error handling
 ob_start();
 

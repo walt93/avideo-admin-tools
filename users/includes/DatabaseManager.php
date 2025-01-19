@@ -1,8 +1,10 @@
 <?php
 class DatabaseManager {
     private $db;
+    private $userId;
 
-    public function __construct() {
+    public function __construct($userId = null) {
+        $this->userId = $userId;
         $this->connect();
     }
 
@@ -93,26 +95,33 @@ class DatabaseManager {
     }
 
     // Update video - with user verification
-    public function updateVideo($id, $title, $description) {
-        // First verify the video belongs to the user
-        $stmt = $this->db->prepare('
-            SELECT users_id 
-            FROM videos 
-            WHERE id = ?
-        ');
-        $stmt->execute([$id]);
-        $video = $stmt->fetch();
+        public function updateVideo($id, $title, $description) {
+            if (!$this->userId) {
+                error_log("No user ID provided for video update");
+                throw new Exception('Access denied: No user ID');
+            }
 
-        if (!$video || $video['users_id'] != $USER_ID) {
-            throw new Exception('Access denied');
+            // First verify the video belongs to the user
+            $stmt = $this->db->prepare('
+                SELECT users_id
+                FROM videos
+                WHERE id = ?
+            ');
+            $stmt->execute([$id]);
+            $video = $stmt->fetch();
+
+            if (!$video || $video['users_id'] != $this->userId) {
+                error_log("Access denied: video {$id} does not belong to user {$this->userId}");
+                throw new Exception('Access denied');
+            }
+
+            $stmt = $this->db->prepare('
+                UPDATE videos
+                SET title = ?, description = ?
+                WHERE id = ? AND users_id = ?
+            ');
+            $stmt->execute([$title, $description, $id, $this->userId]);
+            return true;
         }
-
-        $stmt = $this->db->prepare('
-            UPDATE videos 
-            SET title = ?, description = ? 
-            WHERE id = ?
-        ');
-        $stmt->execute([$title, $description, $id]);
-        return true;
     }
 }

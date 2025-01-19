@@ -132,11 +132,13 @@ async function quickSanitize(videoId, button) {
     row.querySelectorAll('button').forEach(btn => btn.disabled = true);
 
     try {
+        // First sanitize
         const formData = new FormData();
         formData.append('action', 'sanitize');
         formData.append('description', originalDescription);
 
         const data = await makeRequest(formData);
+        console.log('Sanitize response:', data);
 
         if (!data.success) {
             throw new Error(data.error || 'Sanitization failed');
@@ -152,13 +154,25 @@ async function quickSanitize(videoId, button) {
         saveFormData.append('title', row.querySelector('.pure-title').textContent.trim());
         saveFormData.append('description', data.sanitized);
 
-        const saveData = await makeRequest(saveFormData);
-        if (!saveData.success) {
-            throw new Error('Failed to save sanitized description');
-        }
+        const saveResponse = await fetch(window.location.href, {
+            method: 'POST',
+            body: saveFormData
+        });
 
-        // Update the description in the list
-        descriptionDiv.textContent = data.sanitized;
+        const saveResponseText = await saveResponse.text();
+        console.log('Save response:', saveResponseText);
+
+        try {
+            const saveData = JSON.parse(saveResponseText);
+            if (!saveData.success) {
+                throw new Error(saveData.error || 'Failed to save sanitized description');
+            }
+            // Update the description in the list
+            descriptionDiv.textContent = data.sanitized;
+        } catch (parseError) {
+            console.error('Error parsing save response:', parseError);
+            throw new Error('Invalid response from server when saving');
+        }
 
     } catch (error) {
         console.error('Error sanitizing description:', error);
