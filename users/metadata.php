@@ -37,7 +37,7 @@ try {
                         error_log("Sanitize request received: " . print_r($_POST, true));
                         require_once __DIR__ . '/includes/ai_handlers.php';
                         $result = handleSanitize($_POST);
-                        error_log("Sanitize result: " . print_r($result, true));
+                        error_log("Sanitize response: " . json_encode($result));
                         echo json_encode($result);
                     } catch (Exception $e) {
                         error_log("Sanitize error: " . $e->getMessage());

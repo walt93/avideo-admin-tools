@@ -237,59 +237,59 @@ function call_openai_api($data) {
 
 function handleSanitize($post) {
     if (!isset($post['description'])) {
-        echo json_encode(['success' => false, 'error' => 'Description required']);
-        return;
+        return ['success' => false, 'error' => 'Description required'];
     }
 
     try {
         $openaiKey = getenv('OPENAI_API_KEY');
         if (!$openaiKey) {
-            echo json_encode(['success' => false, 'error' => 'OpenAI API key not configured']);
-            return;
+            return ['success' => false, 'error' => 'OpenAI API key not configured'];
         }
 
         $data = [
             'model' => 'gpt-4-0125-preview',
             'messages' => [
-            [
-                'role' => 'system',
-            'content' => 'You are a helpful assistant that sanitizes and formats video descriptions.'
-    ],
-        [
-            'role' => 'user',
-            'content' => <<<EOT
-            You must preserve the exact meaning and information from the original text. Your only tasks are:
-            1. Fix basic capitalization (beginning of sentences)
-            2. Add correct punctuation if missing
-                3. Remove emojis
-            4. Remove email addresses and URLs
-            5. Split into paragraphs where appropriate
+                [
+                    'role' => 'system',
+                    'content' => 'You are a helpful assistant that sanitizes and formats video descriptions.'
+                ],
+                [
+                    'role' => 'user',
+                    'content' => <<<EOT
+                    You must preserve the exact meaning and information from the original text. Your only tasks are:
+                    1. Fix basic capitalization (beginning of sentences)
+                    2. Add correct punctuation if missing
+                    3. Remove emojis
+                    4. Remove email addresses and URLs
+                    5. Split into paragraphs where appropriate
 
-            Rules:
-            - DO NOT rewrite or paraphrase any content
-            - DO NOT add or remove information
-            - DO NOT change word choice
-            - DO NOT remove hashtags
-            - DO NOT "improve" the text
-            - Keep line breaks where they exist in the original
-            - Preserve ALL original terminology and phrasing
-            - If something looks like a formatting error but you're not sure, leave it as is
+                    Rules:
+                    - DO NOT rewrite or paraphrase any content
+                    - DO NOT add or remove information
+                    - DO NOT change word choice
+                    - DO NOT remove hashtags
+                    - DO NOT "improve" the text
+                    - Keep line breaks where they exist in the original
+                    - Preserve ALL original terminology and phrasing
+                    - If something looks like a formatting error but you're not sure, leave it as is
 
-            Original text:
-            {$post['description']}
+                    Original text:
+                    {$post['description']}
 
-            Return ONLY the formatted text with no explanations.
-            EOT
-        ]
-    ],
-        'temperature' => 0.3
-    ];
+                    Return ONLY the formatted text with no explanations.
+                    EOT
+                ]
+            ],
+            'temperature' => 0.3
+        ];
 
         $result = call_openai_api($data);
-        echo json_encode(['success' => true, 'sanitized' => $result]);
+        error_log("OpenAI API response: " . print_r($result, true));
+        return ['success' => true, 'sanitized' => $result];
 
     } catch (Exception $e) {
-        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        error_log("Error in handleSanitize: " . $e->getMessage());
+        return ['success' => false, 'error' => $e->getMessage()];
     }
 }
 
