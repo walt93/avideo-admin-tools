@@ -3,7 +3,7 @@
     <!-- Header with count -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="mb-0 text-light">
-            <?= htmlspecialchars($videos['current_filter']) ?>
+            <?= isset($videos['current_filter']) ? htmlspecialchars($videos['current_filter']) : 'All Videos' ?>
             <span class="ms-2 badge bg-secondary">
                 <?= number_format($videos['total']) ?> video<?= $videos['total'] !== 1 ? 's' : '' ?>
             </span>
@@ -17,8 +17,8 @@
                 <option value="">All Videos</option>
                 <?php foreach ($playlists as $playlist): ?>
                     <option value="<?= $playlist['id'] ?>"
-                            <?= isset($_GET['playlist']) && $_GET['playlist'] == $playlist['id'] ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($playlist['name']) ?>
+                            <?= (isset($_GET['playlist']) && $_GET['playlist'] == $playlist['id']) ? 'selected' : '' ?>>
+                        <?= htmlspecialchars((string)$playlist['name']) ?>
                     </option>
                 <?php endforeach; ?>
             </select>
@@ -31,7 +31,6 @@
         <table class="table table-striped table-dark">
             <thead>
                 <tr>
-                    <th class="col-thumbnail">Thumbnail</th>
                     <th class="col-id">ID</th>
                     <th class="col-created">Created</th>
                     <th class="col-title">Content</th>
@@ -39,70 +38,74 @@
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($videos['videos'] as $video): ?>
-                <?php
-                    $mediaFiles = checkMediaFiles($video['filename']);
-                    $resolutions = getVideoResolutions($video['filename']);
-                    $thumbnailUrl = "https://conspyre.xyz/videos/{$video['filename']}/{$video['filename']}.jpg";
-                ?>
-                <tr>
-                    <td class="col-thumbnail">
-                        <img src="<?= htmlspecialchars($thumbnailUrl) ?>" 
-                             alt="Thumbnail" 
-                             class="video-thumbnail" 
-                             width="240" 
-                             height="135">
-                    </td>
-                    <td class="col-id"><?= $video['id'] ?></td>
-                    <td class="col-created"><?= date('M j, Y', strtotime($video['created'])) ?></td>
-                    <td class="col-title">
-                        <div class="cell-content">
-                            <div class="video-title">
-                                <span class="pure-title"><?= htmlspecialchars($video['title']) ?></span>
-                                <?php if ($mediaFiles['has_vtt']): ?>
-                                    <span title="View Subtitles" class="file-icon" data-action="view-subtitles"
-                                          data-filename="<?= htmlspecialchars($video['filename']) ?>">📝</span>
-                                <?php endif; ?>
-
-                                <?php if ($mediaFiles['has_txt']): ?>
-                                    <span title="View Transcript" class="file-icon" data-action="view-transcript"
-                                          data-filename="<?= htmlspecialchars($video['filename']) ?>">📄</span>
-                                <?php endif; ?>
+                <?php if (empty($videos['videos'])): ?>
+                    <tr>
+                        <td colspan="4" class="text-center py-4">
+                            <div class="text-muted">
+                                <i class="bi bi-camera-video me-2"></i>
+                                No videos found
                             </div>
-                            <div class="video-description">
-                                <?= htmlspecialchars($video['description']) ?>
+                        </td>
+                    </tr>
+                <?php else: ?>
+                    <?php foreach ($videos['videos'] as $video): ?>
+                    <?php
+                        $mediaFiles = checkMediaFiles($video['filename']);
+                        $resolutions = getVideoResolutions($video['filename']);
+                    ?>
+                    <tr>
+                        <td class="col-id"><?= htmlspecialchars((string)$video['id']) ?></td>
+                        <td class="col-created"><?= date('M j, Y', strtotime($video['created'])) ?></td>
+                        <td class="col-title">
+                            <div class="cell-content">
+                                <div class="video-title">
+                                    <span class="pure-title"><?= htmlspecialchars((string)$video['title']) ?></span>
+                                    <?php if ($mediaFiles['has_vtt']): ?>
+                                        <span title="View Subtitles" class="file-icon" data-action="view-subtitles"
+                                              data-filename="<?= htmlspecialchars((string)$video['filename']) ?>">📝</span>
+                                    <?php endif; ?>
+
+                                    <?php if ($mediaFiles['has_txt']): ?>
+                                        <span title="View Transcript" class="file-icon" data-action="view-transcript"
+                                              data-filename="<?= htmlspecialchars((string)$video['filename']) ?>">📄</span>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="video-description">
+                                    <?= htmlspecialchars((string)$video['description']) ?>
+                                </div>
                             </div>
-                        </div>
-                    </td>
-                    <td class="col-actions">
-                        <button class="btn btn-sm btn-outline-primary" data-action="edit"
-                                data-video='<?= htmlspecialchars(json_encode(array_merge($video, ['media_files' => $mediaFiles])), ENT_QUOTES) ?>'>
-                            Edit
-                        </button>
+                        </td>
+                        <td class="col-actions">
+                            <button class="btn btn-sm btn-outline-primary" data-action="edit"
+                                    data-video='<?= htmlspecialchars(json_encode(array_merge($video, ['media_files' => $mediaFiles])), ENT_QUOTES) ?>'>
+                                Edit
+                            </button>
 
-                        <button class="btn btn-sm btn-outline-warning"
-                            onclick="quickSanitize(<?= $video['id'] ?>, this)">
-                            Sanitize
-                        </button>
+                            <button class="btn btn-sm btn-outline-warning"
+                                onclick="quickSanitize(<?= (int)$video['id'] ?>, this)">
+                                Sanitize
+                            </button>
 
-                        <?php if (!empty($resolutions)): ?>
-                        <button class="btn btn-sm btn-outline-success" data-action="play"
-                                data-video='<?= htmlspecialchars(json_encode([
-                                    'title' => $video['title'],
-                                    'filename' => $video['filename'],
-                                    'resolutions' => $resolutions
-                                ]), ENT_QUOTES) ?>'>
-                            <i class="bi bi-play-fill"></i> Play
-                        </button>
-                        <?php endif; ?>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
+                            <?php if (!empty($resolutions)): ?>
+                            <button class="btn btn-sm btn-outline-success" data-action="play"
+                                    data-video='<?= htmlspecialchars(json_encode([
+                                        'title' => $video['title'],
+                                        'filename' => $video['filename'],
+                                        'resolutions' => $resolutions
+                                    ]), ENT_QUOTES) ?>'>
+                                <i class="bi bi-play-fill"></i> Play
+                            </button>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </tbody>
         </table>
     </div>
 
     <!-- Pagination -->
+    <?php if ($videos['pages'] > 1): ?>
     <nav class="d-flex justify-content-center mt-4">
         <ul class="pagination pagination-dark">
             <?php
@@ -116,25 +119,23 @@
             if (!empty($urlParams)) {
                 $baseUrl .= '&';
             }
+            ?>
 
-            if ($page > 1): ?>
+            <?php if ($page > 1): ?>
                 <li class='page-item'><a class='page-link bg-dark text-light' href='<?= $baseUrl ?>page=1'>«</a></li>
                 <?php if ($page - 10 > 0): ?>
                     <li class='page-item'><a class='page-link bg-dark text-light' href='<?= $baseUrl ?>page=<?= $page - 10 ?>'>-10</a></li>
                 <?php endif; ?>
-            <?php endif;
-
-            if ($page > 1): ?>
                 <li class='page-item'><a class='page-link bg-dark text-light' href='<?= $baseUrl ?>page=<?= $page - 1 ?>'>‹</a></li>
-            <?php endif;
+            <?php endif; ?>
 
-            for ($i = $start; $i <= $end; $i++): ?>
+            <?php for ($i = $start; $i <= $end; $i++): ?>
                 <li class='page-item<?= $i === $page ? ' active' : '' ?>'>
                     <a class='page-link bg-dark text-light' href='<?= $baseUrl ?>page=<?= $i ?>'><?= $i ?></a>
                 </li>
-            <?php endfor;
+            <?php endfor; ?>
 
-            if ($page < $videos['pages']): ?>
+            <?php if ($page < $videos['pages']): ?>
                 <li class='page-item'><a class='page-link bg-dark text-light' href='<?= $baseUrl ?>page=<?= $page + 1 ?>'>›</a></li>
                 <?php if ($page + 10 <= $videos['pages']): ?>
                     <li class='page-item'><a class='page-link bg-dark text-light' href='<?= $baseUrl ?>page=<?= $page + 10 ?>'>+10</a></li>
@@ -143,54 +144,18 @@
             <?php endif; ?>
         </ul>
     </nav>
+    <?php endif; ?>
 </div>
 
 <style>
-
-.col-thumbnail {
-    width: 240px; /* 120px height * (9/16) aspect ratio */
-}
-
-.video-thumbnail {
-    width: 100%;
-    height: 120px;
-    object-fit: cover;
-    border-radius: 4px;
-}
-
-/* Ensure the table remains responsive */
-@media (max-width: 768px) {
-    .col-thumbnail {
-        display: none;
-    }
-}
-/* Dark theme specific styles */
-.pagination-dark .page-link {
-    background-color: #343a40;
-    border-color: #454d55;
-}
-
-.pagination-dark .page-item.active .page-link {
-    background-color: #007bff;
-    border-color: #007bff;
-}
-
-.dark-select {
-    background-color: #343a40;
-    color: #fff;
-    border-color: #454d55;
+.badge {
+    font-weight: normal;
+    font-size: 0.85em;
 }
 
 .table-dark {
-    background-color: #343a40;
-}
-
-.table-dark td, .table-dark th {
-    border-color: #454d55;
-}
-
-.btn-outline-primary, .btn-outline-warning, .btn-outline-success {
-    color: #fff;
+    --bs-table-bg: #1a1a1a;
+    --bs-table-striped-bg: #252525;
 }
 
 .cell-content {
@@ -212,5 +177,18 @@
 .file-icon {
     cursor: pointer;
     margin-left: 5px;
+}
+
+.dark-select {
+    background-color: #2b3035;
+    color: #fff;
+    border-color: #454d55;
+}
+
+.dark-select:focus {
+    background-color: #2b3035;
+    color: #fff;
+    border-color: #454d55;
+    box-shadow: 0 0 0 0.25rem rgba(66, 70, 73, 0.5);
 }
 </style>
