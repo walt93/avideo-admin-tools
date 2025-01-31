@@ -48,7 +48,7 @@
             <?php
                 $mediaFiles = checkMediaFiles($video['filename']);
                 $resolutions = getVideoResolutions($video['filename']);
-                $thumbnailUrl = "https://conspyre.xyz/videos/{$video['filename']}/{$video['filename']}.jpg";
+                $thumbnailUrl = "https://conspyre.tv/videos/{$video['filename']}/{$video['filename']}.jpg";
             ?>
             <tr>
                 <td class="col-thumbnail">

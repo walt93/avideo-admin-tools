@@ -110,7 +110,7 @@ The system implements multiple security layers:
 
 Users access their content management interface at:
 ```
-https://conspyre.xyz/management/users/[username]/index.php
+https://conspyre.tv/management/users/[username]/index.php
 ```
 
 Content creators can:

@@ -94,12 +94,12 @@ cat /var/www/html/conspyre.tv/management/users/config/users.json | grep [usernam
 
 3. Test authentication:
 ```bash
-curl -u [username]:[password] https://conspyre.xyz/management/users/[username]/index.php
+curl -u [username]:[password] https://conspyre.tv/management/users/[username]/index.php
 ```
 
 4. Test access with 'walt' credentials:
 ```bash
-curl -u walt:[password] https://conspyre.xyz/management/users/[username]/index.php
+curl -u walt:[password] https://conspyre.tv/management/users/[username]/index.php
 ```
 
 ## Common Issues

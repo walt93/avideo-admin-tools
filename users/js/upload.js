@@ -1,6 +1,6 @@
 // Configuration from PHP
 const API_KEY = window.userConfig.api_key;
-const API_BASE_URL = 'https://api.conspyre.xyz';
+const API_BASE_URL = 'https://api.conspyre.tv';
 
 // Initialize categories from user config
 function loadCategories() {

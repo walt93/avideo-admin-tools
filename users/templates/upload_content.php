@@ -42,7 +42,7 @@ $socialHandle = $userConfig['profile']['social_handle'] ?? '';
 
         <div class="profile-section mb-4">
             <?php if ($profilePhoto): ?>
-            <img src="https://conspyre.xyz<?= htmlspecialchars($profilePhoto) ?>"
+            <img src="https://conspyre.tv<?= htmlspecialchars($profilePhoto) ?>"
                  alt="<?= htmlspecialchars($displayName) ?>"
                  class="profile-image">
             <?php endif; ?>
