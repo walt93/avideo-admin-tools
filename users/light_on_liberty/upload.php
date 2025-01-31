@@ -53,8 +53,116 @@ try {
             padding: 20px;
         }
 
-        /* ... rest of your existing styles ... */
-    </style>
+        /* Logo styling */
+        .logo-container {
+            text-align: center;
+            padding: 1rem 0;
+        }
+
+        .logo-container img {
+            max-width: 200px;
+            height: auto;
+        }
+
+        /* Form controls */
+        .form-control, .form-select {
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+            color: #e0e0e0;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: #2a2a2a;
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+            color: #fff;
+        }
+
+        .form-control::placeholder {
+            color: #666;
+        }
+
+        /* Button styling */
+        .btn-primary {
+            background-color: #0d6efd;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #0b5ed7;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(13, 110, 253, 0.2);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        /* Status container */
+        .status-container {
+            background-color: #1a1a1a;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .status-text {
+            color: #8f8f8f;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Progress bar customization */
+        .progress {
+            background-color: #2a2a2a;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background-color: #0d6efd;
+            transition: width 0.3s ease;
+        }
+
+        /* Error message styling */
+        .error-message {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+            border: 1px solid rgba(220, 53, 69, 0.2);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .upload-container {
+                padding: 10px;
+            }
+
+            .btn-primary {
+                padding: 0.5rem 1rem;
+            }
+
+            .form-control, .form-select {
+                font-size: 16px; /* Prevents zoom on mobile */
+            }
+        }
+
+        /* Animation for status updates */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .status-container.show {
+            animation: fadeIn 0.3s ease forwards;
+        }    </style>
 </head>
 <body>
     <?php
