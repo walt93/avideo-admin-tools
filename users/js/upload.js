@@ -7,9 +7,6 @@ function loadCategories() {
     const categories = window.userConfig.categories;
     const select = document.getElementById('categorySelect');
 
-    // Sort categories by name
-    //categories.sort((a, b) => a.name.localeCompare(b.name));
-
     categories.forEach(category => {
         const option = document.createElement('option');
         option.value = JSON.stringify({
@@ -29,8 +26,12 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
     const categoryData = JSON.parse(document.getElementById('categorySelect').value);
     const errorMessage = document.getElementById('errorMessage');
     const statusContainer = document.getElementById('statusContainer');
+    const progressBar = document.getElementById('progressBar');
 
+    // Reset states
     errorMessage.style.display = 'none';
+    progressBar.style.width = '0%';
+    statusContainer.classList.remove('d-none');
 
     try {
         const response = await fetch(`${API_BASE_URL}/api/v1/upload`, {
@@ -51,11 +52,11 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
         }
 
         const data = await response.json();
-        statusContainer.style.display = 'block';
         pollStatus(data.task_id);
     } catch (error) {
         errorMessage.textContent = 'Error uploading video. Please try again.';
         errorMessage.style.display = 'block';
+        statusContainer.classList.add('d-none');
     }
 });
 
@@ -64,6 +65,7 @@ async function pollStatus(taskId) {
     const statusText = document.getElementById('statusText');
     const progressBar = document.getElementById('progressBar');
     const errorMessage = document.getElementById('errorMessage');
+    const statusContainer = document.getElementById('statusContainer');
 
     const pollInterval = setInterval(async () => {
         try {
@@ -80,7 +82,11 @@ async function pollStatus(taskId) {
             const data = await response.json();
 
             // Update progress bar
-            progressBar.style.width = `${(data.current / data.total) * 100}%`;
+            if (data.total > 0) {
+                const percentage = (data.current / data.total) * 100;
+                progressBar.style.width = `${percentage}%`;
+                progressBar.setAttribute('aria-valuenow', percentage);
+            }
 
             // Update status message
             statusText.textContent = data.status_message || data.status;
@@ -89,8 +95,11 @@ async function pollStatus(taskId) {
             if (data.status === 'completed') {
                 clearInterval(pollInterval);
                 statusText.textContent = 'Upload complete!';
+                progressBar.style.width = '100%';
+
+                // Reset form after delay
                 setTimeout(() => {
-                    document.getElementById('statusContainer').style.display = 'none';
+                    statusContainer.classList.add('d-none');
                     document.getElementById('uploadForm').reset();
                 }, 3000);
             } else if (data.status === 'failed') {
@@ -98,11 +107,13 @@ async function pollStatus(taskId) {
                 errorMessage.textContent = data.status_message || 'Upload failed';
                 errorMessage.style.display = 'block';
                 statusText.textContent = 'Upload failed';
+                statusContainer.classList.add('d-none');
             }
         } catch (error) {
             clearInterval(pollInterval);
             errorMessage.textContent = 'Error checking upload status';
             errorMessage.style.display = 'block';
+            statusContainer.classList.add('d-none');
         }
     }, 2000);  // Poll every 2 seconds
 }
