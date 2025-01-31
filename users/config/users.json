@@ -4,9 +4,9 @@
       "id": 1,
       "name": "Conspyre",
       "profile": {
-        "photo": null,
+        "photo": "/videos/userPhoto/photo6.png",
         "display_name": "Conspyre",
-        "social_handle": null
+        "social_handle": "@Conspyre__TV"
       },
       "categories": [
         {"name": "Antarctica", "categories_id": 565, "users_id": 1},
