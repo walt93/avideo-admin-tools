@@ -8,7 +8,7 @@ function loadCategories() {
     const select = document.getElementById('categorySelect');
 
     // Sort categories by name
-    categories.sort((a, b) => a.name.localeCompare(b.name));
+    //categories.sort((a, b) => a.name.localeCompare(b.name));
 
     categories.forEach(category => {
         const option = document.createElement('option');
