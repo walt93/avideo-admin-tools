@@ -30,7 +30,6 @@
         { "name": "Food", "categories_id": 20, "users_id": 1},
         { "name": "Free Energy", "categories_id": 634, "users_id": 1},
         { "name": "Health", "categories_id": 629, "users_id": 1},
-        { "name": "Homeland Incidents", "categories_id": 837, "users_id": 1},
         { "name": "Human Trafficking & Elite Pedophilia", "categories_id": 553, "users_id": 1},
         { "name": "Humor", "categories_id": 23, "users_id": 1},
         { "name": "Lectures", "categories_id": 375, "users_id": 1},
@@ -68,7 +67,7 @@
         { "name": "Humor", "categories_id": 23, "users_id": 2500},
         { "name": "Quantum Human Capabilities", "categories_id": 632, "users_id": 2500},
         { "name": "Shorts", "categories_id": 30, "users_id": 2500},
-        { "name": "Transhumanism", "categories_id": 301, "users_id": 2500},
+        { "name": "Transhumanism", "categories_id": 301, "users_id": 2500}
       ]
     },
     "joe_rambo": {
@@ -96,7 +95,7 @@
         { "name": "Health", "categories_id": 629, "users_id": 2280},
         { "name": "Human Trafficking & Elite Pedophilia", "categories_id": 553, "users_id": 2280},
         { "name": "Humor", "categories_id": 23, "users_id": 2280},
-        { "name": "Transhumanism", "categories_id": 301, "users_id": 2280},
+        { "name": "Transhumanism", "categories_id": 301, "users_id": 2280}
       ]
     },
     "truthisknowledge": {
