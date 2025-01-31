@@ -139,13 +139,27 @@ $socialHandle = $userConfig['profile']['social_handle'] ?? '';
 
 
 <!-- Pass user configuration to JavaScript -->
+<!-- Add test script -->
 <script>
+console.log('Basic script test - if you see this, JavaScript is working');
+</script>
+
+<!-- Pass user configuration to JavaScript -->
+<script>
+console.log('Attempting to set userConfig...');
 window.userConfig = <?= json_encode([
     'id' => $userConfig['id'],
     'categories' => $userConfig['categories'],
     'api_key' => $username // Using username as API key for now
 ]) ?>;
+console.log('userConfig set to:', window.userConfig);
 </script>
 
 <!-- Initialize the upload functionality -->
+<script>
+console.log('About to load upload.js...');
+</script>
 <script src="/management/users/js/upload.js"></script>
+<script>
+console.log('After upload.js load attempt');
+</script>
