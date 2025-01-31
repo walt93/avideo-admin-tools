@@ -51,14 +51,6 @@
         "social_handle": "@LightOnLiberty"
       },
       "categories": [
-        { "name": "Documentaries", "categories_id": 16, "users_id": 2500},
-        { "name": "Epstein, Jeffery & \"Jizz\"", "categories_id": 51, "users_id": 2500},
-        { "name": "EMFs", "categories_id": 637, "users_id": 2500},
-        { "name": "Free Energy", "categories_id": 634, "users_id": 2500},
-        { "name": "Health", "categories_id": 629, "users_id": 2500},
-        { "name": "Human Trafficking & Elite Pedophilia", "categories_id": 553, "users_id": 2500},
-        { "name": "Humor", "categories_id": 23, "users_id": 2500},
-        { "name": "News:AI", "categories_id": 847, "users_id": 1},
         { "name": "News:Breaking", "categories_id": 846, "users_id": 1},
         { "name": "News:DECLAS", "categories_id": 848, "users_id": 1},
         { "name": "News:DEW&Wild Fires", "categories_id": 841, "users_id": 1},
@@ -68,11 +60,15 @@
         { "name": "News:News Nation", "categories_id": 849, "users_id": 1},
         { "name": "News:Saving Israel For Last", "categories_id": 845, "users_id": 1},
         { "name": "News:UAP", "categories_id": 183, "users_id": 1},
+        { "name": "Documentaries", "categories_id": 16, "users_id": 2500},
+        { "name": "Epstein, Jeffery & \"Jizz\"", "categories_id": 51, "users_id": 2500},
+        { "name": "EMFs", "categories_id": 637, "users_id": 2500},
+        { "name": "Free Energy", "categories_id": 634, "users_id": 2500},
+        { "name": "Human Trafficking & Elite Pedophilia", "categories_id": 553, "users_id": 2500},
+        { "name": "Humor", "categories_id": 23, "users_id": 2500},
         { "name": "Quantum Human Capabilities", "categories_id": 632, "users_id": 2500},
         { "name": "Shorts", "categories_id": 30, "users_id": 2500},
         { "name": "Transhumanism", "categories_id": 301, "users_id": 2500},
-        { "name": "UAP / USAP", "categories_id": 38, "users_id": 2500},
-        { "name": "[Their] Words", "categories_id": 735, "users_id": 2500}
       ]
     },
     "joe_rambo": {
