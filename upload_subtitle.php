@@ -3,7 +3,7 @@ header('Content-Type: application/json');
 
 // Configuration
 define('VIDEOS_BASE_PATH', '/var/www/html/conspyre.tv/videos/');
-define('ALLOWED_EXTENSIONS', ['vtt', 'txt']);
+define('ALLOWED_EXTENSIONS', ['vtt', 'txt', 'json']);
 
 // Error handling
 function sendError($message, $code = 400) {
@@ -59,7 +59,7 @@ if (empty($filename)) {
 // Extract extension and validate
 $extension = strtolower(pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION));
 if (!in_array($extension, ALLOWED_EXTENSIONS)) {
-    sendError('Invalid file extension. Only .vtt and .txt files are allowed');
+    sendError('Invalid file extension. Only .vtt, .txt and .json files are allowed');
 }
 
 // Verify video exists in database

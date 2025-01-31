@@ -4,6 +4,30 @@ $status_file = '/opt/whisper/status.json';
 $log_file = '/opt/whisper/logs/whisper.log';
 $processed_file = '/opt/whisper/logs/files_processed.json';
 
+function getHumanizedDiskSpace($path) {
+    $total = disk_total_space($path);
+    $free = disk_free_space($path);
+    $used = $total - $free;
+    $used_percent = ($used / $total) * 100;
+
+    // Humanize bytes
+    function humanizeBytes($bytes) {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        $bytes = max($bytes, 0);
+        $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+        $pow = min($pow, count($units) - 1);
+        $bytes /= pow(1024, $pow);
+        return round($bytes, 2) . ' ' . $units[$pow];
+    }
+
+    return [
+        'total' => humanizeBytes($total),
+        'free' => humanizeBytes($free),
+        'used' => humanizeBytes($used),
+        'percent_used' => round($used_percent, 1)
+    ];
+}
+
 function getLastNLines($file, $n = 10) {
     $lines = file($file);
     return array_slice($lines, -$n);
@@ -116,12 +140,15 @@ function getLastNLines($file, $n = 10) {
                 <pre class="bg-dark text-light p-3">sudo systemctl enable whisper-processor</pre>
             </div>';
         }
-        
+
         // Load daily stats
         $daily_stats_file = '/opt/whisper/daily_stats.json';
         $daily_stats = file_exists($daily_stats_file) ? json_decode(file_get_contents($daily_stats_file), true) : null;
+
+        // Get disk space
+        $disk_info = getHumanizedDiskSpace('/var/www/html/conspyre.tv/videos');
         ?>
-        
+
         <div class="row mb-4">
             <div class="col">
                 <h1 class="mb-4">
@@ -192,6 +219,29 @@ function getLastNLines($file, $n = 10) {
                                 </div>
                             </div>
                         </div>
+
+<div class="row mt-3">
+    <div class="col-12">
+        <h6 class="text-light">Storage Space</h6>
+        <div class="progress mb-2" style="height: 20px;">
+            <div class="progress-bar bg-info" role="progressbar" 
+                 style="width: <?php echo $disk_info['percent_used']; ?>%" 
+                 aria-valuenow="<?php echo $disk_info['percent_used']; ?>" 
+                 aria-valuemin="0" 
+                 aria-valuemax="100">
+                <?php echo $disk_info['percent_used']; ?>%
+            </div>
+        </div>
+        <div class="d-flex justify-content-between">
+            <small class="text-muted">
+                <?php echo $disk_info['used']; ?> used
+            </small>
+            <small class="text-muted">
+                <?php echo $disk_info['free']; ?> free of <?php echo $disk_info['total']; ?>
+            </small>
+        </div>
+    </div>
+</div>
                     </div>
                 </div>
             </div>
