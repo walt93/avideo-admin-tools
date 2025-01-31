@@ -65,11 +65,6 @@ $socialHandle = $userConfig['profile']['social_handle'] ?? '';
                 <div class="mb-3">
                     <select class="form-select form-select-lg" id="categorySelect" required>
                         <option value="">Select category...</option>
-                        <?php foreach ($userConfig['categories'] as $category): ?>
-                        <option value="<?= htmlspecialchars($category['categories_id']) ?>">
-                            <?= htmlspecialchars($category['name']) ?>
-                        </option>
-                        <?php endforeach; ?>
                     </select>
                 </div>
 
