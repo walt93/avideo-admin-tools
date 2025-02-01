@@ -1,4 +1,3 @@
-FUCK YOU
 // Configuration from PHP
 const API_KEY = window.userConfig.api_key;
 const API_BASE_URL = 'https://api.conspyre.tv';
