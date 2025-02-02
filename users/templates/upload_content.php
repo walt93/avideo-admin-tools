@@ -106,7 +106,122 @@ $socialHandle = $userConfig['profile']['social_handle'] ?? '';
     </div>
 </div>
 
+<div class="uploads-section mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="text-light">Recent Uploads</h3>
+        <button class="btn btn-outline-light btn-sm" onclick="refreshUploads()">
+            <i class="bi bi-arrow-clockwise"></i> Refresh
+        </button>
+    </div>
+
+    <div id="uploadsList" class="uploads-list">
+        <!-- Uploads will be inserted here -->
+    </div>
+</div>
+
 <style>
+.uploads-list {
+    display: grid;
+    gap: 1rem;
+}
+
+.upload-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 180px 1fr auto;
+    align-items: start;
+    position: relative;
+}
+
+.upload-thumbnail {
+    width: 180px;
+    height: 101px; /* 16:9 ratio */
+    object-fit: cover;
+    background: #000;
+}
+
+.upload-thumbnail.placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #1a1a1a;
+    color: #666;
+}
+
+.upload-content {
+    padding: 1rem;
+}
+
+.upload-title {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.upload-meta {
+    font-size: 0.85rem;
+    color: #888;
+}
+
+.upload-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+.upload-status.encoding {
+    background: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+}
+
+.upload-status.active {
+    background: rgba(40, 167, 69, 0.2);
+    color: #28a745;
+}
+
+.upload-status.inactive {
+    background: rgba(108, 117, 125, 0.2);
+    color: #6c757d;
+}
+
+.upload-status.error {
+    background: rgba(220, 53, 69, 0.2);
+    color: #dc3545;
+}
+
+.upload-actions {
+    padding: 1rem;
+}
+
+.delete-upload {
+    color: #dc3545;
+    background: none;
+    border: none;
+    padding: 0.25rem;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.delete-upload:hover {
+    opacity: 1;
+}
+
+.transcript-badge {
+    position: absolute;
+    bottom: 0.5rem;
+    left: 0.5rem;
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+}
+
 .upload-container {
     max-width: 600px;
     margin: 0 auto;
@@ -193,7 +308,6 @@ $socialHandle = $userConfig['profile']['social_handle'] ?? '';
 }
 </style>
 
-<!-- Pass user configuration to JavaScript -->
 <script>
 window.userConfig = <?= json_encode([
     'id' => $userConfig['id'],
@@ -266,18 +380,19 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
         const data = await response.json();
         console.log('API response:', data);
 
-        if (!data.task_id) {  // Only check for task_id
+        if (!data.task_id) {
             throw new Error(data.error || 'Upload failed');
         }
 
         // Start polling for status
         const pollInterval = setInterval(async () => {
             try {
-                const statusResponse = await fetch(`${API_BASE_URL}/api/v1/upload/status/${data.task_id}`, {
+                const statusResponse = await fetch(`${API_BASE_URL}${data.status_url}`, {
                     headers: {'X-API-Key': API_KEY}
                 });
 
                 const statusData = await statusResponse.json();
+                console.log('Status response:', statusData);
 
                 // Update UI based on status
                 statusPhase.textContent = statusData.phase || 'Processing...';
@@ -332,4 +447,129 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
 
 // Load categories when the page loads
 loadCategories();
+</script>
+
+<script>
+let refreshInterval;
+
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+}
+
+function createUploadCard(upload, videoDetails) {
+    const hasTranscript = videoDetails.files?.transcript;
+    const stateClass = {
+        'e': 'encoding',
+        'a': 'active',
+        'i': 'inactive',
+        'x': 'error'
+    }[videoDetails.state] || 'inactive';
+
+    return `
+        <div class="upload-card" data-id="${upload.id}">
+            <div class="upload-thumbnail-container">
+                ${videoDetails.files?.thumbnail
+                    ? `<img src="/videos/${videoDetails.filename}/${videoDetails.filename}.jpg"
+                         class="upload-thumbnail" alt="Video thumbnail">`
+                    : `<div class="upload-thumbnail placeholder">
+                         <i class="bi bi-film"></i>
+                       </div>`
+                }
+                ${hasTranscript
+                    ? `<div class="transcript-badge">
+                         <i class="bi bi-file-text"></i> Transcript
+                       </div>`
+                    : ''
+                }
+            </div>
+
+            <div class="upload-content">
+                <div class="upload-title">
+                    <a href="https://conspyre.tv/v/${upload.id}" target="_blank" class="text-light">
+                        ${videoDetails.title || upload.title}
+                    </a>
+                </div>
+                <div class="upload-meta">
+                    Uploaded: ${formatDate(upload.upload_date)}<br>
+                    Category: ${upload.category}
+                </div>
+                <div class="upload-status ${stateClass}">
+                    <i class="bi bi-circle-fill me-1"></i>
+                    ${videoDetails.stateDescription}
+                </div>
+            </div>
+
+            <div class="upload-actions">
+                <button onclick="removeUpload('${upload.id}')" class="delete-upload"
+                        title="Remove from list">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+async function loadUploads() {
+    try {
+        const response = await fetch('?action=get_uploads');
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.error);
+        }
+
+        const uploadsList = document.getElementById('uploadsList');
+        uploadsList.innerHTML = data.uploads.map(upload =>
+            createUploadCard(upload, data.videoDetails[upload.id])
+        ).join('');
+
+    } catch (error) {
+        console.error('Error loading uploads:', error);
+    }
+}
+
+function refreshUploads() {
+    loadUploads();
+}
+
+async function removeUpload(id) {
+    if (!confirm('Remove this upload from the list?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch('?action=remove_upload', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ id })
+        });
+
+        const data = await response.json();
+        if (!data.success) {
+            throw new Error(data.error);
+        }
+
+        // Remove the card from the UI
+        const card = document.querySelector(`.upload-card[data-id="${id}"]`);
+        card.remove();
+
+    } catch (error) {
+        console.error('Error removing upload:', error);
+        alert('Failed to remove upload: ' + error.message);
+    }
+}
+
+// Start periodic refresh
+document.addEventListener('DOMContentLoaded', () => {
+    loadUploads();
+    refreshInterval = setInterval(loadUploads, 30000);
+});
+
+// Clean up interval when leaving page
+window.addEventListener('beforeunload', () => {
+    clearInterval(refreshInterval);
+});
 </script>
