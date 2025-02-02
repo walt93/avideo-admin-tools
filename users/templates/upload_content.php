@@ -264,8 +264,9 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
         });
 
         const data = await response.json();
+        console.log('API response:', data);
 
-        if (!data.success) {
+        if (!data.task_id) {  // Only check for task_id
             throw new Error(data.error || 'Upload failed');
         }
 
