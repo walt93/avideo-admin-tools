@@ -410,35 +410,52 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
                 statusText.textContent = statusData.status_message || '';
 
                 if (statusData.status === 'completed') {
-                    // Add to uploads log
-                    const uploadData = {
-                        id: statusData.video_id, // You'll need to add this to the API response
-                        url: url,
-                        title: statusData.title || 'Untitled Video',
-                        description: statusData.description || '',
-                        category: document.querySelector('#categorySelect option:checked').textContent,
-                        category_id: categoryData.categories_id
-                    };
+                     clearInterval(pollInterval);
+                        console.log('Upload completed, status data:', statusData);  // Debug log
 
-                    await fetch('?action=add_upload', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(uploadData)
-                    });
-                    clearInterval(pollInterval);
-                    statusPhase.textContent = 'Upload completed!';
-                    downloadDetails.style.display = 'none';
-                    document.getElementById('uploadingIndicator').classList.add('d-none');
+                        try {
+                            // Add to uploads log
+                            const uploadData = {
+                                id: statusData.video_id,  // Make sure this matches what your API returns
+                                url: url,
+                                title: statusData.title || url,  // Fallback to URL if no title
+                                description: statusData.description || '',
+                                category: document.querySelector('#categorySelect option:checked').textContent,
+                                category_id: categoryData.categories_id
+                            };
 
-                    console.log('Upload completed, status data:', statusData);  // Debug log
+                            console.log('Attempting to save upload data:', uploadData);
 
-                    // Reset form after 3 seconds
-                    setTimeout(() => {
-                        statusContainer.classList.add('d-none');
-                        e.target.reset();
-                    }, 3000);
+                            const saveResponse = await fetch('?action=add_upload', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify(uploadData)
+                            });
+
+                            const saveResult = await saveResponse.json();
+                            console.log('Save result:', saveResult);
+
+                            if (!saveResult.success) {
+                                console.error('Failed to save upload:', saveResult.error);
+                            } else {
+                                // Refresh the uploads list
+                                loadUploads();
+                            }
+                        } catch (error) {
+                            console.error('Error saving upload:', error);
+                        }
+
+                        statusPhase.textContent = 'Upload completed!';
+                        downloadDetails.style.display = 'none';
+                        document.getElementById('uploadingIndicator').classList.add('d-none');
+
+                        // Reset form after 3 seconds
+                        setTimeout(() => {
+                            statusContainer.classList.add('d-none');
+                            e.target.reset();
+                        }, 3000);
                 } else if (statusData.status === 'failed') {
                     document.getElementById('uploadingIndicator').classList.add('d-none');
                     clearInterval(pollInterval);

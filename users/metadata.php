@@ -26,6 +26,18 @@ try {
         // Handle POST actions
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             switch ($_POST['action']) {
+                case 'add_upload':
+                    $data = json_decode(file_get_contents('php://input'), true);
+                    if (!isset($data['id'])) {
+                        echo json_encode(['success' => false, 'error' => 'No ID provided']);
+                        exit;
+                    }
+
+                    $uploadManager = new UploadedFilesManager($db);
+                    $uploadManager->addUpload($data);
+                    echo json_encode(['success' => true]);
+                    exit;
+
                 case 'update':
                     try {
                         $db->updateVideo($_POST['id'], $_POST['title'], $_POST['description']);
@@ -83,19 +95,6 @@ try {
                         echo json_encode(['success' => false, 'error' => 'Transcript file not found']);
                     }
                     exit;
-
-                case 'add_upload':
-                    $data = json_decode(file_get_contents('php://input'), true);
-                    if (!isset($data['id'])) {
-                        echo json_encode(['success' => false, 'error' => 'No ID provided']);
-                        exit;
-                    }
-
-                    $uploadManager = new UploadedFilesManager($db);
-                    $uploadManager->addUpload($data);
-                    echo json_encode(['success' => true]);
-                    exit;
-
 
                 case 'get_uploads':
                     $uploadManager = new UploadedFilesManager($db);
