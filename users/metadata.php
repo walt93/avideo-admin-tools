@@ -84,44 +84,52 @@ try {
                     }
                     exit;
 
-
-
-                    case 'get_uploads':
-                        $uploadManager = new UploadedFilesManager($db);
-                        $uploads = $uploadManager->getUploads();
-
-                        // Get video details for each upload
-                        $videoDetails = [];
-                        foreach ($uploads as $upload) {
-                            $details = $uploadManager->getVideoDetails($upload['id']);
-                            if ($details) {
-                                $details['files'] = $uploadManager->checkVideoFiles($details['filename']);
-                                $details['stateDescription'] = $uploadManager->getStateDescription($details['state']);
-                                $videoDetails[$upload['id']] = $details;
-                            }
-                        }
-
-                        echo json_encode([
-                            'success' => true,
-                            'uploads' => $uploads,
-                            'videoDetails' => $videoDetails
-                        ]);
+                case 'add_upload':
+                    $data = json_decode(file_get_contents('php://input'), true);
+                    if (!isset($data['id'])) {
+                        echo json_encode(['success' => false, 'error' => 'No ID provided']);
                         exit;
+                    }
 
-                    case 'remove_upload':
-                        $data = json_decode(file_get_contents('php://input'), true);
-                        if (!isset($data['id'])) {
-                            echo json_encode(['success' => false, 'error' => 'No ID provided']);
-                            exit;
+                    $uploadManager = new UploadedFilesManager($db);
+                    $uploadManager->addUpload($data);
+                    echo json_encode(['success' => true]);
+                    exit;
+
+
+                case 'get_uploads':
+                    $uploadManager = new UploadedFilesManager($db);
+                    $uploads = $uploadManager->getUploads();
+
+                    // Get video details for each upload
+                    $videoDetails = [];
+                    foreach ($uploads as $upload) {
+                        $details = $uploadManager->getVideoDetails($upload['id']);
+                        if ($details) {
+                            $details['files'] = $uploadManager->checkVideoFiles($details['filename']);
+                            $details['stateDescription'] = $uploadManager->getStateDescription($details['state']);
+                            $videoDetails[$upload['id']] = $details;
                         }
+                    }
 
-                        $uploadManager = new UploadedFilesManager($db);
-                        $uploadManager->removeUpload($data['id']);
-                        echo json_encode(['success' => true]);
+                    echo json_encode([
+                        'success' => true,
+                        'uploads' => $uploads,
+                        'videoDetails' => $videoDetails
+                    ]);
+                    exit;
+
+                case 'remove_upload':
+                    $data = json_decode(file_get_contents('php://input'), true);
+                    if (!isset($data['id'])) {
+                        echo json_encode(['success' => false, 'error' => 'No ID provided']);
                         exit;
+                    }
 
-
-
+                    $uploadManager = new UploadedFilesManager($db);
+                    $uploadManager->removeUpload($data['id']);
+                    echo json_encode(['success' => true]);
+                    exit;
             }
         }
     }

@@ -410,10 +410,29 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
                 statusText.textContent = statusData.status_message || '';
 
                 if (statusData.status === 'completed') {
+                    // Add to uploads log
+                    const uploadData = {
+                        id: statusData.video_id, // You'll need to add this to the API response
+                        url: url,
+                        title: statusData.title || 'Untitled Video',
+                        description: statusData.description || '',
+                        category: document.querySelector('#categorySelect option:checked').textContent,
+                        category_id: categoryData.categories_id
+                    };
+
+                    await fetch('?action=add_upload', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(uploadData)
+                    });
                     clearInterval(pollInterval);
                     statusPhase.textContent = 'Upload completed!';
                     downloadDetails.style.display = 'none';
                     document.getElementById('uploadingIndicator').classList.add('d-none');
+
+                    console.log('Upload completed, status data:', statusData);  // Debug log
 
                     // Reset form after 3 seconds
                     setTimeout(() => {
