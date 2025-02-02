@@ -75,7 +75,7 @@ $socialHandle = $userConfig['profile']['social_handle'] ?? '';
                 <div class="error-message mt-3" id="errorMessage"></div>
             </form>
 
-            <div class="status-container mt-4" id="statusContainer" style="display: none;">
+            <div class="status-container mt-4 d-none" id="statusContainer">
                 <div class="status-header mb-2">
                     <span class="status-phase">Initializing...</span>
                     <div class="download-details" style="display: none;">
@@ -99,9 +99,24 @@ $socialHandle = $userConfig['profile']['social_handle'] ?? '';
 <script>
 document.getElementById('uploadForm').addEventListener('submit', async (e) => {
     e.preventDefault();
+    console.log('Form submitted');
 
     // Show status container
     const statusContainer = document.getElementById('statusContainer');
+    console.log('Status container element:', statusContainer);
+    statusContainer.classList.remove('d-none');
+    console.log('Removed d-none class');
+
+    const url = document.getElementById('videoUrl').value;
+    const categoryData = JSON.parse(document.getElementById('categorySelect').value);
+    console.log('URL:', url);
+    console.log('Category data:', categoryData);
+
+    try {
+        // Initial API call
+        console.log('Making API call to:', `${API_BASE_URL}/api/v1/upload`);
+
+
     const statusPhase = document.querySelector('.status-phase');
     const downloadDetails = document.querySelector('.download-details');
     const downloadSpeed = document.querySelector('.download-speed');
@@ -110,7 +125,7 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
     const progressText = progressBar.querySelector('.progress-text');
     const statusText = document.getElementById('statusText');
 
-    statusContainer.style.display = 'block';
+    statusContainer.classList.remove('d-none');
 
     const url = document.getElementById('videoUrl').value;
     const categoryData = JSON.parse(document.getElementById('categorySelect').value);
