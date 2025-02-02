@@ -159,7 +159,7 @@ console.log('userConfig set to:', window.userConfig);
 <script>
 console.log('About to load upload.js...');
 </script>
-<script src="/management/users/js/upload.js"></script>
+{/* <script src="/management/users/js/upload.js"></script> */}
 <script>
 console.log('After upload.js load attempt');
 </script>

@@ -28,7 +28,7 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
     const categoryData = JSON.parse(document.getElementById('categorySelect').value);
 
     try {
-        const response = await fetch(`${API_BASE_URL}/xapi/v1/upload`, {
+        const response = await fetch(`${API_BASE_URL}/api/v1/upload`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -52,7 +52,7 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
 function pollStatus(taskId) {
     const interval = setInterval(async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/xapi/v1/upload/status/${taskId}`, {
+            const response = await fetch(`${API_BASE_URL}/api/v1/upload/status/${taskId}`, {
                 headers: {'X-API-Key': API_KEY}
             });
 
