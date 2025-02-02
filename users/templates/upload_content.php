@@ -104,20 +104,21 @@ $socialHandle = $userConfig['profile']['social_handle'] ?? '';
             </div>
         </div>
     </div>
-</div>
+    <div class="uploads-section mt-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="text-light">Recent Uploads</h3>
+            <button class="btn btn-outline-light btn-sm" onclick="refreshUploads()">
+                <i class="bi bi-arrow-clockwise"></i> Refresh
+            </button>
+        </div>
 
-<div class="uploads-section mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="text-light">Recent Uploads</h3>
-        <button class="btn btn-outline-light btn-sm" onclick="refreshUploads()">
-            <i class="bi bi-arrow-clockwise"></i> Refresh
-        </button>
+        <div id="uploadsList" class="uploads-list">
+            <!-- Uploads will be inserted here -->
+        </div>
     </div>
 
-    <div id="uploadsList" class="uploads-list">
-        <!-- Uploads will be inserted here -->
-    </div>
 </div>
+
 
 <style>
 .uploads-list {
