@@ -57,6 +57,7 @@ $socialHandle = $userConfig['profile']['social_handle'] ?? '';
 
         <div class="upload-card">
             <form id="uploadForm" class="bg-dark p-4 rounded">
+               <h2 class="text-danger mb-3">UPLOAD HERE</h2>
                 <div class="mb-3">
                     <input type="url" class="form-control form-control-lg" id="videoUrl"
                            placeholder="Enter video URL" required>
