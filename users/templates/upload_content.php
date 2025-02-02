@@ -57,7 +57,7 @@ $socialHandle = $userConfig['profile']['social_handle'] ?? '';
 
         <div class="upload-card">
             <form id="uploadForm" class="bg-dark p-4 rounded">
-               <h2 class="text-danger mb-3">UPLOAD HERE</h2>
+                <h2 class="text-danger mb-3">UPLOAD HERE</h2>
                 <div class="mb-3">
                     <input type="url" class="form-control form-control-lg" id="videoUrl"
                            placeholder="Enter video URL" required>
@@ -72,6 +72,16 @@ $socialHandle = $userConfig['profile']['social_handle'] ?? '';
                 <button type="submit" class="btn btn-primary btn-lg w-100">
                     Upload Video
                 </button>
+
+                <!-- Upload indicator -->
+                <div id="uploadingIndicator" class="alert alert-info mt-3 d-none">
+                    <div class="d-flex align-items-center">
+                        <div class="spinner-border spinner-border-sm me-2" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <strong>UPLOADING VIDEO...</strong>
+                    </div>
+                </div>
 
                 <div class="error-message mt-3" id="errorMessage"></div>
             </form>
@@ -92,32 +102,132 @@ $socialHandle = $userConfig['profile']['social_handle'] ?? '';
                 </div>
                 <div class="status-message text-muted small" id="statusText"></div>
             </div>
-
         </div>
     </div>
 </div>
 
+<style>
+.upload-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.profile-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+.profile-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.profile-info h2 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.profile-info p {
+    margin: 0;
+    color: #6c757d;
+}
+
+.upload-card {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.error-message {
+    color: #dc3545;
+    margin-top: 0.5rem;
+    display: none;
+}
+
+.progress {
+    height: 0.5rem;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.status-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #e0e0e0;
+}
+
+.status-phase {
+    font-weight: 500;
+}
+
+.download-details {
+    font-size: 0.9em;
+    color: #adb5bd;
+}
+
+.progress-bar {
+    position: relative;
+    overflow: visible;
+    background-color: #0d6efd;
+    transition: width 0.5s ease;
+}
+
+.progress-text {
+    position: absolute;
+    right: 5px;
+    color: white;
+    font-size: 0.75rem;
+    line-height: 0.75rem;
+}
+
+.status-message {
+    font-size: 0.85em;
+    color: #adb5bd;
+}
+</style>
+
+<!-- Pass user configuration to JavaScript -->
 <script>
+window.userConfig = <?= json_encode([
+    'id' => $userConfig['id'],
+    'categories' => $userConfig['categories'],
+    'api_key' => $username // Using username as API key for now
+]) ?>;
+
+// Constants
+const API_BASE_URL = 'https://api.conspyre.tv';
+const API_KEY = window.userConfig.api_key;
+
+// Initialize categories
+function loadCategories() {
+    const categories = window.userConfig.categories;
+    const select = document.getElementById('categorySelect');
+    categories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = JSON.stringify({
+            categories_id: category.categories_id,
+            users_id: window.userConfig.id
+        });
+        option.textContent = category.name;
+        select.appendChild(option);
+    });
+}
+
+// Form submission handler
 document.getElementById('uploadForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    console.log('Form submitted');
 
-    // Show status container
+    // Show uploading indicator
+    document.getElementById('uploadingIndicator').classList.remove('d-none');
+
     const statusContainer = document.getElementById('statusContainer');
-    console.log('Status container element:', statusContainer);
-    statusContainer.classList.remove('d-none');
-    console.log('Removed d-none class');
-
-    const url = document.getElementById('videoUrl').value;
-    const categoryData = JSON.parse(document.getElementById('categorySelect').value);
-    console.log('URL:', url);
-    console.log('Category data:', categoryData);
-
-    try {
-        // Initial API call
-        console.log('Making API call to:', `${API_BASE_URL}/api/v1/upload`);
-
-
     const statusPhase = document.querySelector('.status-phase');
     const downloadDetails = document.querySelector('.download-details');
     const downloadSpeed = document.querySelector('.download-speed');
@@ -125,6 +235,11 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
     const progressBar = document.getElementById('progressBar');
     const progressText = progressBar.querySelector('.progress-text');
     const statusText = document.getElementById('statusText');
+    const errorMessage = document.getElementById('errorMessage');
+
+    // Clear any previous error messages
+    errorMessage.style.display = 'none';
+    errorMessage.textContent = '';
 
     statusContainer.classList.remove('d-none');
 
@@ -182,13 +297,15 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
                     clearInterval(pollInterval);
                     statusPhase.textContent = 'Upload completed!';
                     downloadDetails.style.display = 'none';
+                    document.getElementById('uploadingIndicator').classList.add('d-none');
 
                     // Reset form after 3 seconds
                     setTimeout(() => {
-                        statusContainer.style.display = 'none';
+                        statusContainer.classList.add('d-none');
                         e.target.reset();
                     }, 3000);
                 } else if (statusData.status === 'failed') {
+                    document.getElementById('uploadingIndicator').classList.add('d-none');
                     clearInterval(pollInterval);
                     throw new Error(statusData.error || 'Upload failed');
                 }
@@ -200,71 +317,18 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
 
     } catch (error) {
         console.error('Upload error:', error);
+        document.getElementById('uploadingIndicator').classList.add('d-none');
         statusPhase.textContent = 'Error';
         statusText.textContent = error.message;
         downloadDetails.style.display = 'none';
         progressBar.classList.add('bg-danger');
+
+        // Show error message
+        errorMessage.textContent = error.message;
+        errorMessage.style.display = 'block';
     }
 });
-</script>
 
-<style>
-.upload-container {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-.profile-section {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
-}
-
-.profile-image {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.profile-info h2 {
-    margin: 0;
-    font-size: 1.5rem;
-}
-
-.profile-info p {
-    margin: 0;
-    color: #6c757d;
-}
-
-.upload-card {
-    background: rgba(255, 255, 255, 0.02);
-    border-radius: 8px;
-    padding: 1.5rem;
-}
-
-.error-message {
-    color: #dc3545;
-    margin-top: 0.5rem;
-    display: none;
-}
-
-.progress {
-    height: 0.5rem;
-    background-color: rgba(255, 255, 255, 0.1);
-}
-</style>
-
-
-<!-- Pass user configuration to JavaScript -->
-<script>
-window.userConfig = <?= json_encode([
-    'id' => $userConfig['id'],
-    'categories' => $userConfig['categories'],
-    'api_key' => $username // Using username as API key for now
-]) ?>;
+// Load categories when the page loads
+loadCategories();
 </script>
