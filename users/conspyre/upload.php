@@ -11,7 +11,7 @@ try {
     $userManager = new UserManager();
     error_log("UserManager initialized");
 
-    // Verify access
+    // Verify accessx
     if (!$userManager->verifyAccess($username)) {
         error_log("Access denied for user: " . $username);
         header('HTTP/1.0 403 Forbidden');
@@ -30,6 +30,55 @@ try {
 } catch (Exception $e) {
     error_log("Error in upload.php: " . $e->getMessage());
     exit("An error occurred: " . $e->getMessage());
+}
+
+// Add this new code HERE, before the DOCTYPE html line:
+$uploadManager = new UploadedFilesManager($db);
+
+// Handle AJAX requests
+if (isset($_GET['action'])) {
+    header('Content-Type: application/json');
+
+    switch ($_GET['action']) {
+        case 'add_upload':
+            $data = json_decode(file_get_contents('php://input'), true);
+            if (!isset($data['id'])) {
+                echo json_encode(['success' => false, 'error' => 'No ID provided']);
+                exit;
+            }
+
+            $uploadManager->addUpload($data);
+            echo json_encode(['success' => true]);
+            exit;
+
+        case 'get_uploads':
+            $uploads = $uploadManager->getUploads();
+            $videoDetails = [];
+            foreach ($uploads as $upload) {
+                $details = $uploadManager->getVideoDetails($upload['id']);
+                if ($details) {
+                    $videoDetails[$upload['id']] = $details;
+                }
+            }
+
+            echo json_encode([
+                'success' => true,
+                'uploads' => $uploads,
+                'videoDetails' => $videoDetails
+            ]);
+            exit;
+
+        case 'remove_upload':
+            $data = json_decode(file_get_contents('php://input'), true);
+            if (!isset($data['id'])) {
+                echo json_encode(['success' => false, 'error' => 'No ID provided']);
+                exit;
+            }
+
+            $uploadManager->removeUpload($data['id']);
+            echo json_encode(['success' => true]);
+            exit;
+    }
 }
 ?>
 <!DOCTYPE html>

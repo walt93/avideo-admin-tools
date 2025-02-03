@@ -2,6 +2,8 @@
 // Get user config
 $username = basename(dirname($_SERVER['PHP_SELF']));
 $configFile = __DIR__ . '/../config/users.json';
+require_once __DIR__ . '/../templates/UploadedFileManager.php';
+
 // Add error handling for config file reading
 if (!file_exists($configFile)) {
     error_log("Config file not found: $configFile");
@@ -126,13 +128,31 @@ $socialHandle = $userConfig['profile']['social_handle'] ?? '';
 }
 
 .upload-card {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    width: 100%;
+}
+
+/* Update upload list card styling */
+.upload-card-item {
+    display: grid;
+    grid-template-columns: 180px 1fr auto;
+    gap: 1rem;
     background: rgba(255, 255, 255, 0.05);
     border-radius: 8px;
     overflow: hidden;
-    display: grid;
-    grid-template-columns: 180px 1fr auto;
-    align-items: start;
-    position: relative;
+}
+
+.status-container {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 1.5rem;
 }
 
 .upload-thumbnail {
@@ -416,9 +436,9 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
                         try {
                             // Add to uploads log
                             const uploadData = {
-                                id: statusData.video_id,  // Make sure this matches what your API returns
+                                id: statusData.video_id,
                                 url: url,
-                                title: statusData.title || url,  // Fallback to URL if no title
+                                title: statusData.title || url,
                                 description: statusData.description || '',
                                 category: document.querySelector('#categorySelect option:checked').textContent,
                                 category_id: categoryData.categories_id
@@ -436,13 +456,12 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
 
                             const saveResult = await saveResponse.json();
                             console.log('Save result:', saveResult);
-
                             if (!saveResult.success) {
-                                console.error('Failed to save upload:', saveResult.error);
-                            } else {
-                                // Refresh the uploads list
-                                loadUploads();
+                                throw new Error(saveResult.error);
                             }
+
+                            // Refresh the uploads list
+                            loadUploads();
                         } catch (error) {
                             console.error('Error saving upload:', error);
                         }

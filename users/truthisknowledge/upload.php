@@ -32,6 +32,54 @@ try {
     exit("An error occurred: " . $e->getMessage());
 }
 ?>
+// Add this new code HERE, before the DOCTYPE html line:
+$uploadManager = new UploadedFilesManager($db);
+
+// Handle AJAX requests
+if (isset($_GET['action'])) {
+    header('Content-Type: application/json');
+
+    switch ($_GET['action']) {
+        case 'add_upload':
+            $data = json_decode(file_get_contents('php://input'), true);
+            if (!isset($data['id'])) {
+                echo json_encode(['success' => false, 'error' => 'No ID provided']);
+                exit;
+            }
+
+            $uploadManager->addUpload($data);
+            echo json_encode(['success' => true]);
+            exit;
+
+        case 'get_uploads':
+            $uploads = $uploadManager->getUploads();
+            $videoDetails = [];
+            foreach ($uploads as $upload) {
+                $details = $uploadManager->getVideoDetails($upload['id']);
+                if ($details) {
+                    $videoDetails[$upload['id']] = $details;
+                }
+            }
+
+            echo json_encode([
+                'success' => true,
+                'uploads' => $uploads,
+                'videoDetails' => $videoDetails
+            ]);
+            exit;
+
+        case 'remove_upload':
+            $data = json_decode(file_get_contents('php://input'), true);
+            if (!isset($data['id'])) {
+                echo json_encode(['success' => false, 'error' => 'No ID provided']);
+                exit;
+            }
+
+            $uploadManager->removeUpload($data['id']);
+            echo json_encode(['success' => true]);
+            exit;
+    }
+}
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="dark">
 <head>
@@ -162,7 +210,8 @@ try {
 
         .status-container.show {
             animation: fadeIn 0.3s ease forwards;
-        }    </style>
+        }
+    </style>
 </head>
 <body>
     <?php

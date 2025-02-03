@@ -1,76 +1,83 @@
 <?php
 class UploadedFilesManager {
-    private $logFile = '/opt/upload/logs/files-uploaded.json';
     private $db;
+    private $uploadsFile;
 
     public function __construct($db) {
         $this->db = $db;
-        $this->ensureLogDirectory();
-    }
+        // Get current user's directory from the script path
+        $userDir = dirname($_SERVER['SCRIPT_FILENAME']);
+        $this->uploadsFile = $userDir . '/uploads.json';
 
-    private function ensureLogDirectory() {
-        $dir = dirname($this->logFile);
-        if (!file_exists($dir)) {
-            mkdir($dir, 0755, true);
+        // Create uploads file if it doesn't exist
+        if (!file_exists($this->uploadsFile)) {
+            file_put_contents($this->uploadsFile, json_encode(['uploads' => []]));
         }
     }
 
     public function addUpload($data) {
         $uploads = $this->getUploads();
-        $data['upload_date'] = date('c');
-        array_unshift($uploads, $data); // Add to start of array
+
+        // Add new upload with timestamp
+        $uploads[] = array_merge($data, [
+            'upload_date' => date('Y-m-d H:i:s'),
+            'status' => 'pending'
+        ]);
+
+        // Save back to file
         $this->saveUploads($uploads);
     }
 
-    public function removeUpload($id) {
-        $uploads = $this->getUploads();
-        $uploads = array_filter($uploads, function($upload) use ($id) {
-            return $upload['id'] !== $id;
-        });
-        $this->saveUploads(array_values($uploads));
-    }
-
     public function getUploads() {
-        if (!file_exists($this->logFile)) {
-            return [];
-        }
-        $content = file_get_contents($this->logFile);
-        if (!$content) {
-            return [];
-        }
+        $content = file_get_contents($this->uploadsFile);
         $data = json_decode($content, true);
         return $data['uploads'] ?? [];
     }
 
     private function saveUploads($uploads) {
-        $data = ['uploads' => $uploads];
-        file_put_contents($this->logFile, json_encode($data, JSON_PRETTY_PRINT));
+        file_put_contents($this->uploadsFile, json_encode(['uploads' => $uploads], JSON_PRETTY_PRINT));
     }
 
-    public function getVideoDetails($videoId) {
+    public function removeUpload($id) {
+        $uploads = $this->getUploads();
+        $uploads = array_filter($uploads, function($upload) use ($id) {
+            return $upload['id'] != $id;
+        });
+        $this->saveUploads(array_values($uploads));
+    }
+
+    public function getVideoDetails($id) {
         $stmt = $this->db->prepare('
-            SELECT id, title, description, filename, state
+            SELECT id, title, filename, state, created
             FROM videos
             WHERE id = ?
         ');
-        $stmt->execute([$videoId]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        $stmt->execute([$id]);
+        $video = $stmt->fetch();
+
+        if ($video) {
+            return array_merge($video, [
+                'files' => $this->checkVideoFiles($video['filename'])
+            ]);
+        }
+        return null;
     }
 
     public function checkVideoFiles($filename) {
+        $basePath = "/var/www/html/conspyre.tv/videos/$filename/$filename";
         return [
-            'thumbnail' => file_exists("/var/www/html/conspyre.tv/videos/{$filename}/{$filename}.jpg"),
-            'transcript' => file_exists("/var/www/html/conspyre.tv/videos/{$filename}/{$filename}.txt")
+            'thumbnail' => file_exists($basePath . '.jpg'),
+            'transcript' => file_exists($basePath . '.txt') || file_exists($basePath . '_ext.txt'),
+            'subtitles' => file_exists($basePath . '.vtt') || file_exists($basePath . '_ext.vtt')
         ];
     }
 
     public function getStateDescription($state) {
         $states = [
-            'i' => 'Inactive',
-            'a' => 'Active',
             'e' => 'Encoding',
-            'x' => 'Error',
-            'd' => 'Deleted'
+            'a' => 'Active',
+            'i' => 'Inactive',
+            'x' => 'Error'
         ];
         return $states[$state] ?? 'Unknown';
     }
