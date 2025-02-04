@@ -41,6 +41,21 @@ class DatabaseManager {
         }
     }
 
+    public function getVideoById($id) {
+        try {
+            $stmt = $this->db->prepare('
+                SELECT id, title, filename, state, created
+                FROM videos
+                WHERE id = ?
+            ');
+            $stmt->execute([$id]);
+            return $stmt->fetch();
+        } catch (PDOException $e) {
+            error_log("Error in getVideoById: " . $e->getMessage());
+            return null;
+        }
+    }
+
     // Get playlists for a specific user
     public function getUserPlaylists($userId) {
         $stmt = $this->db->prepare('
@@ -94,7 +109,7 @@ class DatabaseManager {
         ];
     }
 
-    // Update video - with user verification
+        // Update video - with user verification
         public function updateVideo($id, $title, $description) {
             if (!$this->userId) {
                 error_log("No user ID provided for video update");

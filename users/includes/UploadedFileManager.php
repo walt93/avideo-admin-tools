@@ -48,20 +48,11 @@ class UploadedFilesManager {
 
     public function getVideoDetails($id) {
         try {
-            $query = '
-                SELECT id, title, filename, state, created
-                FROM videos
-                WHERE id = ?
-            ';
-            $params = [$id];
-
-            // Call executeQuery instead of prepare directly
-            $result = $this->db->getVideos(['video_id' => $id], 1, 1);
-
-            if (!empty($result['videos'])) {
-                $video = $result['videos'][0];
+            $video = $this->db->getVideoById($id);
+            if ($video) {
                 return array_merge($video, [
-                    'files' => $this->checkVideoFiles($video['filename'])
+                    'files' => $this->checkVideoFiles($video['filename']),
+                    'stateDescription' => $this->getStateDescription($video['state'])
                 ]);
             }
             return null;
