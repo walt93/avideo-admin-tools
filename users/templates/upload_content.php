@@ -2,7 +2,7 @@
 // Get user config
 $username = basename(dirname($_SERVER['PHP_SELF']));
 $configFile = __DIR__ . '/../config/users.json';
-require_once __DIR__ . '/../templates/UploadedFileManager.php';
+// require_once __DIR__ . '/../templates/UploadedFileManager.php';
 
 // Add error handling for config file reading
 if (!file_exists($configFile)) {
