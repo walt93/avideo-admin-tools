@@ -130,12 +130,13 @@ $socialHandle = $userConfig['profile']['social_handle'] ?? '';
 
 .upload-card {
     display: grid;
-    grid-template-columns: 180px 1fr 40px; /* Fixed thumbnail width, flexible content, small actions column */
+    grid-template-columns: 180px 1fr auto;
     gap: 1rem;
     background: rgba(255, 255, 255, 0.05);
     border-radius: 8px;
-    margin-bottom: 1rem;
-    position: relative; /* For absolute positioning of delete button */
+    margin-bottom: 0.75rem;
+    padding: 0.75rem;
+    height: 101px; /* Match thumbnail height */
 }
 
 
@@ -170,32 +171,40 @@ $socialHandle = $userConfig['profile']['social_handle'] ?? '';
 }
 
 .upload-content {
-    padding: 0.75rem 1rem;
-    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0;
 }
 
 .uploads-section {
+    max-width: 100%;
     margin-top: 3rem;
-    width: 100%;
 }
 
 .upload-title {
-    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
     margin-bottom: 0.25rem;
+}
+
+.upload-title a {
+    font-size: 1.1rem;
+    text-decoration: none;
 }
 
 .upload-meta {
     font-size: 0.85rem;
     color: #888;
-    margin-bottom: 0.5rem;
 }
 
 .upload-status {
-    display: inline-flex;
-    align-items: center;
+    margin: 0;
     padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    font-size: 0.85rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    white-space: nowrap;
 }
 
 .upload-status.encoding {
@@ -219,13 +228,12 @@ $socialHandle = $userConfig['profile']['social_handle'] ?? '';
 }
 
 .upload-actions {
-    padding: 1rem;
+    display: flex;
+    align-items: center;
+    padding-right: 0.5rem;
 }
 
 .delete-upload {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
     color: #dc3545;
     background: none;
     border: none;
@@ -257,7 +265,7 @@ $socialHandle = $userConfig['profile']['social_handle'] ?? '';
 }
 
 .upload-container {
-    max-width: 600px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
 }
