@@ -1,6 +1,7 @@
 <?php
 // Load the UserManager
 require_once __DIR__ . '/../includes/UserManager.php';
+require_once __DIR__ . '/../includes/UploadedFileManager.php';
 
 try {
     // Get username from directory name
