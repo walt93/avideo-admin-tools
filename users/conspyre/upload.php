@@ -98,7 +98,7 @@ if (isset($_GET['action'])) {
         }
 
         .upload-container {
-            max-width: 600px;
+            max-width: 1200px; /* Increase from 600px */
             margin: 0 auto;
             padding: 20px;
         }

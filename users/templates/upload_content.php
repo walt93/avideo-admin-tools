@@ -123,19 +123,21 @@ $socialHandle = $userConfig['profile']['social_handle'] ?? '';
 
 <style>
 .uploads-list {
-    display: grid;
-    gap: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
 }
 
 .upload-card {
-    background: rgba(255, 255, 255, 0.02);
+    display: grid;
+    grid-template-columns: 180px 1fr 40px; /* Fixed thumbnail width, flexible content, small actions column */
+    gap: 1rem;
+    background: rgba(255, 255, 255, 0.05);
     border-radius: 8px;
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    width: 100%;
+    margin-bottom: 1rem;
+    position: relative; /* For absolute positioning of delete button */
 }
+
 
 /* Update upload list card styling */
 .upload-card-item {
@@ -147,41 +149,45 @@ $socialHandle = $userConfig['profile']['social_handle'] ?? '';
     overflow: hidden;
 }
 
-.status-container {
-    width: 100%;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
-    padding: 1rem;
-    margin-top: 1.5rem;
-}
-
-.upload-thumbnail {
+.upload-thumbnail-container {
     width: 180px;
     height: 101px; /* 16:9 ratio */
-    object-fit: cover;
-    background: #000;
+    position: relative;
 }
 
+.status-container {
+    max-width: 600px;
+    margin: 1.5rem auto;
+}
+
+
+.upload-thumbnail,
 .upload-thumbnail.placeholder {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #1a1a1a;
-    color: #666;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 4px;
 }
 
 .upload-content {
-    padding: 1rem;
+    padding: 0.75rem 1rem;
+    flex-grow: 1;
+}
+
+.uploads-section {
+    margin-top: 3rem;
+    width: 100%;
 }
 
 .upload-title {
     font-size: 1.1rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
 }
 
 .upload-meta {
     font-size: 0.85rem;
     color: #888;
+    margin-bottom: 0.5rem;
 }
 
 .upload-status {
@@ -190,7 +196,6 @@ $socialHandle = $userConfig['profile']['social_handle'] ?? '';
     padding: 0.25rem 0.5rem;
     border-radius: 4px;
     font-size: 0.85rem;
-    margin-top: 0.5rem;
 }
 
 .upload-status.encoding {
@@ -218,6 +223,9 @@ $socialHandle = $userConfig['profile']['social_handle'] ?? '';
 }
 
 .delete-upload {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
     color: #dc3545;
     background: none;
     border: none;
@@ -229,6 +237,12 @@ $socialHandle = $userConfig['profile']['social_handle'] ?? '';
 
 .delete-upload:hover {
     opacity: 1;
+}
+
+/* Adjust the upload form width */
+#uploadForm {
+    max-width: 600px; /* Keep the form narrower */
+    margin: 0 auto;
 }
 
 .transcript-badge {
@@ -272,12 +286,6 @@ $socialHandle = $userConfig['profile']['social_handle'] ?? '';
 .profile-info p {
     margin: 0;
     color: #6c757d;
-}
-
-.upload-card {
-    background: rgba(255, 255, 255, 0.02);
-    border-radius: 8px;
-    padding: 1.5rem;
 }
 
 .error-message {
