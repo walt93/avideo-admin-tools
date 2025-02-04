@@ -47,20 +47,28 @@ class UploadedFilesManager {
     }
 
     public function getVideoDetails($id) {
-        $stmt = $this->db->prepare('
-            SELECT id, title, filename, state, created
-            FROM videos
-            WHERE id = ?
-        ');
-        $stmt->execute([$id]);
-        $video = $stmt->fetch();
+        try {
+            $query = '
+                SELECT id, title, filename, state, created
+                FROM videos
+                WHERE id = ?
+            ';
+            $params = [$id];
 
-        if ($video) {
-            return array_merge($video, [
-                'files' => $this->checkVideoFiles($video['filename'])
-            ]);
+            // Call executeQuery instead of prepare directly
+            $result = $this->db->getVideos(['video_id' => $id], 1, 1);
+
+            if (!empty($result['videos'])) {
+                $video = $result['videos'][0];
+                return array_merge($video, [
+                    'files' => $this->checkVideoFiles($video['filename'])
+                ]);
+            }
+            return null;
+        } catch (Exception $e) {
+            error_log("Error getting video details: " . $e->getMessage());
+            return null;
         }
-        return null;
     }
 
     public function checkVideoFiles($filename) {
