@@ -436,10 +436,10 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
                         try {
                             // Add to uploads log
                             const uploadData = {
-                                id: statusData.video_id,
+                                id: statusData.result.video_id,  // Changed from statusData.video_id
                                 url: url,
-                                title: statusData.title || url,
-                                description: statusData.description || '',
+                                title: statusData.result.title || url,  // Get title from result
+                                description: statusData.result.description || '',
                                 category: document.querySelector('#categorySelect option:checked').textContent,
                                 category_id: categoryData.categories_id
                             };
@@ -456,12 +456,13 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
 
                             const saveResult = await saveResponse.json();
                             console.log('Save result:', saveResult);
-                            if (!saveResult.success) {
-                                throw new Error(saveResult.error);
-                            }
 
-                            // Refresh the uploads list
-                            loadUploads();
+                            if (!saveResult.success) {
+                                console.error('Failed to save upload:', saveResult.error);
+                            } else {
+                                // Refresh the uploads list
+                                loadUploads();
+                            }
                         } catch (error) {
                             console.error('Error saving upload:', error);
                         }
