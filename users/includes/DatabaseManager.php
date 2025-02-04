@@ -43,18 +43,22 @@ class DatabaseManager {
 
     public function getVideoById($id) {
         try {
+            error_log("DatabaseManager: Getting video ID: " . $id);
             $stmt = $this->db->prepare('
                 SELECT id, title, filename, state, created
                 FROM videos
                 WHERE id = ?
             ');
             $stmt->execute([$id]);
-            return $stmt->fetch();
+            $result = $stmt->fetch();
+            error_log("DatabaseManager: Result: " . json_encode($result));
+            return $result;
         } catch (PDOException $e) {
-            error_log("Error in getVideoById: " . $e->getMessage());
+            error_log("DatabaseManager error: " . $e->getMessage());
             return null;
         }
     }
+
 
     // Get playlists for a specific user
     public function getUserPlaylists($userId) {
