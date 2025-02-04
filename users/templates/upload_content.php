@@ -521,7 +521,53 @@ function formatDate(dateString) {
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
 }
 
-function createUploadCard(upload, videoDetails
+function createUploadCard(upload, videoDetails) {
+    const hasFiles = videoDetails?.files || {};
+    const hasTranscript = hasFiles.transcript;
+    const stateClass = videoDetails?.state ? {
+        'e': 'encoding',
+        'a': 'active',
+        'i': 'inactive',
+        'x': 'error'
+    }[videoDetails.state] || 'inactive' : 'pending';
+
+    return `
+        <div class="upload-card">
+            <div class="upload-thumbnail-container">
+                ${hasFiles.thumbnail
+                    ? `<img src="/videos/${videoDetails.filename}/${videoDetails.filename}.jpg"
+                         class="upload-thumbnail" alt="Video thumbnail">`
+                    : `<div class="upload-thumbnail placeholder">
+                         <i class="bi bi-film"></i>
+                       </div>`
+                }
+            </div>
+
+            <div class="upload-content">
+                <div class="upload-title">
+                    <a href="https://conspyre.tv/v/${upload.id}" target="_blank" class="text-light">
+                        ${upload.title}
+                    </a>
+                    <div class="upload-status ${stateClass}">
+                        <i class="bi bi-circle-fill me-1"></i>
+                        ${videoDetails?.stateDescription || upload.status}
+                    </div>
+                </div>
+                <div class="upload-meta">
+                    Uploaded: ${formatDate(upload.upload_date)}<br>
+                    Category: ${upload.category}
+                </div>
+            </div>
+
+            <div class="upload-actions">
+                <button onclick="removeUpload('${upload.id}')" class="delete-upload"
+                        title="Remove from list">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+        </div>
+    `;
+}
 
 async function loadUploads() {
     try {
