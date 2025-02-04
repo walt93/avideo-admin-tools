@@ -48,13 +48,19 @@ class UploadedFilesManager {
 
     public function getVideoDetails($id) {
         try {
+            error_log("Getting video details for ID: " . $id);
             $video = $this->db->getVideoById($id);
+            error_log("Database returned: " . json_encode($video));
+
             if ($video) {
-                return array_merge($video, [
+                $result = array_merge($video, [
                     'files' => $this->checkVideoFiles($video['filename']),
                     'stateDescription' => $this->getStateDescription($video['state'])
                 ]);
+                error_log("Returning video details: " . json_encode($result));
+                return $result;
             }
+            error_log("No video found for ID: " . $id);
             return null;
         } catch (Exception $e) {
             error_log("Error getting video details: " . $e->getMessage());
