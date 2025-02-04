@@ -38,10 +38,12 @@ $socialHandle = $userConfig['profile']['social_handle'] ?? '';
 
 <div class="container">
     <div class="upload-container">
+        <!-- Logo section -->
         <div class="logo-container mb-4">
             <img src="/truth_tide_tv.png" alt="Truth Tide TV" class="img-fluid">
         </div>
 
+        <!-- Profile section -->
         <div class="profile-section mb-4">
             <?php if ($profilePhoto): ?>
             <img src="https://conspyre.tv<?= htmlspecialchars($profilePhoto) ?>"
@@ -57,7 +59,8 @@ $socialHandle = $userConfig['profile']['social_handle'] ?? '';
             </div>
         </div>
 
-        <div class="upload-card">
+        <!-- Upload form section -->
+        <div class="upload-form-section">
             <form id="uploadForm" class="bg-dark p-4 rounded">
                 <h2 class="text-danger mb-3">UPLOAD HERE</h2>
                 <div class="mb-3">
@@ -74,20 +77,21 @@ $socialHandle = $userConfig['profile']['social_handle'] ?? '';
                 <button type="submit" class="btn btn-primary btn-lg w-100">
                     Upload Video
                 </button>
-
-                <!-- Upload indicator -->
-                <div id="uploadingIndicator" class="alert alert-info mt-3 d-none">
-                    <div class="d-flex align-items-center">
-                        <div class="spinner-border spinner-border-sm me-2" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                        <strong>UPLOADING VIDEO...</strong>
-                    </div>
-                </div>
-
-                <div class="error-message mt-3" id="errorMessage"></div>
             </form>
 
+            <!-- Upload indicator -->
+            <div id="uploadingIndicator" class="alert alert-info mt-3 d-none">
+                <div class="d-flex align-items-center">
+                    <div class="spinner-border spinner-border-sm me-2" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <strong>UPLOADING VIDEO...</strong>
+                </div>
+            </div>
+
+            <div class="error-message mt-3" id="errorMessage"></div>
+
+            <!-- Status container -->
             <div class="status-container mt-4 d-none" id="statusContainer">
                 <div class="status-header mb-2">
                     <span class="status-phase">Initializing...</span>
@@ -105,6 +109,8 @@ $socialHandle = $userConfig['profile']['social_handle'] ?? '';
                 <div class="status-message text-muted small" id="statusText"></div>
             </div>
         </div>
+
+        <!-- Recent Uploads section -->
         <div class="uploads-section mt-5">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h3 class="text-light">Recent Uploads</h3>
@@ -114,12 +120,11 @@ $socialHandle = $userConfig['profile']['social_handle'] ?? '';
             </div>
 
             <div id="uploadsList" class="uploads-list">
-                <!-- Uploads will be inserted here -->
+                <!-- Uploads will be dynamically inserted here -->
             </div>
         </div>
     </div>
 </div>
-
 
 <style>
 .uploads-list {
@@ -136,7 +141,7 @@ $socialHandle = $userConfig['profile']['social_handle'] ?? '';
     border-radius: 8px;
     margin-bottom: 0.75rem;
     padding: 0.75rem;
-    height: 101px; /* Match thumbnail height */
+    height: 101px;
 }
 
 
@@ -178,8 +183,8 @@ $socialHandle = $userConfig['profile']['social_handle'] ?? '';
 }
 
 .uploads-section {
-    max-width: 100%;
-    margin-top: 3rem;
+    max-width: 1200px;
+    margin: 3rem auto 0;
 }
 
 .upload-title {
@@ -247,12 +252,24 @@ $socialHandle = $userConfig['profile']['social_handle'] ?? '';
     opacity: 1;
 }
 
-/* Adjust the upload form width */
-#uploadForm {
-    max-width: 600px; /* Keep the form narrower */
+/* Style for the upload form section */
+.upload-form-section {
+    max-width: 600px;
     margin: 0 auto;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    padding: 1.5rem;
 }
 
+#uploadForm {
+    width: 100%;
+}
+
+#uploadForm input,
+#uploadForm select {
+    width: 100%;
+    margin-bottom: 1rem;
+}
 .transcript-badge {
     position: absolute;
     bottom: 0.5rem;
