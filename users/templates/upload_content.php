@@ -568,17 +568,29 @@ function createUploadCard(upload, videoDetails) {
 
 async function loadUploads() {
     try {
+        console.log('Fetching uploads...');
         const response = await fetch('?action=get_uploads');
-        const data = await response.json();
+        const responseText = await response.text(); // Get raw response first
+        console.log('Raw uploads response:', responseText);
 
-        if (!data.success) {
-            throw new Error(data.error);
+        try {
+            const data = JSON.parse(responseText);
+            console.log('Parsed uploads data:', data);
+
+            if (!data.success) {
+                throw new Error(data.error);
+            }
+
+            const uploadsList = document.getElementById('uploadsList');
+            uploadsList.innerHTML = data.uploads.map(upload =>
+                createUploadCard(upload, data.videoDetails[upload.id])
+            ).join('');
+
+        } catch (parseError) {
+            console.error('Error parsing uploads response:', parseError);
+            console.log('Response that failed to parse:', responseText);
+            throw parseError;
         }
-
-        const uploadsList = document.getElementById('uploadsList');
-        uploadsList.innerHTML = data.uploads.map(upload =>
-            createUploadCard(upload, data.videoDetails[upload.id])
-        ).join('');
 
     } catch (error) {
         console.error('Error loading uploads:', error);
