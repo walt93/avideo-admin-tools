@@ -71,11 +71,14 @@ class UploadedFilesManager {
     }
 
     public function checkVideoFiles($filename) {
-        $basePath = "/var/www/html/conspyre.tv/videos/$filename/$filename";
+        // Update base path to match your filesystem structure
+        $basePath = "/var/www/html/conspyre.tv/videos/$filename";
         return [
-            'thumbnail' => file_exists($basePath . '.jpg'),
-            'transcript' => file_exists($basePath . '.txt') || file_exists($basePath . '_ext.txt'),
-            'subtitles' => file_exists($basePath . '.vtt') || file_exists($basePath . '_ext.vtt')
+            'thumbnail' => file_exists("$basePath/$filename.jpg"),
+            'transcript' => file_exists("$basePath/$filename.txt") ||
+                           file_exists("$basePath/{$filename}_ext.txt"),
+            'subtitles' => file_exists("$basePath/$filename.vtt") ||
+                          file_exists("$basePath/{$filename}_ext.vtt")
         ];
     }
 

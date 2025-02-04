@@ -45,7 +45,7 @@ class DatabaseManager {
         try {
             error_log("DatabaseManager: Getting video ID: " . $id);
             $stmt = $this->db->prepare('
-                SELECT id, title, filename, state, created
+                SELECT id, title, filename, status as state, created
                 FROM videos
                 WHERE id = ?
             ');
