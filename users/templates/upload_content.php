@@ -557,7 +557,7 @@ function createUploadCard(upload, videoDetails) {
     }[videoDetails.state] || 'inactive' : 'pending';
 
     return `
-        <div class="upload-card">
+        <div class="upload-card" data-id="${upload.id}">
             <div class="upload-thumbnail-container">
                 ${hasFiles.thumbnail
                     ? `<img src="/videos/${videoDetails.filename}/${videoDetails.filename}.jpg"
@@ -598,7 +598,7 @@ async function loadUploads() {
     try {
         console.log('Fetching uploads...');
         const response = await fetch('?action=get_uploads');
-        const responseText = await response.text(); // Get raw response first
+        const responseText = await response.text();
         console.log('Raw uploads response:', responseText);
 
         try {
@@ -610,7 +610,8 @@ async function loadUploads() {
             }
 
             const uploadsList = document.getElementById('uploadsList');
-            uploadsList.innerHTML = data.uploads.map(upload =>
+            // Reverse the array before mapping
+            uploadsList.innerHTML = data.uploads.reverse().map(upload =>
                 createUploadCard(upload, data.videoDetails[upload.id])
             ).join('');
 
@@ -648,9 +649,14 @@ async function removeUpload(id) {
             throw new Error(data.error);
         }
 
-        // Remove the card from the UI
+        // Find and remove the correct card
         const card = document.querySelector(`.upload-card[data-id="${id}"]`);
-        card.remove();
+        if (card) {
+            card.remove();
+        } else {
+            // If we can't find the card, refresh the whole list
+            await loadUploads();
+        }
 
     } catch (error) {
         console.error('Error removing upload:', error);
