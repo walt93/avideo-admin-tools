@@ -94,7 +94,12 @@ $socialHandle = $userConfig['profile']['social_handle'] ?? '';
             <!-- Status container -->
             <div class="status-container mt-4 d-none" id="statusContainer">
                 <div class="status-header mb-2">
-                    <span class="status-phase">Initializing...</span>
+                    <div class="d-flex align-items-center">
+                        <div class="spinner-border spinner-border-sm me-2" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <span class="status-phase">Initializing...</span>
+                    </div>
                     <div class="download-details" style="display: none;">
                         <span class="download-speed">0 MB/s</span> |
                         <span class="download-size">0 MB</span> downloaded
@@ -162,8 +167,23 @@ $socialHandle = $userConfig['profile']['social_handle'] ?? '';
 }
 
 .status-container {
-    max-width: 600px;
-    margin: 1.5rem auto;
+    background-color: rgba(13, 202, 240, 0.1);
+    border: 1px solid rgba(13, 202, 240, 0.2);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.status-phase {
+    color: rgba(13, 202, 240, 0.9);
+    font-weight: 500;
+}
+
+.progress {
+    background-color: rgba(13, 202, 240, 0.1);
+}
+
+.progress-bar {
+    background-color: rgba(13, 202, 240, 0.8);
 }
 
 
@@ -392,8 +412,6 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
     // Show uploading indicator
-    document.getElementById('uploadingIndicator').classList.remove('d-none');
-
     const statusContainer = document.getElementById('statusContainer');
     const statusPhase = document.querySelector('.status-phase');
     const downloadDetails = document.querySelector('.download-details');
@@ -502,7 +520,6 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
 
                         statusPhase.textContent = 'Upload completed!';
                         downloadDetails.style.display = 'none';
-                        document.getElementById('uploadingIndicator').classList.add('d-none');
 
                         // Reset form after 3 seconds
                         setTimeout(() => {
@@ -510,7 +527,6 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
                             e.target.reset();
                         }, 3000);
                 } else if (statusData.status === 'failed') {
-                    document.getElementById('uploadingIndicator').classList.add('d-none');
                     clearInterval(pollInterval);
                     throw new Error(statusData.error || 'Upload failed');
                 }
@@ -522,7 +538,6 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
 
     } catch (error) {
         console.error('Upload error:', error);
-        document.getElementById('uploadingIndicator').classList.add('d-none');
         statusPhase.textContent = 'Error';
         statusText.textContent = error.message;
         downloadDetails.style.display = 'none';
