@@ -8,6 +8,7 @@ import logging
 from datetime import datetime
 from pathlib import Path
 import re
+import time
 
 class WhisperProcessor:
     def __init__(self):
@@ -18,7 +19,10 @@ class WhisperProcessor:
         self.processed_log = os.path.join(self.log_dir, "files_processed.json")
         self.cdn_base = "https://b-low.b-cdn.net"
         self.whisper_path = subprocess.check_output(['which', 'whisper']).decode().strip()
-        
+
+        self.poll_interval = 60  # 1 minute, in seconds
+        self.processed_ids = set()  # Keep track of processed video IDs
+
         # Ensure required directories exist
         os.makedirs(self.whisper_dir, exist_ok=True)
         os.makedirs(self.log_dir, exist_ok=True)
@@ -33,12 +37,55 @@ class WhisperProcessor:
             ]
         )
         self.logger = logging.getLogger(__name__)
-        
+
         # Initialize processing stats
+        self.reset_stats()
+
+    def reset_stats(self):
+        """Reset processing statistics for new batch"""
         self.total_videos = 0
         self.processed_count = 0
         self.processing_times = []
         self.current_start_time = None
+
+    def load_processed_ids(self):
+        """Load previously processed video IDs from the log file"""
+        if os.path.exists(self.processed_log):
+            try:
+                with open(self.processed_log, 'r') as f:
+                    data = json.load(f)
+                    for entry in data.get('processed_files', []):
+                        if entry.get('success'):
+                            self.processed_ids.add(entry['id'])
+            except json.JSONDecodeError:
+                self.logger.error("Error reading processed log file")
+
+    def get_pending_videos(self):
+        """Get videos that haven't been processed yet"""
+        conn = self.connect_db()
+        cursor = conn.cursor(dictionary=True)
+
+        query = """
+        SELECT id, filename, title 
+        FROM videos 
+        WHERE status = 'a' AND type = 'video'
+        AND id NOT IN (%s)
+        ORDER BY created DESC
+        """
+
+        # Handle empty processed_ids
+        if not self.processed_ids:
+            query = query.replace("AND id NOT IN (%s)", "")
+            cursor.execute(query)
+        else:
+            placeholders = ','.join(['%s'] * len(self.processed_ids))
+            query = query % placeholders
+            cursor.execute(query, tuple(self.processed_ids))
+
+        videos = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return videos
 
     def connect_db(self):
         return mysql.connector.connect(
@@ -47,23 +94,6 @@ class WhisperProcessor:
             user="conspyre",  # Update these credentials
             password="jvciX85cvOdjfg6Qcvp_vn6T"
         )
-
-    def get_pending_videos(self):
-        conn = self.connect_db()
-        cursor = conn.cursor(dictionary=True)
-        
-        query = """
-        SELECT id, filename, title 
-        FROM videos 
-        WHERE status = 'a' AND type = 'video'
-        ORDER BY created DESC
-        """
-        
-        cursor.execute(query)
-        videos = cursor.fetchall()
-        cursor.close()
-        conn.close()
-        return videos
 
     def find_video_file(self, video_dir):
         """Find the lowest resolution MP4 file in the video directory"""
@@ -222,30 +252,49 @@ class WhisperProcessor:
             json.dump(processed_data, f, indent=2)
 
     def run(self):
-        self.logger.info("Starting whisper processing")
-        self.update_status(status="starting")
-        
-        videos = self.get_pending_videos()
-        self.total_videos = len(videos)
-        self.logger.info(f"Found {self.total_videos} videos to process")
-        
-        for video in videos:
-            self.current_start_time = datetime.now()
-            self.update_status(current_video=video['filename'])
-            self.logger.info(f"Processing {video['filename']} ({self.processed_count + 1}/{self.total_videos})")
-            
+        """Main processing loop with continuous polling"""
+        self.logger.info("Starting whisper processing service")
+        self.load_processed_ids()
+
+        while True:
             try:
-                success = self.process_video(video)
-                self.log_processed_file(video, success)
-                self.processed_count += 1
+                self.update_status(status="checking")
+                videos = self.get_pending_videos()
+
+                if videos:
+                    self.logger.info(f"Found {len(videos)} new videos to process")
+                    self.reset_stats()
+                    self.total_videos = len(videos)
+
+                    for video in videos:
+                        self.current_start_time = datetime.now()
+                        self.update_status(current_video=video['filename'])
+                        self.logger.info(f"Processing {video['filename']} ({self.processed_count + 1}/{self.total_videos})")
+
+                        try:
+                            success = self.process_video(video)
+                            self.log_processed_file(video, success)
+                            if success:
+                                self.processed_ids.add(video['id'])
+                            self.processed_count += 1
+                        except Exception as e:
+                            self.logger.error(f"Error processing {video['filename']}: {str(e)}")
+                            self.log_processed_file(video, False, error=str(e))
+
+                        self.update_status(current_video=video['filename'])
+
+                else:
+                    self.logger.info("No new videos to process")
+                    self.update_status(status="idle")
+
+                self.logger.info(f"Sleeping for {self.poll_interval} seconds")
+                time.sleep(self.poll_interval)
+
             except Exception as e:
-                self.logger.error(f"Error processing {video['filename']}: {str(e)}")
-                self.log_processed_file(video, False, error=str(e))
-            
-            self.update_status(current_video=video['filename'])
-        
-        self.update_status(status="completed")
-        self.logger.info("Processing completed")
+                self.logger.error(f"Error in main processing loop: {str(e)}")
+                self.update_status(status="error")
+                time.sleep(self.poll_interval)  # Still sleep on error to prevent rapid retries
+
 
 if __name__ == "__main__":
     processor = WhisperProcessor()
