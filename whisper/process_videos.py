@@ -31,7 +31,6 @@ Requirements:
 Author: [Your Name]
 Last Modified: January 2025
 """
-
 import os
 import json
 import mysql.connector
