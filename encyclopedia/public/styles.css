@@ -111,10 +111,19 @@ th {
 }
 
 /* Source Book Popup Styles */
+.source-book-wrapper {
+    position: relative;
+    width: 100%;
+}
+
 .source-book-container {
     position: relative;
-    display: flex;
-    align-items: center;
+    width: 100%;
+}
+
+.source-book-container input[type="text"] {
+    width: 100%;
+    padding-right: 30px; /* Make room for the trigger icon */
 }
 
 .source-book-trigger {
@@ -125,6 +134,7 @@ th {
     cursor: pointer;
     padding: 5px;
     color: #666;
+    z-index: 2;
 }
 
 .source-book-trigger:hover {
@@ -134,7 +144,7 @@ th {
 .source-book-menu {
     display: none;
     position: absolute;
-    top: 100%;
+    top: calc(100% + 5px);
     left: 0;
     right: 0;
     background: white;
@@ -146,13 +156,19 @@ th {
     overflow-y: auto;
 }
 
-.source-book-container:hover .source-book-menu {
+.source-book-container:hover .source-book-menu,
+.source-book-menu:hover {
     display: block;
 }
 
 .source-book-option {
     padding: 8px 12px;
     cursor: pointer;
+    border-bottom: 1px solid #eee;
+}
+
+.source-book-option:last-child {
+    border-bottom: none;
 }
 
 .source-book-option:hover {
