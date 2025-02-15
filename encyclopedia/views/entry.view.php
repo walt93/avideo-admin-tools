@@ -1,3 +1,4 @@
+<?php
 <h1><?php echo $entry ? 'Edit' : 'New'; ?> Entry</h1>
 
 <?php if (isset($error_message)): ?>
@@ -17,9 +18,12 @@
 
     <div class="form-group">
         <label for="content">Content:</label>
-        <textarea id="content" name="content" required><?php
-            echo $entry ? h($entry['content']) : '';
-        ?></textarea>
+        <div class="content-wrapper">
+            <textarea id="content" name="content" required><?php
+                echo $entry ? h($entry['content']) : '';
+            ?></textarea>
+            <button type="button" id="rewriteBtn" class="rewrite-btn">🤖 Rewrite</button>
+        </div>
     </div>
 
     <div class="form-group">
@@ -64,6 +68,13 @@
     </div>
 </form>
 
+<div id="rewriteOverlay" class="rewrite-overlay">
+    <div class="rewrite-message">
+        <div class="spinner"></div>
+        <p>🤖 AI Rewriting in Progress...</p>
+    </div>
+</div>
+
 <script>
     // Store source book in local storage on form submission
     document.querySelector('form').addEventListener('submit', function() {
@@ -91,3 +102,48 @@
         }
     });
     <?php endif; ?>
+
+    // Add rewrite functionality
+    document.getElementById('rewriteBtn').addEventListener('click', async function() {
+        const contentArea = document.getElementById('content');
+        const statusSelect = document.getElementById('status');
+        const overlay = document.getElementById('rewriteOverlay');
+
+        // Show overlay
+        overlay.style.display = 'flex';
+
+        try {
+            const response = await fetch('api/rewrite.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    content: contentArea.value
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Rewrite failed');
+            }
+
+            const result = await response.json();
+
+            // Update content
+            contentArea.value = result.content;
+
+            // Upgrade status (draft -> review -> published)
+            if (statusSelect.value === 'draft') {
+                statusSelect.value = 'review';
+            } else if (statusSelect.value === 'review') {
+                statusSelect.value = 'published';
+            }
+
+        } catch (error) {
+            alert('Error during rewrite: ' + error.message);
+        } finally {
+            // Hide overlay
+            overlay.style.display = 'none';
+        }
+    });
+</script>
