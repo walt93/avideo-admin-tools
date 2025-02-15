@@ -22,7 +22,25 @@
                 echo $entry ? h($entry['content']) : '';
             ?></textarea>
             <button type="button" id="rewriteBtn" class="rewrite-btn">🤖 Rewrite</button>
+            <div class="text-stats">
+                <span id="contentWordCount">0 words</span>
+                <span class="stat-divider">|</span>
+                <span id="contentCharCount">0 characters</span>
+            </div>
         </div>
+    </div>
+
+    <div id="aiRewriteSection" class="form-group" style="display: none;">
+        <label for="aiRewrite">AI Rewrite:</label>
+        <div class="content-wrapper">
+            <textarea id="aiRewrite" readonly></textarea>
+            <div class="text-stats">
+                <span id="aiWordCount">0 words</span>
+                <span class="stat-divider">|</span>
+                <span id="aiCharCount">0 characters</span>
+            </div>
+        </div>
+        <button type="button" id="useAiBtn" class="use-ai-btn">Use AI Rewrite</button>
     </div>
 
     <div class="form-group">
@@ -75,6 +93,27 @@
 </div>
 
 <script>
+    // Word and character count functions
+    function updateWordCount(text) {
+        return text.trim().split(/\s+/).filter(word => word.length > 0).length;
+    }
+
+    function updateCharCount(text) {
+        return text.length;
+    }
+
+    function updateStats(text, wordId, charId) {
+        document.getElementById(wordId).textContent = updateWordCount(text) + ' words';
+        document.getElementById(charId).textContent = updateCharCount(text) + ' characters';
+    }
+
+    // Initialize and update content stats
+    const contentArea = document.getElementById('content');
+    updateStats(contentArea.value, 'contentWordCount', 'contentCharCount');
+    contentArea.addEventListener('input', () => {
+        updateStats(contentArea.value, 'contentWordCount', 'contentCharCount');
+    });
+
     // Store source book in local storage on form submission
     document.querySelector('form').addEventListener('submit', function() {
         const sourceBook = document.getElementById('source_book').value;
@@ -107,6 +146,8 @@
         const contentArea = document.getElementById('content');
         const statusSelect = document.getElementById('status');
         const overlay = document.getElementById('rewriteOverlay');
+        const aiSection = document.getElementById('aiRewriteSection');
+        const aiRewrite = document.getElementById('aiRewrite');
 
         // Show overlay
         overlay.style.display = 'flex';
@@ -128,8 +169,10 @@
 
             const result = await response.json();
 
-            // Update content
-            contentArea.value = result.content;
+            // Show AI rewrite section and update content
+            aiSection.style.display = 'block';
+            aiRewrite.value = result.content;
+            updateStats(result.content, 'aiWordCount', 'aiCharCount');
 
             // Upgrade status (draft -> review -> published)
             if (statusSelect.value === 'draft') {
@@ -144,5 +187,19 @@
             // Hide overlay
             overlay.style.display = 'none';
         }
+    });
+
+    // Handle "Use AI Rewrite" button
+    document.getElementById('useAiBtn').addEventListener('click', function() {
+        const contentArea = document.getElementById('content');
+        const aiRewrite = document.getElementById('aiRewrite');
+        const aiSection = document.getElementById('aiRewriteSection');
+
+        // Copy AI rewrite to content area
+        contentArea.value = aiRewrite.value;
+        updateStats(contentArea.value, 'contentWordCount', 'contentCharCount');
+
+        // Hide AI section
+        aiSection.style.display = 'none';
     });
 </script>
