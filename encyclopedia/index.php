@@ -35,5 +35,9 @@ $entries = $entry->getFilteredEntries([
 
 $total_entries = count($entries);
 
+// Set up view variables
+$currentView = __DIR__ . '/views/index.view.php';
+$pageTitle = 'DeepState Guide Entries';
+
 // Load the view
 require __DIR__ . '/views/layout.php';

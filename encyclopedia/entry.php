@@ -27,5 +27,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// Set up view variables
+$currentView = __DIR__ . '/views/entry.view.php';
+$pageTitle = $entry ? 'Edit Entry' : 'New Entry';
+
 // Load the view
 require __DIR__ . '/views/layout.php';
