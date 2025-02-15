@@ -1,3 +1,4 @@
+<?php
 <h1><?php echo $entry ? 'Edit' : 'New'; ?> Entry</h1>
 
 <?php if (isset($error_message)): ?>
@@ -65,14 +66,8 @@
 </form>
 
 <script>
-    // Form submission confirmation and source book storage
-    document.querySelector('form').addEventListener('submit', function(e) {
-        if (!confirm('Are you sure you want to save this entry?')) {
-            e.preventDefault();
-            return;
-        }
-
-        // Store source book in local storage
+    // Store source book in local storage on form submission
+    document.querySelector('form').addEventListener('submit', function() {
         const sourceBook = document.getElementById('source_book').value;
         if (sourceBook) {
             localStorage.setItem('lastUsedSourceBook', sourceBook);
@@ -97,11 +92,3 @@
         }
     });
     <?php endif; ?>
-
-    // Source book selection
-    document.querySelectorAll('.source-book-option').forEach(option => {
-        option.addEventListener('click', function() {
-            document.getElementById('source_book').value = this.dataset.value;
-        });
-    });
-</script>
