@@ -11,7 +11,7 @@ function logError($message) {
 header('Content-Type: application/json');
 
 function rewriteContent($content) {
-    $api_key = getenv('OPENAI-API-KEY');
+    $api_key = getenv('OPENAI_API_KEY');
 
     if (!$api_key) {
         logError("OpenAI API key not found in environment");
