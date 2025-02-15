@@ -1,4 +1,3 @@
-<?php
 <div class="header-section">
     <h1>DeepState Guide Entries</h1>
     <div class="entry-count">
