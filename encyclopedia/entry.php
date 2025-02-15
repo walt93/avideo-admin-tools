@@ -27,6 +27,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// Get list of existing source books
+$sourceBooks = $entry_model->getUniqueSourceBooks();
+
 // Set up view variables
 $currentView = __DIR__ . '/views/entry.view.php';
 $pageTitle = $entry ? 'Edit Entry' : 'New Entry';

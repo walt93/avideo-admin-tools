@@ -93,8 +93,8 @@ th {
 }
 
 .delete-button {
-    color: #dc3545;
-}
+}    color: #dc3545;
+
 
 .delete-button:hover {
     color: #c82333;
@@ -165,6 +165,55 @@ th {
     border-radius: 10px;
     font-size: 0.8em;
     color: #666;
+}
+
+/* Source Book Popup Styles */
+.source-book-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.source-book-trigger {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    padding: 5px;
+    color: #666;
+}
+
+.source-book-trigger:hover {
+    color: #333;
+}
+
+.source-book-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.source-book-container:hover .source-book-menu {
+    display: block;
+}
+
+.source-book-option {
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.source-book-option:hover {
+    background: #f5f5f5;
 }
 
 .source-book {

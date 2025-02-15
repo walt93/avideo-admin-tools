@@ -24,8 +24,22 @@
 
     <div class="form-group">
         <label for="source_book">Source Book (optional):</label>
-        <input type="text" id="source_book" name="source_book"
-               value="<?php echo $entry ? h($entry['source_book']) : ''; ?>">
+        <div class="source-book-container">
+            <input type="text" id="source_book" name="source_book"
+                   value="<?php echo $entry ? h($entry['source_book']) : ''; ?>">
+            <div class="source-book-trigger">
+                <svg class="filter-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 4h18M6 9h12M9 14h6M11 19h2"/>
+                </svg>
+            </div>
+            <div class="source-book-menu">
+                <?php foreach ($sourceBooks as $source): ?>
+                    <div class="source-book-option" data-value="<?php echo h($source['source_book']); ?>">
+                        <?php echo h($source['source_book']); ?>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
     </div>
 
     <div class="form-group">
@@ -60,5 +74,12 @@
         if (!confirm('Are you sure you want to save this entry?')) {
             e.preventDefault();
         }
+    });
+
+    // Source book selection
+    document.querySelectorAll('.source-book-option').forEach(option => {
+        option.addEventListener('click', function() {
+            document.getElementById('source_book').value = this.dataset.value;
+        });
     });
 </script>

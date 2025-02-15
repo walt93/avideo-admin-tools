@@ -17,6 +17,15 @@ class Entry {
         ")->fetchAll();
     }
 
+    public function getUniqueSourceBooks() {
+        return $this->db->query("
+            SELECT DISTINCT source_book
+            FROM entries
+            WHERE source_book IS NOT NULL
+            ORDER BY source_book
+        ")->fetchAll();
+    }
+
     public function getStatusCounts() {
         return $this->db->query("
             SELECT
