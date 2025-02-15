@@ -86,10 +86,7 @@
 </form>
 
 <div id="rewriteOverlay" class="rewrite-overlay">
-    <div class="rewrite-message">
-        <div class="spinner"></div>
-        <p>🤖 AI Rewriting in Progress...</p>
-    </div>
+    🤖 AI Rewriting in Progress...
 </div>
 
 <script>
