@@ -110,69 +110,19 @@ th {
     opacity: 1;
 }
 
-/* Source Book Popup Styles */
-.source-book-wrapper {
-    position: relative;
-    width: 100%;
+.source-book-inputs {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
 }
 
-.source-book-container {
-    position: relative;
-    width: 100%;
+.source-book-inputs input[type="text"] {
+    flex: 1;
 }
 
-.source-book-container input[type="text"] {
-    width: 100%;
-    padding-right: 30px; /* Make room for the trigger icon */
-}
-
-.source-book-trigger {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-    padding: 5px;
-    color: #666;
-    z-index: 2;
-}
-
-.source-book-trigger:hover {
-    color: #333;
-}
-
-.source-book-menu {
-    display: none;
-    position: absolute;
-    top: calc(100% + 5px);
-    left: 0;
-    right: 0;
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    z-index: 1000;
-    max-height: 200px;
-    overflow-y: auto;
-}
-
-.source-book-container:hover .source-book-menu,
-.source-book-menu:hover {
-    display: block;
-}
-
-.source-book-option {
-    padding: 8px 12px;
-    cursor: pointer;
-    border-bottom: 1px solid #eee;
-}
-
-.source-book-option:last-child {
-    border-bottom: none;
-}
-
-.source-book-option:hover {
-    background: #f5f5f5;
+.source-book-inputs select {
+    width: auto;
+    min-width: 200px;
 }
 
 /* Entry Form Styles */
