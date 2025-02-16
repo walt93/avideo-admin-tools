@@ -15,11 +15,16 @@
     <thead>
         <tr>
             <th colspan="6" class="title-filter-header">
-                <input type="text"
-                       id="titleFilter"
-                       class="title-filter"
-                       placeholder="Filter by title..."
-                       value="<?php echo h($_GET['title_search'] ?? ''); ?>">
+                <div class="title-filter-wrapper">
+                    <input type="text"
+                           id="titleFilter"
+                           class="title-filter"
+                           placeholder="Filter by title..."
+                           value="<?php echo h($_GET['title_search'] ?? ''); ?>">
+                    <?php if (isset($_GET['title_search']) && $_GET['title_search'] !== ''): ?>
+                    <button type="button" id="clearTitleFilter" class="clear-filter" title="Clear filter">×</button>
+                    <?php endif; ?>
+                </div>
             </th>
         </tr>
         <tr>
@@ -122,6 +127,26 @@
         <?php endforeach; ?>
     </tbody>
 </table>
+
+<script>
+document.getElementById('clearTitleFilter')?.addEventListener('click', function() {
+    // Clear the input
+    document.getElementById('titleFilter').value = '';
+
+    // Get current URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+
+    // Remove the title_search parameter
+    urlParams.delete('title_search');
+
+    // Reset to first page
+    urlParams.set('page', '1');
+
+    // Navigate to the new URL
+    window.location.href = '?' + urlParams.toString();
+});
+</script>
+
 <script>
 let filterTimeout = null;
 
