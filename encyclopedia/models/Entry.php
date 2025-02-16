@@ -138,6 +138,7 @@ class Entry {
         $str = preg_replace('/-+/', "-", $str);
         return trim($str, '-');
      }
+
     public function getFilteredEntries($filters, $page = 1) {
         $allowed_sort_fields = ['title', 'updated_at'];
         if (!in_array($filters['sort_field'], $allowed_sort_fields)) {
@@ -153,6 +154,12 @@ class Entry {
 
         $where_clause = "";
         $params = [];
+
+        // Add title filter
+        if (!empty($filters['title_search'])) {
+            $where_clause .= " AND e.title LIKE :title_search";
+            $params['title_search'] = "%" . $filters['title_search'] . "%";
+        }
 
         if ($filters['source'] !== 'ALL') {
             if ($filters['source'] === 'Unspecified') {
@@ -173,7 +180,7 @@ class Entry {
 
         // Calculate pagination values
         $total_pages = ceil($total_count / $this->items_per_page);
-        $page = max(1, min($page, $total_pages)); // Ensure page is within valid range
+        $page = max(1, min($page, $total_pages));
         $offset = ($page - 1) * $this->items_per_page;
 
         // Main query with pagination

@@ -14,6 +14,15 @@
 <table>
     <thead>
         <tr>
+            <th colspan="6" class="title-filter-header">
+                <input type="text"
+                       id="titleFilter"
+                       class="title-filter"
+                       placeholder="Filter by title..."
+                       value="<?php echo h($_GET['title_search'] ?? ''); ?>">
+            </th>
+        </tr>
+        <tr>
             <th class="sort-header <?php echo $sort_field === 'title' ? 'active-sort' : ''; ?>"
                 onclick="window.location.href='<?php echo buildUrl([
                     'sort' => 'title',
@@ -113,4 +122,49 @@
         <?php endforeach; ?>
     </tbody>
 </table>
+<script>
+let filterTimeout = null;
+
+document.getElementById('titleFilter').addEventListener('input', function(e) {
+    // Clear any existing timeout
+    if (filterTimeout) {
+        clearTimeout(filterTimeout);
+    }
+
+    // Set a new timeout to prevent too many requests
+    filterTimeout = setTimeout(function() {
+        // Get current URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+
+        // Update or add the title_search parameter
+        if (e.target.value) {
+            urlParams.set('title_search', e.target.value);
+        } else {
+            urlParams.delete('title_search');
+        }
+
+        // Reset to first page when filtering
+        urlParams.set('page', '1');
+
+        // Navigate to the new URL
+        window.location.href = '?' + urlParams.toString();
+    }, 300); // 300ms delay
+});
+
+function handleSort(field) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentSort = urlParams.get('sort');
+    const currentDirection = urlParams.get('direction');
+
+    urlParams.set('sort', field);
+    if (field === currentSort) {
+        urlParams.set('direction', currentDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+        urlParams.set('direction', 'asc');
+    }
+
+    window.location.href = '?' + urlParams.toString();
+}
+</script>
+
 <?php renderPagination($pagination, $current_params); ?>
