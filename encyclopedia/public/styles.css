@@ -364,6 +364,10 @@ th {
     border-color: #9ca3af;  /* Darker border on hover */
 }
 
+.entry-form select {
+    width: 200px;  /* Match the source book select width */
+}
+
 .rewrite-overlay {
     display: none;
     position: fixed;
