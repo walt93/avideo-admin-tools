@@ -18,22 +18,37 @@ function rewriteContent($content) {
         throw new Exception("API key not configured");
     }
 
-    $prompt = "Rewrite the following text in an authoritative encyclopedia style. Maintain absolute fidelity to the source material - do not add, remove, or modify any factual claims. Focus on clarity, precision, and academic tone while preserving all original information and context. Here is the content to rewrite:\n\n";
+    $prompt = "Rewrite the following text in an authoritative encyclopedia style. Maintain absolute fidelity to the source material - do not add, remove, or modify any factual claims. Focus on clarity, precision, and academic tone while preserving all original information and context. The output length should match or exceed the input length while maintaining all details. Here is the content to rewrite:\n\n";
+
+    // Calculate approximate input tokens (rough estimate: 4 chars per token)
+    $estimated_input_tokens = ceil((strlen($prompt) + strlen($content)) / 4);
+
+    // Set max_tokens to be 2x the input length to ensure we get full output
+    // Add buffer for system message tokens
+    $max_tokens = $estimated_input_tokens * 2 + 1000;
+
+    // Cap at GPT-4o's maximum output length
+    $max_tokens = min($max_tokens, 16384);
 
     $data = [
-        'model' => 'gpt-4',
+        'model' => 'gpt-4o',
         'messages' => [
             [
                 'role' => 'system',
-                'content' => 'You are an expert encyclopedia editor. Your task is to rewrite content while maintaining complete factual accuracy. Do not add information, remove details, or make assumptions. Focus on improving clarity, structure, and academic tone while preserving the exact meaning and all specific details from the source material.'
+                'content' => 'You are an expert encyclopedia editor. Your task is to rewrite content while maintaining complete factual accuracy. Do not add information, remove details, or make assumptions. Focus on improving clarity, structure, and academic tone while preserving the exact meaning and all specific details from the source material. The output should be at least as detailed as the input.'
             ],
             [
                 'role' => 'user',
                 'content' => $prompt . $content
             ]
         ],
-        'temperature' => 0.3
+        'temperature' => 0.3,
+        'max_tokens' => $max_tokens
     ];
+
+    // Log token estimates for debugging
+    logError("Estimated input tokens: " . $estimated_input_tokens);
+    logError("Set max_tokens: " . $max_tokens);
 
     $ch = curl_init('https://api.openai.com/v1/chat/completions');
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -86,6 +101,12 @@ function rewriteContent($content) {
         logError("Invalid API response structure: " . print_r($result, true));
         throw new Exception("Invalid API response");
     }
+
+    // Compare input and output lengths for debugging
+    $input_length = strlen($content);
+    $output_length = strlen($result['choices'][0]['message']['content']);
+    logError("Input length: " . $input_length . " chars");
+    logError("Output length: " . $output_length . " chars");
 
     return $result['choices'][0]['message']['content'];
 }
