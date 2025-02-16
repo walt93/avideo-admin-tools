@@ -50,42 +50,6 @@ class Entry {
         }
     }
 
-    public function getFilteredEntries($filters) {
-        $allowed_sort_fields = ['title', 'updated_at'];
-        if (!in_array($filters['sort_field'], $allowed_sort_fields)) {
-            $filters['sort_field'] = 'title';
-        }
-
-        $query = "
-            SELECT
-                e.*,
-                COUNT(f.id) as footnote_count
-            FROM entries e
-            LEFT JOIN footnotes f ON e.id = f.entry_id
-            WHERE 1=1
-        ";
-
-        $params = [];
-
-        if ($filters['source'] !== 'ALL') {
-            if ($filters['source'] === 'Unspecified') {
-                $query .= " AND e.source_book IS NULL";
-            } else {
-                $query .= " AND e.source_book = :source_book";
-                $params['source_book'] = $filters['source'];
-            }
-        }
-
-        if ($filters['status'] !== 'ALL') {
-            $query .= " AND e.status = :status";
-            $params['status'] = $filters['status'];
-        }
-
-        $query .= " GROUP BY e.id ORDER BY {$filters['sort_field']} {$filters['sort_direction']}";
-
-        return $this->db->query($query, $params)->fetchAll();
-    }
-
     public function getById($id) {
         $entry = $this->db->query("SELECT * FROM entries WHERE id = ?", [$id])->fetch();
 
