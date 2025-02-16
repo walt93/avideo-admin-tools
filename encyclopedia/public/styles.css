@@ -337,11 +337,15 @@ th {
     position: relative;
 }
 
+.content-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 5px;
+}
+
 .rewrite-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    padding: 8px 16px;
+    padding: 4px 12px;
     background: #4a5568;
     color: white;
     border: none;
@@ -349,7 +353,6 @@ th {
     cursor: pointer;
     font-size: 14px;
     transition: background-color 0.2s;
-    z-index: 10;
 }
 
 .rewrite-btn:hover {

@@ -20,12 +20,14 @@
     </div>
 
     <div class="form-group">
-        <label for="content">Content:</label>
+        <div class="content-header">
+            <label for="content">Content:</label>
+            <button type="button" id="rewriteBtn" class="rewrite-btn">🤖 Rewrite</button>
+        </div>
         <div class="content-wrapper">
             <textarea id="content" name="content" required><?php
                 echo $entry ? h($entry['content']) : '';
             ?></textarea>
-            <button type="button" id="rewriteBtn" class="rewrite-btn">🤖 Rewrite</button>
             <div class="text-stats">
                 <span id="contentWordCount">0 words</span>
                 <span class="stat-divider">|</span>
