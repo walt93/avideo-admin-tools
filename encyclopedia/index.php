@@ -1,11 +1,11 @@
 <?php
-// Enable error reporting
 ini_set('display_errors', 1);
+ini_set('log_errors', 1);
 error_reporting(E_ALL);
 
-// Add error logging
+// Simple debug logging function
 function debug_log($message) {
-    error_log("Encyclopedia Debug: " . print_r($message, true));
+    error_log("DEBUG: " . print_r($message, true));
 }
 
 try {
@@ -50,6 +50,8 @@ try {
     $sort_direction = $_GET['direction'] ?? 'asc';
     $current_page = max(1, intval($_GET['page'] ?? 1));
 
+    debug_log("Title search term: " . $title_search);
+
     debug_log("Filters prepared: " . json_encode([
         'source' => $selected_source,
         'status' => $selected_status,
@@ -66,7 +68,7 @@ try {
         'sort_direction' => $sort_direction
     ], $current_page);
 
-    debug_log("Entries retrieved");
+    debug_log("Number of results: " . count($result['entries']));
 
     $entries = $result['entries'];
     $pagination = $result['pagination'];

@@ -146,7 +146,7 @@ class Entry {
         }
 
         // Debug: Log the incoming filters
-        error_log("Filters received: " . print_r($filters, true));
+        debug_log("Filters received: " . print_r($filters, true));
 
         // First, get total count for pagination
         $count_query = "
@@ -163,7 +163,9 @@ class Entry {
             $where_clause .= " AND LOWER(e.title) LIKE LOWER(:title_search)";
             $params['title_search'] = "%" . $filters['title_search'] . "%";
             // Debug: Log when title filter is being applied
-            error_log("Applying title filter: " . $filters['title_search']);
+            debug_log("Applied title filter: " . $filters['title_search']);
+            debug_log("SQL where clause: " . $where_clause);
+            debug_log("SQL params: " . print_r($params, true));
         }
 
         if ($filters['source'] !== 'ALL') {
@@ -183,8 +185,8 @@ class Entry {
         $count_query .= $where_clause;
 
         // Debug: Log the final queries and parameters
-        error_log("Count query: " . $count_query);
-        error_log("Query parameters: " . print_r($params, true));
+        debug_log("Count query: " . $count_query);
+        debug_log("Query parameters: " . print_r($params, true));
 
         $total_count = $this->db->query($count_query, $params)->fetch()['total'];
 
@@ -209,12 +211,12 @@ class Entry {
         ";
 
         // Debug: Log the main query
-        error_log("Main query: " . $query);
+        debug_log("Main query: " . $query);
 
         $entries = $this->db->query($query, $params)->fetchAll();
 
         // Debug: Log the number of results
-        error_log("Number of entries returned: " . count($entries));
+        debug_log("Number of entries returned: " . count($entries));
 
         return [
             'entries' => $entries,
