@@ -49,15 +49,16 @@ try {
     $sort_field = $_GET['sort'] ?? 'title';
     $sort_direction = $_GET['direction'] ?? 'asc';
     $current_page = max(1, intval($_GET['page'] ?? 1));
+    $title_search = $_GET['title_search'] ?? '';  // Add this line BEFORE we use it
 
     debug_log("Title search term: " . $title_search);
-
     debug_log("Filters prepared: " . json_encode([
         'source' => $selected_source,
         'status' => $selected_status,
         'sort' => $sort_field,
         'direction' => $sort_direction,
-        'page' => $current_page
+        'page' => $current_page,
+        'title_search' => $title_search  // Add this to the debug log
     ]));
 
     // Get filtered entries with pagination
@@ -65,11 +66,11 @@ try {
         'source' => $selected_source,
         'status' => $selected_status,
         'sort_field' => $sort_field,
-        'sort_direction' => $sort_direction
+        'sort_direction' => $sort_direction,
+        'title_search' => $title_search  // Add this to the filters array
     ], $current_page);
 
     debug_log("Number of results: " . count($result['entries']));
-
     $entries = $result['entries'];
     $pagination = $result['pagination'];
     $total_entries = count($entries);
@@ -79,7 +80,8 @@ try {
         'source_book' => $selected_source,
         'status' => $selected_status,
         'sort' => $sort_field,
-        'direction' => $sort_direction
+        'direction' => $sort_direction,
+        'title_search' => $title_search  // Add this to preserve the filter during pagination
     ];
 
     // Set up view variables
