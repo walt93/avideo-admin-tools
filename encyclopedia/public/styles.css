@@ -340,22 +340,28 @@ th {
 .content-header {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;  /* Increased gap for better spacing */
+    margin-bottom: 8px;  /* Increased margin to prevent smashing into textarea */
 }
 
 .rewrite-btn {
-    padding: 6px 12px;
-    background: #4a5568;
-    color: white;
-    border: none;
+    padding: 4px 12px;
+    background: #f3f4f6;  /* Light gray background */
+    color: #374151;      /* Darker text for contrast */
+    border: 1px solid #d1d5db;  /* Light border */
     border-radius: 4px;
     cursor: pointer;
     font-size: 14px;
-    transition: background-color 0.2s;
+    transition: all 0.2s;
+    height: 28px;        /* Fixed height for better alignment */
+    display: flex;       /* For vertical centering of text and emoji */
+    align-items: center;
+    line-height: 1;      /* Helps with vertical centering */
 }
 
 .rewrite-btn:hover {
-    background: #2d3748;
+    background: #e5e7eb;  /* Slightly darker on hover */
+    border-color: #9ca3af;  /* Darker border on hover */
 }
 
 .rewrite-overlay {
