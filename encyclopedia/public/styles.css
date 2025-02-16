@@ -264,6 +264,29 @@ th {
     min-width: 200px;
 }
 
+/* back button */
+.back-nav {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+}
+
+.back-nav a {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    color: #333;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.back-nav a:hover {
+    background: #e9ecef;
+}
+
 /* Content Rewrite Styles */
 .content-wrapper {
     position: relative;

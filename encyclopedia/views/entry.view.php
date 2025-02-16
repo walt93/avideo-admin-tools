@@ -1,3 +1,7 @@
+<div class="back-nav">
+    <a href="index.php">← Back</a>
+</div>
+
 <h1><?php echo $entry ? 'Edit' : 'New'; ?> Entry</h1>
 
 <?php if (isset($error_message)): ?>
