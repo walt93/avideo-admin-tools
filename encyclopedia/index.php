@@ -67,7 +67,8 @@ try {
         'status' => $selected_status,
         'sort_field' => $sort_field,
         'sort_direction' => $sort_direction,
-        'title_search' => $title_search  // Add this to the filters array
+        'title_search' => $title_search,
+        'alpha' => $_GET['alpha'] ?? null
     ], $current_page);
 
     debug_log("Number of results: " . count($result['entries']));

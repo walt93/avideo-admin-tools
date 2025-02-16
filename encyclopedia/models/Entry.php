@@ -182,11 +182,20 @@ class Entry {
             $params['status'] = $filters['status'];
         }
 
-        $count_query .= $where_clause;
+        if (!empty($filters['alpha'])) {
+            $letters = explode(',', $filters['alpha']);
+            $letter_conditions = array_map(function($letter) {
+                return "e.title LIKE :title_start_" . $letter;
+            }, $letters);
 
-        // Debug: Log the final queries and parameters
-        debug_log("Count query: " . $count_query);
-        debug_log("Query parameters: " . print_r($params, true));
+            $where_clause .= " AND (" . implode(" OR ", $letter_conditions) . ")";
+
+            foreach ($letters as $letter) {
+                $params['title_start_' . $letter] = $letter . '%';
+            }
+        }
+
+        $count_query .= $where_clause;
 
         $total_count = $this->db->query($count_query, $params)->fetch()['total'];
 

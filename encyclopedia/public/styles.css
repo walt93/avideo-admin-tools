@@ -403,3 +403,55 @@ th {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
+.alpha-filter {
+    margin: 20px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.alpha-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.alpha-button {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    border: 1px solid #d1d5db;
+    background: #f3f4f6;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.alpha-button:hover {
+    background: #e5e7eb;
+    border-color: #9ca3af;
+}
+
+.alpha-button.active {
+    background: #1f2937;
+    border-color: #1f2937;
+    color: white;
+}
+
+.alpha-clear {
+    padding: 4px 8px;
+    background: none;
+    border: none;
+    color: #dc3545;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.alpha-clear:hover {
+    opacity: 1;
+}

@@ -11,6 +11,26 @@
     <div class="message error"><?php echo h($error_message); ?></div>
 <?php endif; ?>
 
+<div class="alpha-filter">
+    <div class="alpha-buttons">
+        <?php
+        $letters = range('A', 'Z');
+        $active_letters = isset($_GET['alpha']) ? explode(',', $_GET['alpha']) : [];
+
+        foreach ($letters as $letter):
+        ?>
+            <button
+                class="alpha-button <?php echo in_array($letter, $active_letters) ? 'active' : ''; ?>"
+                data-letter="<?php echo $letter; ?>"
+                type="button"
+            ><?php echo $letter; ?></button>
+        <?php endforeach; ?>
+    </div>
+    <?php if (!empty($active_letters)): ?>
+        <button class="alpha-clear" type="button" title="Clear letter filters">×</button>
+    <?php endif; ?>
+</div>
+
 <table>
     <thead>
         <tr>
@@ -190,6 +210,55 @@ function handleSort(field) {
 
     window.location.href = '?' + urlParams.toString();
 }
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const alphaButtons = document.querySelectorAll('.alpha-button');
+    const clearButton = document.querySelector('.alpha-clear');
+
+    // Get current URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+
+    // Handle letter button clicks
+    alphaButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const letter = this.dataset.letter;
+            let activeLetters = urlParams.get('alpha') ?
+                urlParams.get('alpha').split(',') : [];
+
+            if (this.classList.contains('active')) {
+                // Remove letter if already active
+                activeLetters = activeLetters.filter(l => l !== letter);
+            } else {
+                // Add letter if not active
+                activeLetters.push(letter);
+            }
+
+            // Update URL
+            if (activeLetters.length > 0) {
+                urlParams.set('alpha', activeLetters.join(','));
+            } else {
+                urlParams.delete('alpha');
+            }
+
+            // Reset to first page
+            urlParams.set('page', '1');
+
+            // Navigate to new URL
+            window.location.href = '?' + urlParams.toString();
+        });
+    });
+
+    // Handle clear button click
+    if (clearButton) {
+        clearButton.addEventListener('click', function() {
+            urlParams.delete('alpha');
+            urlParams.set('page', '1');
+            window.location.href = '?' + urlParams.toString();
+        });
+    }
+});
 </script>
 
 <?php renderPagination($pagination, $current_params); ?>
