@@ -60,7 +60,10 @@
                     </option>
                 <?php endforeach; ?>
             </select>
-            <input type="text" id="source_book" name="source_book"
+            <input type="text"
+                   id="source_book"
+                   name="source_book"
+                   placeholder="ENTER SOURCE BOOK NAME"
                    value="<?php echo $entry ? h($entry['source_book']) : ''; ?>">
         </div>
     </div>
