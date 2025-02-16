@@ -70,6 +70,7 @@ try {
 
     $entries = $result['entries'];
     $pagination = $result['pagination'];
+    $total_entries = count($entries);
 
     // Current URL parameters for pagination
     $current_params = [
