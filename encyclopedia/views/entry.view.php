@@ -50,8 +50,6 @@
     <div class="form-group">
         <label for="source_book">Source Book (optional):</label>
         <div class="source-book-inputs">
-            <input type="text" id="source_book" name="source_book"
-                   value="<?php echo $entry ? h($entry['source_book']) : ''; ?>">
             <select id="source_book_select" onChange="document.getElementById('source_book').value = this.value">
                 <option value="">Select existing source...</option>
                 <?php foreach ($sourceBooks as $source): ?>
@@ -60,6 +58,8 @@
                     </option>
                 <?php endforeach; ?>
             </select>
+            <input type="text" id="source_book" name="source_book"
+                   value="<?php echo $entry ? h($entry['source_book']) : ''; ?>">
         </div>
     </div>
 

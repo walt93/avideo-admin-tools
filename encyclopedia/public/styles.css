@@ -255,13 +255,12 @@ th {
     align-items: flex-start;
 }
 
-.source-book-inputs input[type="text"] {
-    flex: 1;
+.source-book-inputs select {
+    width: 200px;
 }
 
-.source-book-inputs select {
-    width: auto;
-    min-width: 200px;
+.source-book-inputs input[type="text"] {
+    flex: 1;
 }
 
 /* back button */
