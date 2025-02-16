@@ -2,6 +2,7 @@
 require_once __DIR__ . '/database.php';
 require_once __DIR__ . '/functions.php';
 require_once __DIR__ . '/models/Entry.php';
+require_once __DIR__ . '/views/components/pagination.php';
 
 $entry = new Entry();
 $error_message = null;
@@ -24,16 +25,28 @@ $selected_source = $_GET['source_book'] ?? 'ALL';
 $selected_status = $_GET['status'] ?? 'ALL';
 $sort_field = $_GET['sort'] ?? 'title';
 $sort_direction = $_GET['direction'] ?? 'asc';
+$current_page = max(1, intval($_GET['page'] ?? 1));
 
-// Get filtered entries
-$entries = $entry->getFilteredEntries([
+// Get filtered entries with pagination
+$result = $entry->getFilteredEntries([
     'source' => $selected_source,
     'status' => $selected_status,
     'sort_field' => $sort_field,
     'sort_direction' => $sort_direction
-]);
+], $current_page);
+
+$entries = $result['entries'];
+$pagination = $result['pagination'];
 
 $total_entries = count($entries);
+
+// Current URL parameters for pagination
+$current_params = [
+    'source_book' => $selected_source,
+    'status' => $selected_status,
+    'sort' => $sort_field,
+    'direction' => $sort_direction
+];
 
 // Set up view variables
 $currentView = __DIR__ . '/views/index.view.php';

@@ -1,6 +1,7 @@
 <?php
 class Entry {
     private $db;
+    private $items_per_page = 20;
 
     public function __construct() {
         $this->db = Database::getInstance();
@@ -172,5 +173,70 @@ class Entry {
         $str = preg_replace('/[^a-z0-9-]/', '-', $str);
         $str = preg_replace('/-+/', "-", $str);
         return trim($str, '-');
+     }
+    public function getFilteredEntries($filters, $page = 1) {
+        $allowed_sort_fields = ['title', 'updated_at'];
+        if (!in_array($filters['sort_field'], $allowed_sort_fields)) {
+            $filters['sort_field'] = 'title';
+        }
+
+        // First, get total count for pagination
+        $count_query = "
+            SELECT COUNT(DISTINCT e.id) as total
+            FROM entries e
+            WHERE 1=1
+        ";
+
+        $where_clause = "";
+        $params = [];
+
+        if ($filters['source'] !== 'ALL') {
+            if ($filters['source'] === 'Unspecified') {
+                $where_clause .= " AND e.source_book IS NULL";
+            } else {
+                $where_clause .= " AND e.source_book = :source_book";
+                $params['source_book'] = $filters['source'];
+            }
+        }
+
+        if ($filters['status'] !== 'ALL') {
+            $where_clause .= " AND e.status = :status";
+            $params['status'] = $filters['status'];
+        }
+
+        $count_query .= $where_clause;
+        $total_count = $this->db->query($count_query, $params)->fetch()['total'];
+
+        // Calculate pagination values
+        $total_pages = ceil($total_count / $this->items_per_page);
+        $page = max(1, min($page, $total_pages)); // Ensure page is within valid range
+        $offset = ($page - 1) * $this->items_per_page;
+
+        // Main query with pagination
+        $query = "
+            SELECT
+                e.*,
+                COUNT(f.id) as footnote_count
+            FROM entries e
+            LEFT JOIN footnotes f ON e.id = f.entry_id
+            WHERE 1=1
+            {$where_clause}
+            GROUP BY e.id
+            ORDER BY {$filters['sort_field']} {$filters['sort_direction']}
+            LIMIT {$this->items_per_page}
+            OFFSET {$offset}
+        ";
+
+        $entries = $this->db->query($query, $params)->fetchAll();
+
+        return [
+            'entries' => $entries,
+            'pagination' => [
+                'current_page' => $page,
+                'total_pages' => $total_pages,
+                'total_entries' => $total_count,
+                'items_per_page' => $this->items_per_page
+            ]
+        ];
     }
 }

@@ -113,3 +113,4 @@
         <?php endforeach; ?>
     </tbody>
 </table>
+<?php renderPagination($pagination, $current_params); ?>
