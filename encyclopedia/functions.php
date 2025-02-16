@@ -1,11 +1,10 @@
 <?php
 function buildUrl($params_to_update) {
-    $params = $_GET;
-    foreach ($params_to_update as $key => $value) {
-        $params[$key] = $value;
-    }
-    return '?' . http_build_query($params);
-}
+     $current_params = $_GET;
+     // Merge current params with updates, allowing updates to override
+     $params = array_merge($current_params, $params_to_update);
+     return '?' . http_build_query($params);
+ }
 
 function getSortIcon($field, $current_sort_field, $current_direction) {
     if ($field !== $current_sort_field) {

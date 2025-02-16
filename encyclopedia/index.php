@@ -82,7 +82,8 @@ try {
         'status' => $selected_status,
         'sort' => $sort_field,
         'direction' => $sort_direction,
-        'title_search' => $title_search  // Add this to preserve the filter during pagination
+        'title_search' => $title_search,
+        'alpha' => $_GET['alpha'] ?? null
     ];
 
     // Set up view variables

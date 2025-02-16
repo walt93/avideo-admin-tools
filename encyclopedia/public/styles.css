@@ -405,18 +405,20 @@ th {
 }
 
 .alpha-filter {
-    margin: 20px 0;
+    margin: 20px auto;  /* Changed from '20px 0' */
     display: flex;
     align-items: center;
+    justify-content: center;  /* Added this */
     gap: 10px;
+    width: 100%;  /* Added this */
 }
 
 .alpha-buttons {
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
+    justify-content: center;  /* Added this */
 }
-
 .alpha-button {
     min-width: 32px;
     height: 32px;
@@ -438,6 +440,8 @@ th {
     background: #1f2937;
     border-color: #1f2937;
     color: white;
+    font-weight: 500;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .alpha-clear {
