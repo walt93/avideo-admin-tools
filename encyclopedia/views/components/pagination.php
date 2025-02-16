@@ -2,6 +2,7 @@
 // New file: views/components/pagination.php
 
 function renderPagination($pagination, $current_params = []) {
+    debug_log("Pagination current_params: " . print_r($current_params, true));
     $current_page = $pagination['current_page'];
     $total_pages = $pagination['total_pages'];
 
