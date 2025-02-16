@@ -50,7 +50,7 @@
     </div>
 
     <div class="form-group">
-        <label for="source_book">Source Book (optional):</label>
+        <label for="source_book">Source:</label>
         <div class="source-book-inputs">
             <select id="source_book_select" onChange="document.getElementById('source_book').value = this.value">
                 <option value="">Select existing source...</option>
