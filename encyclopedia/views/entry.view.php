@@ -22,7 +22,23 @@
     <div class="form-group">
         <div class="content-header">
             <label for="content">Content:</label>
-            <button type="button" id="rewriteBtn" class="rewrite-btn">🤖 Rewrite</button>
+            <div class="rewrite-controls">
+                <button type="button" id="rewriteBtn" class="rewrite-btn">🤖 Rewrite</button>
+                <div class="model-selector">
+                    <button type="button" id="modelSelectBtn" class="model-select-btn">
+                        <span id="currentModel">gpt-4o (16,384)</span>
+                        <span class="caret">▼</span>
+                    </button>
+                    <div class="model-dropdown">
+                        <div class="model-option" data-model="gpt-4o" data-tokens="16384">gpt-4o (16,384)</div>
+                        <div class="model-option" data-model="gpt-4o-mini" data-tokens="16384">gpt-4o-mini (16,384)</div>
+                        <div class="model-option" data-model="o1" data-tokens="100000">o1 (100,000)</div>
+                        <div class="model-option" data-model="o1-mini" data-tokens="65563">o1-mini (65,563)</div>
+                        <div class="model-option" data-model="o3-mini" data-tokens="100000">o3-mini (100,000)</div>
+                        <div class="model-option" data-model="o1-preview" data-tokens="32768">o1-preview (32,768)</div>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="content-wrapper">
             <textarea id="content" name="content" required><?php
