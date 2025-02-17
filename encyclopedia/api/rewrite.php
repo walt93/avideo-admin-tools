@@ -4,7 +4,7 @@ ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
 // Set up error logging
-function logError($message) {
+function logError($message, $data = null) {
     $log_message = "Rewrite API Error: " . $message;
     if ($data) {
         $log_message .= "\nData: " . print_r($data, true);
