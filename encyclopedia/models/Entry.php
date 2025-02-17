@@ -63,6 +63,15 @@ class Entry {
         return $entry;
     }
 
+    public function getRecentEdits($limit = 3) {
+        return $this->db->query("
+            SELECT id, title, updated_at
+            FROM entries
+            ORDER BY updated_at DESC
+            LIMIT ?
+        ", [$limit])->fetchAll();
+    }
+
     public function save($data) {
         try {
             $this->db->beginTransaction();

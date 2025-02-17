@@ -10,19 +10,11 @@ function debug_log($message) {
 
 try {
     require_once __DIR__ . '/database.php';
-    debug_log("Database included");
-
     require_once __DIR__ . '/functions.php';
-    debug_log("Functions included");
-
     require_once __DIR__ . '/models/Entry.php';
-    debug_log("Entry model included");
-
     require_once __DIR__ . '/views/components/pagination.php';
-    debug_log("Pagination component included");
 
     $entry = new Entry();
-    debug_log("Entry instantiated");
 
     $error_message = null;
 
@@ -36,12 +28,10 @@ try {
         }
     }
 
-    // Get source books and status counts
+    // Get source books, status counts and recent edits
     $source_books = $entry->getSourceBooks();
-    debug_log("Source books retrieved");
-
     $status_counts = $entry->getStatusCounts();
-    debug_log("Status counts retrieved");
+    $recent_edits = $entry->getRecentEdits(3);  // Get last 3 edits
 
     // Get current filters and pagination
     $selected_source = $_GET['source_book'] ?? 'ALL';

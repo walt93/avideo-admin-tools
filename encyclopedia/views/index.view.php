@@ -1,7 +1,24 @@
 <div class="header-section">
     <h1>DeepState Guide Entries</h1>
-    <div class="entry-count">
-        Showing: <strong><?php echo $total_entries; ?></strong> entries
+    <div class="header-info">
+        <div class="entry-count">
+            Showing: <strong><?php echo $total_entries; ?></strong> entries
+        </div>
+        <div class="recent-edits">
+            <h3>Recent Edits</h3>
+            <?php foreach ($recent_edits as $edit): ?>
+                <div class="recent-edit">
+                    <span title="<?php echo h($edit['title']); ?>">
+                        <?php echo h(strlen($edit['title']) > 30 ? substr($edit['title'], 0, 27) . '...' : $edit['title']); ?>
+                    </span>
+                    <a href="entry.php?id=<?php echo $edit['id']; ?>" class="action-icon" title="Edit">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                        </svg>
+                    </a>
+                </div>
+            <?php endforeach; ?>
+        </div>
     </div>
 </div>
 
