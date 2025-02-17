@@ -5,12 +5,16 @@ error_reporting(E_ALL);
 
 // Set up error logging
 function logError($message) {
-    error_log("Rewrite API Error: " . $message);
+    $log_message = "Rewrite API Error: " . $message;
+    if ($data) {
+        $log_message .= "\nData: " . print_r($data, true);
+    }
+    error_log($log_message);
 }
 
 header('Content-Type: application/json');
 
-function rewriteContent($content, $model = 'gpt-4o', $max_tokens = 16384) {
+function rewriteContent($content, $model = 'gpt-4o', $max_tokens = 16384, $provider = 'openai') {
     // Get API keys from environment
     $openai_key = getenv('OPENAI_API_KEY');
     $groq_key = getenv('GROQ_API_KEY');
@@ -25,6 +29,15 @@ function rewriteContent($content, $model = 'gpt-4o', $max_tokens = 16384) {
         logError(($is_groq ? "Groq" : "OpenAI") . " API key not found in environment");
         throw new Exception("API key not configured");
     }
+
+    // Log the API request configuration
+    logError("API Request Configuration", [
+        'provider' => $provider,
+        'model' => $model,
+        'max_tokens' => $max_tokens,
+        'base_url' => $base_url,
+        'content_length' => strlen($content)
+    ]);
 
     $prompt = "Rewrite the following text in an authoritative encyclopedia style. Maintain absolute fidelity to the source material - do not add, remove, or modify any factual claims. Focus on clarity, precision, and academic tone while preserving all original information and context. The output length should match or exceed the input length while maintaining all details. Here is the content to rewrite:\n\n";
 
@@ -71,10 +84,14 @@ function rewriteContent($content, $model = 'gpt-4o', $max_tokens = 16384) {
     $response = curl_exec($ch);
     $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-    // Log CURL errors if any
+    // Get CURL errors if any
     if (curl_errno($ch)) {
-        logError("CURL Error: " . curl_error($ch));
-        throw new Exception("CURL Error: " . curl_error($ch));
+        $curl_error = curl_error($ch);
+        logError("CURL Error", [
+            'error' => $curl_error,
+            'errno' => curl_errno($ch)
+        ]);
+        throw new Exception("CURL Error: " . $curl_error);
     }
 
     // Log verbose output
@@ -97,6 +114,11 @@ function rewriteContent($content, $model = 'gpt-4o', $max_tokens = 16384) {
                 $error_message .= ": " . $error_data['error']['message'];
             }
         }
+        logError("API Error", [
+            'status' => $http_status,
+            'message' => $error_message,
+            'response' => $response
+        ]);
         throw new Exception($error_message);
     }
 
@@ -119,24 +141,36 @@ function rewriteContent($content, $model = 'gpt-4o', $max_tokens = 16384) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $input = file_get_contents('php://input');
-        $decoded = json_decode($input, true);
+        logError("Received request", $input); // Log the incoming request
 
+        $decoded = json_decode($input, true);
         if (!$decoded || !isset($decoded['content'])) {
             throw new Exception('No content provided or invalid JSON');
         }
 
         $model = $decoded['model'] ?? 'gpt-4o';
         $max_tokens = $decoded['max_tokens'] ?? 16384;
+        $provider = $decoded['provider'] ?? 'openai';
 
-        $rewritten = rewriteContent($decoded['content'], $model, $max_tokens);
+        logError("Processing request", [
+            'model' => $model,
+            'max_tokens' => $max_tokens,
+            'provider' => $provider,
+            'content_length' => strlen($decoded['content'])
+        ]);
+
+        $rewritten = rewriteContent($decoded['content'], $model, $max_tokens, $provider);
         echo json_encode(['content' => $rewritten]);
 
     } catch (Exception $e) {
-        logError("Exception: " . $e->getMessage());
+        logError("Exception occurred", [
+          'message' => $e->getMessage(),
+          'trace' => $e->getTraceAsString()
+        ]);
         http_response_code(500);
         echo json_encode([
-            'error' => $e->getMessage(),
-            'details' => 'Check error log for more information'
+          'error' => $e->getMessage(),
+          'details' => $e->getTraceAsString()
         ]);
     }
 } else {

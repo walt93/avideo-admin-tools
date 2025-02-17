@@ -196,11 +196,11 @@
         // Show overlay
         overlay.style.display = 'flex';
 
-        const selectedModel = localStorage.getItem('selectedModel') || 'gpt-4o';
-        const selectedTokens = parseInt(localStorage.getItem('selectedTokens') || '16384');
-        const provider = document.querySelector(`.model-option[data-model="${selectedModel}"]`)?.dataset.provider || 'openai';
-
         try {
+            const selectedModel = localStorage.getItem('selectedModel') || 'gpt-4o';
+            const selectedTokens = parseInt(localStorage.getItem('selectedTokens') || '16384');
+            const provider = document.querySelector(`.model-option[data-model="${selectedModel}"]`)?.dataset.provider || 'openai';
+
             const response = await fetch('api/rewrite.php', {
                 method: 'POST',
                 headers: {
@@ -215,7 +215,8 @@
             });
 
             if (!response.ok) {
-                throw new Error('Rewrite failed');
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Unknown error occurred');
             }
 
             const result = await response.json();
