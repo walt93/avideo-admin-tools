@@ -30,41 +30,41 @@
                          <span class="caret">▼</span>
                      </button>
                      <div class="model-dropdown">
-                         <!-- OpenAI Models -->
-                         <div class="model-section">OpenAI</div>
-                         <div class="model-option" data-model="gpt-4o" data-tokens="16384">gpt-4o (16,384)</div>
-                         <div class="model-option" data-model="gpt-4o-mini" data-tokens="16384">gpt-4o-mini (16,384)</div>
-                         <div class="model-option" data-model="o1" data-tokens="100000">o1 (100,000)</div>
-                         <div class="model-option" data-model="o1-mini" data-tokens="65563">o1-mini (65,563)</div>
-                         <div class="model-option" data-model="o3-mini" data-tokens="100000">o3-mini (100,000)</div>
-                         <div class="model-option" data-model="o1-preview" data-tokens="32768">o1-preview (32,768)</div>
+                        <!-- OpenAI Models -->
+                        <div class="model-section">OpenAI</div>
+                        <div class="model-option" data-model="gpt-4o" data-tokens="16384">GPT-4 (16K/16K)</div>
+                        <div class="model-option" data-model="gpt-4o-mini" data-tokens="16384">GPT-4 Mini (16K/16K)</div>
+                        <div class="model-option" data-model="o1" data-tokens="100000">GPT-4 Turbo (100K/100K)</div>
+                        <div class="model-option" data-model="o1-mini" data-tokens="65563">GPT-4 Turbo Mini (65K/65K)</div>
+                        <div class="model-option" data-model="o3-mini" data-tokens="100000">GPT-3.5 Turbo Mini (100K/100K)</div>
+                        <div class="model-option" data-model="o1-preview" data-tokens="32768">GPT-4 Preview (32K/32K)</div>
 
-                         <div class="model-separator"></div>
+                        <div class="model-separator"></div>
 
-                         <!-- Groq Production Models -->
-                         <div class="model-section">Groq Production</div>
-                         <div class="model-option" data-model="gemma2-9b-it" data-tokens="8192" data-provider="groq">gemma2-9b-it (8,192)</div>
-                         <div class="model-option" data-model="llama-3.3-70b-versatile" data-tokens="32768" data-provider="groq">llama-3.3-70b-versatile (32,768)</div>
-                         <div class="model-option" data-model="llama-3.1-8b-instant" data-tokens="8192" data-provider="groq">llama-3.1-8b-instant (8,192)</div>
-                         <div class="model-option" data-model="llama-guard-3-8b" data-tokens="8192" data-provider="groq">llama-guard-3-8b (8,192)</div>
-                         <div class="model-option" data-model="llama3-70b-8192" data-tokens="8192" data-provider="groq">llama3-70b-8192 (8,192)</div>
-                         <div class="model-option" data-model="llama3-8b-8192" data-tokens="8192" data-provider="groq">llama3-8b-8192 (8,192)</div>
-                         <div class="model-option" data-model="mixtral-8x7b-32768" data-tokens="32768" data-provider="groq">mixtral-8x7b-32768 (32,768)</div>
+                        <!-- Groq Production Models -->
+                        <div class="model-section">Groq Production</div>
+                        <div class="model-option" data-model="gemma2-9b-it" data-tokens="8192" data-provider="groq">Gemma-2 9B (8K/8K)</div>
+                        <div class="model-option" data-model="llama-3.3-70b-versatile" data-tokens="32768" data-provider="groq">Llama-3 70B (128K/32K)</div>
+                        <div class="model-option" data-model="llama-3.1-8b-instant" data-tokens="8192" data-provider="groq">Llama-3 8B Fast (128K/8K)</div>
+                        <div class="model-option" data-model="llama-guard-3-8b" data-tokens="8192" data-provider="groq">Llama Guard 8B (8K/8K)</div>
+                        <div class="model-option" data-model="llama3-70b-8192" data-tokens="8192" data-provider="groq">Llama-3 70B Compact (8K/8K)</div>
+                        <div class="model-option" data-model="llama3-8b-8192" data-tokens="8192" data-provider="groq">Llama-3 8B Compact (8K/8K)</div>
+                        <div class="model-option" data-model="mixtral-8x7b-32768" data-tokens="32768" data-provider="groq">Mixtral 56B (32K/32K)</div>
 
-                         <div class="model-separator"></div>
+                        <div class="model-separator"></div>
 
-                         <!-- Groq Development Models -->
-                         <div class="model-section">Groq Development</div>
-                         <div class="model-option" data-model="qwen-2.5-32b" data-tokens="8192" data-provider="groq">qwen-2.5-32b (8,192)</div>
-                         <div class="model-option" data-model="deepseek-r1-distill-qwen-32b" data-tokens="16384" data-provider="groq">deepseek-r1-distill-qwen-32b (16,384)</div>
-                         <div class="model-option" data-model="deepseek-r1-distill-llama-70b-specdec" data-tokens="16384" data-provider="groq">deepseek-r1-distill-llama-70b-specdec (16,384)</div>
-                         <div class="model-option" data-model="deepseek-r1-distill-llama-70b" data-tokens="16384" data-provider="groq">deepseek-r1-distill-llama-70b (16,384)</div>
-                         <div class="model-option" data-model="llama-3.3-70b-specdec" data-tokens="8192" data-provider="groq">llama-3.3-70b-specdec (8,192)</div>
-                         <div class="model-option" data-model="llama-3.2-1b-preview" data-tokens="8192" data-provider="groq">llama-3.2-1b-preview (8,192)</div>
-                         <div class="model-option" data-model="llama-3.2-3b-preview" data-tokens="8192" data-provider="groq">llama-3.2-3b-preview (8,192)</div>
-                         <div class="model-option" data-model="llama-3.2-11b-vision-preview" data-tokens="8192" data-provider="groq">llama-3.2-11b-vision-preview (8,192)</div>
-                         <div class="model-option" data-model="llama-3.2-90b-vision-preview" data-tokens="8192" data-provider="groq">llama-3.2-90b-vision-preview (8,192)</div>
-                     </div>
+                        <!-- Groq Development Models -->
+                        <div class="model-section">Groq Development</div>
+                        <div class="model-option" data-model="qwen-2.5-32b" data-tokens="8192" data-provider="groq">Qwen-2 32B (128K/8K)</div>
+                        <div class="model-option" data-model="deepseek-r1-distill-qwen-32b" data-tokens="16384" data-provider="groq">DeepSeek/Qwen 32B (128K/16K)</div>
+                        <div class="model-option" data-model="deepseek-r1-distill-llama-70b-specdec" data-tokens="16384" data-provider="groq">DeepSeek/Llama 70B Spec (128K/16K)</div>
+                        <div class="model-option" data-model="deepseek-r1-distill-llama-70b" data-tokens="16384" data-provider="groq">DeepSeek/Llama 70B (128K/16K)</div>
+                        <div class="model-option" data-model="llama-3.3-70b-specdec" data-tokens="8192" data-provider="groq">Llama-3 70B Spec (8K/8K)</div>
+                        <div class="model-option" data-model="llama-3.2-1b-preview" data-tokens="8192" data-provider="groq">Llama-3 1B Preview (128K/8K)</div>
+                        <div class="model-option" data-model="llama-3.2-3b-preview" data-tokens="8192" data-provider="groq">Llama-3 3B Preview (128K/8K)</div>
+                        <div class="model-option" data-model="llama-3.2-11b-vision-preview" data-tokens="8192" data-provider="groq">Llama-3 11B Vision (128K/8K)</div>
+                        <div class="model-option" data-model="llama-3.2-90b-vision-preview" data-tokens="8192" data-provider="groq">Llama-3 90B Vision (128K/8K)</div>
+                    </div>
                  </div>
              </div>
         </div>
