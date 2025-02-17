@@ -31,7 +31,7 @@ try {
     // Get source books, status counts and recent edits
     $source_books = $entry->getSourceBooks();
     $status_counts = $entry->getStatusCounts();
-    $recent_edits = $entry->getRecentEdits(3);  // Get last 3 edits
+    $recent_edits = $entry->getRecentEdits(7);  // Get last 7 edits
 
     // Get current filters and pagination
     $selected_source = $_GET['source_book'] ?? 'ALL';
