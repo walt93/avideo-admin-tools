@@ -1,13 +1,50 @@
 <div class="header-section">
-    <h1>DeepState Guide Entries</h1>
-    <div class="header-info">
-        <div class="entry-count">
-            Showing: <strong><?php echo $total_entries; ?></strong> entries
-        </div>
-        <div class="recent-edits">
-            <h3>Recent Edits</h3>
-            <?php foreach ($recent_edits as $edit): ?>
-                <div class="recent-edit">
+    <div class="header-top">
+        <h1>DeepState Guide Entries</h1>
+        <div class="stats-panels">
+            <!-- Source Books Panel -->
+            <div class="stats-panel">
+                <h3>Sources</h3>
+                <div class="stat-item">
+                    <a href="<?php echo buildUrl(['source_book' => 'ALL']); ?>">
+                        All Sources
+                        <span class="stat-count"><?php echo array_sum(array_column($source_books, 'count')); ?></span>
+                    </a>
+                </div>
+                <?php foreach ($source_books as $source): ?>
+                <div class="stat-item">
+                    <a href="<?php echo buildUrl(['source_book' => $source['source_book']]); ?>">
+                        <?php echo h($source['source_book']); ?>
+                        <span class="stat-count"><?php echo $source['count']; ?></span>
+                    </a>
+                </div>
+                <?php endforeach; ?>
+            </div>
+
+            <!-- Status Panel -->
+            <div class="stats-panel">
+                <h3>Status</h3>
+                <div class="stat-item">
+                    <a href="<?php echo buildUrl(['status' => 'ALL']); ?>">
+                        All Statuses
+                        <span class="stat-count"><?php echo array_sum(array_column($status_counts, 'count')); ?></span>
+                    </a>
+                </div>
+                <?php foreach ($status_counts as $status): ?>
+                <div class="stat-item">
+                    <a href="<?php echo buildUrl(['status' => $status['status']]); ?>">
+                        <?php echo ucfirst($status['status']); ?>
+                        <span class="stat-count"><?php echo $status['count']; ?></span>
+                    </a>
+                </div>
+                <?php endforeach; ?>
+            </div>
+
+            <!-- Recent Edits Panel -->
+            <div class="stats-panel">
+                <h3>Recent Edits</h3>
+                <?php foreach ($recent_edits as $edit): ?>
+                <div class="stat-item">
                     <span title="<?php echo h($edit['title']); ?>">
                         <?php echo h(strlen($edit['title']) > 30 ? substr($edit['title'], 0, 27) . '...' : $edit['title']); ?>
                     </span>
@@ -17,7 +54,8 @@
                         </svg>
                     </a>
                 </div>
-            <?php endforeach; ?>
+                <?php endforeach; ?>
+            </div>
         </div>
     </div>
 </div>
