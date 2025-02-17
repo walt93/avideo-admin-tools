@@ -174,6 +174,9 @@
         // Show overlay
         overlay.style.display = 'flex';
 
+        const selectedModel = localStorage.getItem('selectedModel') || 'gpt-4o';
+        const selectedTokens = parseInt(localStorage.getItem('selectedTokens') || '16384');
+
         try {
             const response = await fetch('api/rewrite.php', {
                 method: 'POST',
@@ -181,7 +184,9 @@
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    content: contentArea.value
+                    content: contentArea.value,
+                    model: selectedModel,
+                    max_tokens: selectedTokens
                 })
             });
 
@@ -209,6 +214,55 @@
             // Hide overlay
             overlay.style.display = 'none';
         }
+    });
+
+    // Model selector functionality
+    const modelSelector = document.querySelector('.model-selector');
+    const modelSelectBtn = document.getElementById('modelSelectBtn');
+    const currentModelSpan = document.getElementById('currentModel');
+
+    // Load saved model from localStorage or use default
+    const savedModel = localStorage.getItem('selectedModel') || 'gpt-4o';
+    const savedTokens = localStorage.getItem('selectedTokens') || '16384';
+    currentModelSpan.textContent = `${savedModel} (${Number(savedTokens).toLocaleString()})`;
+
+    // Toggle dropdown
+    modelSelectBtn.addEventListener('click', () => {
+        modelSelector.classList.toggle('active');
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!modelSelector.contains(e.target)) {
+            modelSelector.classList.remove('active');
+        }
+    });
+
+    // Handle model selection
+    document.querySelectorAll('.model-option').forEach(option => {
+        const model = option.dataset.model;
+        const tokens = option.dataset.tokens;
+
+        // Mark initially selected option
+        if (model === savedModel) {
+            option.classList.add('selected');
+        }
+
+        option.addEventListener('click', () => {
+            // Update selection
+            document.querySelectorAll('.model-option').forEach(opt => opt.classList.remove('selected'));
+            option.classList.add('selected');
+
+            // Update button text
+            currentModelSpan.textContent = option.textContent;
+
+            // Save to localStorage
+            localStorage.setItem('selectedModel', model);
+            localStorage.setItem('selectedTokens', tokens);
+
+            // Close dropdown
+            modelSelector.classList.remove('active');
+        });
     });
 
     // Handle "Use AI Rewrite" button

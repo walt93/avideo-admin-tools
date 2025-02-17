@@ -364,6 +364,74 @@ th {
     border-color: #9ca3af;  /* Darker border on hover */
 }
 
+.rewrite-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.model-selector {
+    position: relative;
+    display: inline-block;
+}
+
+.model-select-btn {
+    padding: 4px 12px;
+    background: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.model-select-btn:hover {
+    background: #e5e7eb;
+    border-color: #9ca3af;
+}
+
+.caret {
+    font-size: 10px;
+}
+
+.model-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    z-index: 1000;
+    margin-top: 4px;
+    min-width: 200px;
+}
+
+.model-selector.active .model-dropdown {
+    display: block;
+}
+
+.model-option {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #374151;
+}
+
+.model-option:hover {
+    background: #f3f4f6;
+}
+
+.model-option.selected {
+    background: #e5e7eb;
+    font-weight: 500;
+}
+
 .entry-form select {
     width: 200px;  /* Match the source book select width */
 }

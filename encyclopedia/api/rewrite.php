@@ -10,7 +10,7 @@ function logError($message) {
 
 header('Content-Type: application/json');
 
-function rewriteContent($content) {
+function rewriteContent($content, $model = 'gpt-4o', $max_tokens = 16384) {
     $api_key = getenv('OPENAI_API_KEY');
 
     if (!$api_key) {
@@ -31,7 +31,7 @@ function rewriteContent($content) {
     $max_tokens = min($max_tokens, 16384);
 
     $data = [
-        'model' => 'gpt-4o',
+        'model' => $model,
         'messages' => [
             [
                 'role' => 'system',
@@ -43,7 +43,7 @@ function rewriteContent($content) {
             ]
         ],
         'temperature' => 0.3,
-        'max_tokens' => $max_tokens
+        'max_tokens' => min($max_tokens, intval($max_tokens))
     ];
 
     // Log token estimates for debugging
@@ -115,14 +115,16 @@ function rewriteContent($content) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $input = file_get_contents('php://input');
-        logError("Received input: " . $input);
-
         $decoded = json_decode($input, true);
+
         if (!$decoded || !isset($decoded['content'])) {
             throw new Exception('No content provided or invalid JSON');
         }
 
-        $rewritten = rewriteContent($decoded['content']);
+        $model = $decoded['model'] ?? 'gpt-4o';
+        $max_tokens = $decoded['max_tokens'] ?? 16384;
+
+        $rewritten = rewriteContent($decoded['content'], $model, $max_tokens);
         echo json_encode(['content' => $rewritten]);
 
     } catch (Exception $e) {
