@@ -11,10 +11,18 @@ function logError($message) {
 header('Content-Type: application/json');
 
 function rewriteContent($content, $model = 'gpt-4o', $max_tokens = 16384) {
-    $api_key = getenv('OPENAI_API_KEY');
+    // Get API keys from environment
+    $openai_key = getenv('OPENAI_API_KEY');
+    $groq_key = getenv('GROQ_API_KEY');
+
+    // Determine if this is a Groq model
+    $is_groq = isset($_POST['provider']) && $_POST['provider'] === 'groq';
+
+    $api_key = $is_groq ? $groq_key : $openai_key;
+    $base_url = $is_groq ? 'https://api.groq.com/openai/v1/chat/completions' : 'https://api.openai.com/v1/chat/completions';
 
     if (!$api_key) {
-        logError("OpenAI API key not found in environment");
+        logError(($is_groq ? "Groq" : "OpenAI") . " API key not found in environment");
         throw new Exception("API key not configured");
     }
 
@@ -45,10 +53,6 @@ function rewriteContent($content, $model = 'gpt-4o', $max_tokens = 16384) {
         'temperature' => 0.3,
         'max_tokens' => min($max_tokens, intval($max_tokens))
     ];
-
-    // Log token estimates for debugging
-    logError("Estimated input tokens: " . $estimated_input_tokens);
-    logError("Set max_tokens: " . $max_tokens);
 
     $ch = curl_init('https://api.openai.com/v1/chat/completions');
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);

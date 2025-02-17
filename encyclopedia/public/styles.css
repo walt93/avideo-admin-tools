@@ -416,6 +416,27 @@ th {
     display: block;
 }
 
+.model-section {
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6B7280;
+    background: #F9FAFB;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.model-separator {
+    height: 1px;
+    background: #E5E7EB;
+    margin: 4px 0;
+}
+
+.model-dropdown {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
 .model-option {
     padding: 8px 12px;
     cursor: pointer;
