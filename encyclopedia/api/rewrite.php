@@ -110,10 +110,43 @@ function calculateTokenLimit($content, $max_tokens) {
     return min($estimated_input_tokens * 2 + 1000, intval($max_tokens));
 }
 
+function getOpenAIModelConfig($model) {
+    $configs = [
+        'gpt-4o' => [
+            'supports_system_message' => true,
+            'supports_temperature' => true,
+            'token_param_name' => 'max_tokens'
+        ],
+        'gpt-4o-mini' => [
+            'supports_system_message' => true,
+            'supports_temperature' => true,
+            'token_param_name' => 'max_tokens'
+        ],
+        'o1-mini' => [
+            'supports_system_message' => false,
+            'supports_temperature' => false,
+            'token_param_name' => 'max_completion_tokens'
+        ],
+        'o1-preview' => [
+            'supports_system_message' => false,
+            'supports_temperature' => false,
+            'token_param_name' => 'max_completion_tokens'
+        ],
+        // Add other models as needed
+    ];
+
+    if (!isset($configs[$model])) {
+        throw new Exception("Unsupported OpenAI model: " . $model);
+    }
+
+    return $configs[$model];
+}
+
 function handleOpenAIRequest($content, $model, $max_tokens, $api_key) {
     logError("Handling OpenAI request", ['model' => $model]);
 
     $base_url = 'https://api.openai.com/v1/chat/completions';
+    $model_config = getOpenAIModelConfig($model);
 
     // OpenAI-specific headers
     $headers = [
@@ -121,28 +154,44 @@ function handleOpenAIRequest($content, $model, $max_tokens, $api_key) {
         'Authorization: Bearer ' . $api_key
     ];
 
-    // OpenAI-specific message format
-    $messages = [
-        [
+    // Build messages based on model capabilities
+    $messages = [];
+    if ($model_config['supports_system_message']) {
+        $messages[] = [
             'role' => 'system',
             'content' => 'You are an expert encyclopedia editor. Your task is to rewrite content while maintaining complete factual accuracy. Do not add information, remove details, or make assumptions. Focus on improving clarity, structure, and academic tone while preserving the exact meaning and all specific details from the source material. The output should be at least as detailed as the input.'
-        ],
-        [
-            'role' => 'user',
-            'content' => "Rewrite the following text in an authoritative encyclopedia style. Your output MUST be equal to or longer than the input text - do not condense or summarize. Expand explanations where appropriate while maintaining absolute factual accuracy. Keep every single detail, data point, and nuance from the source. Structure the content with improved clarity and formal academic tone, but never sacrifice completeness for conciseness. You should elaborate on concepts where it adds clarity, use precise language, and maintain comprehensive coverage of all points in the original text. Here is the content to rewrite:\n\n" . $content
-        ]
+        ];
+    }
+
+    // For models that don't support system messages, include instructions in user message
+    $user_content = $model_config['supports_system_message']
+        ? "Rewrite the following text in an authoritative encyclopedia style."
+        : "You are an expert encyclopedia editor. Rewrite the following text in an authoritative encyclopedia style, maintaining complete factual accuracy.";
+
+    $user_content .= " Your output MUST be equal to or longer than the input text - do not condense or summarize. Expand explanations where appropriate while maintaining absolute factual accuracy. Keep every single detail, data point, and nuance from the source. Structure the content with improved clarity and formal academic tone, but never sacrifice completeness for conciseness. You should elaborate on concepts where it adds clarity, use precise language, and maintain comprehensive coverage of all points in the original text. Here is the content to rewrite:\n\n" . $content;
+
+    $messages[] = [
+        'role' => 'user',
+        'content' => $user_content
     ];
 
-    // OpenAI-specific request body
+    // Build request data based on model capabilities
     $data = [
         'model' => $model,
-        'messages' => $messages,
-        'temperature' => 0.3,
-        'max_tokens' => calculateTokenLimit($content, $max_tokens)
+        'messages' => $messages
     ];
+
+    // Add temperature only if supported
+    if ($model_config['supports_temperature']) {
+        $data['temperature'] = 0.3;
+    }
+
+    // Add token limit with correct parameter name
+    $data[$model_config['token_param_name']] = calculateTokenLimit($content, $max_tokens);
 
     logError("OpenAI request prepared", [
         'url' => $base_url,
+        'model_config' => $model_config,
         'data_structure' => array_keys($data)
     ]);
 
