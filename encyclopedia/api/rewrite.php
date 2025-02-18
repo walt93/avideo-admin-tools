@@ -34,25 +34,18 @@ function rewriteContent($content, $model = 'gpt-4o', $max_tokens = 16384, $provi
     $model_configs = [
         'o1-mini' => [
             'supports_system_message' => false,
-            'token_param_name' => 'max_completion_tokens'
+            'token_param_name' => 'max_completion_tokens',
+            'supports_temperature' => false
         ],
         // Add other models as needed
         'default' => [
             'supports_system_message' => true,
-            'token_param_name' => 'max_tokens'
+            'token_param_name' => 'max_tokens',
+            'supports_temperature' => true
         ]
     ];
 
     $model_config = $model_configs[$model] ?? $model_configs['default'];
-
-    // Log the API request configuration
-    logError("API Request Configuration", [
-        'provider' => $provider,
-        'model' => $model,
-        'max_tokens' => $max_tokens,
-        'base_url' => $base_url,
-        'content_length' => strlen($content)
-    ]);
 
     $system_content = 'You are an expert encyclopedia editor. Your task is to rewrite content while maintaining complete factual accuracy. Do not add information, remove details, or make assumptions. Focus on improving clarity, structure, and academic tone while preserving the exact meaning and all specific details from the source material. The output should be at least as detailed as the input.';
 
@@ -90,10 +83,27 @@ function rewriteContent($content, $model = 'gpt-4o', $max_tokens = 16384, $provi
     $data = [
         'model' => $model,
         'messages' => $messages,
-        'temperature' => 0.3,
     ];
+
+    // Add temperature only if supported
+    if ($model_config['supports_temperature']) {
+        $data['temperature'] = 0.3;
+    }
+
     // Add the appropriate token parameter based on model configuration
     $data[$model_config['token_param_name']] = $token_limit;
+
+    // Log the API request configuration
+    logError("API Request Configuration", [
+        'provider' => $provider,
+        'model' => $model,
+        'token_param' => $model_config['token_param_name'],
+        'token_limit' => $token_limit,
+        'temperature_supported' => $model_config['supports_temperature'],
+        'base_url' => $base_url,
+        'content_length' => strlen($content),
+        'request_data' => $data
+    ]);
 
     $ch = curl_init($base_url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -103,6 +113,7 @@ function rewriteContent($content, $model = 'gpt-4o', $max_tokens = 16384, $provi
         'Content-Type: application/json',
         'Authorization: Bearer ' . $api_key
     ]);
+
 
     // Add these for debugging
     curl_setopt($ch, CURLOPT_VERBOSE, true);
