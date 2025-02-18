@@ -364,9 +364,8 @@ async function analyzeSentiment(content, entryId = null, targetElement, statusEl
         const sentimentSection = targetElement.closest('.sentiment-section');
         sentimentSection.style.display = 'block';
 
-        // Create a new SentimentAnalysis instance and render
-        const analyzer = new SentimentAnalysis(result.sentiment_data);
-        targetElement.innerHTML = analyzer.render();
+        // Use the rendered HTML from the server
+        targetElement.innerHTML = result.html;
 
         return result;
     } catch (error) {

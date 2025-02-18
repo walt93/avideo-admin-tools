@@ -91,10 +91,14 @@ Analyze the following content:
         $entry->saveSentimentAnalysis($data['entry_id'], $jsonData);
     }
 
-    // Return the results
+    // Create an analyzer instance with the parsed data
+    $visualizer = new SentimentAnalysis(json_decode($jsonData, true));
+
+    // Return both the raw data and rendered HTML
     echo json_encode([
         'raw_xml' => $result,
-        'sentiment_data' => $jsonData
+        'sentiment_data' => json_decode($jsonData),
+        'html' => $visualizer->render()
     ]);
 
 } catch (Exception $e) {
