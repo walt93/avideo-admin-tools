@@ -35,7 +35,6 @@ logError("Logging test from rewrite.php startup", [
 
 header('Content-Type: application/json');
 
-
  function rewriteContent($content, $model = 'gpt-4o', $max_tokens = 16384, $provider = 'openai') {
      // Get API keys from environment
      $openai_key = getenv('OPENAI_API_KEY');
