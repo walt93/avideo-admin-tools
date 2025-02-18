@@ -42,113 +42,137 @@ class SentimentAnalysis {
         return min(100, abs($score * 5) + 50) . '%';  // 50% at 0, 100% at ±10
     }
 
-    public function render() {
-        if (!$this->data) {
-            return '<div class="sentiment-analysis">No sentiment data available</div>';
-        }
+    public funct    public function render() {
+                        if (!$this->data) {
+                            return '<div class="sentiment-analysis">No sentiment data available</div>';
+                        }
 
-        $html = '<div class="sentiment-analysis">';
+                        $html = '<div class="sentiment-analysis">';
 
-        // Overall sentiment first
-        if (isset($this->data['sentiment'])) {
-            $overallScore = $this->data['sentiment'];
-            $overallColor = $this->getScoreColor($overallScore);
-            $overallWidth = $this->getScoreWidth($overallScore);
+                        // Overall sentiment first in its own row
+                        if (isset($this->data['sentiment'])) {
+                            $overallScore = $this->data['sentiment'];
+                            $overallColor = $this->getScoreColor($overallScore);
+                            $overallWidth = $this->getScoreWidth($overallScore);
 
-            $html .= sprintf(
-                '<div class="sentiment-overall">
-                    <div class="sentiment-label">Overall Sentiment</div>
-                    <div class="sentiment-bar-container">
-                        <div class="sentiment-bar" style="width: %s; background-color: %s;"></div>
-                        <div class="sentiment-score">%+.1f</div>
-                    </div>
-                </div>',
-                $overallWidth,
-                $overallColor,
-                $overallScore
-            );
-        }
+                            $html .= sprintf(
+                                '<div class="sentiment-overall">
+                                    <div class="sentiment-label">Overall Sentiment</div>
+                                    <div class="sentiment-bar-container">
+                                        <div class="sentiment-bar" style="width: %s; background-color: %s;"></div>
+                                        <div class="sentiment-score">%+.1f</div>
+                                    </div>
+                                </div>',
+                                $overallWidth,
+                                $overallColor,
+                                $overallScore
+                            );
+                        }
 
-        // Then other topics
-        foreach ($this->data as $topic => $score) {
-            if ($topic === 'sentiment') continue;
+                        // Start grid container for topics
+                        $html .= '<div class="sentiment-grid">';
 
-            $color = $this->getScoreColor($score);
-            $width = $this->getScoreWidth($score);
+                        // Then other topics
+                        foreach ($this->data as $topic => $score) {
+                            if ($topic === 'sentiment') continue;
 
-            $html .= sprintf(
-                '<div class="sentiment-item">
-                    <div class="sentiment-label">%s</div>
-                    <div class="sentiment-bar-container">
-                        <div class="sentiment-bar" style="width: %s; background-color: %s;"></div>
-                        <div class="sentiment-score">%+.1f</div>
-                    </div>
-                </div>',
-                htmlspecialchars(str_replace('_', ' ', ucfirst($topic))),
-                $width,
-                $color,
-                $score
-            );
-        }
+                            $color = $this->getScoreColor($score);
+                            $width = $this->getScoreWidth($score);
 
-        $html .= '</div>';
+                            $html .= sprintf(
+                                '<div class="sentiment-item">
+                                    <div class="sentiment-label">%s</div>
+                                    <div class="sentiment-bar-container">
+                                        <div class="sentiment-bar" style="width: %s; background-color: %s;"></div>
+                                        <div class="sentiment-score">%+.1f</div>
+                                    </div>
+                                </div>',
+                                htmlspecialchars(str_replace('_', ' ', ucfirst($topic))),
+                                $width,
+                                $color,
+                                $score
+                            );
+                        }
 
-        return $html . $this->getStyles();
-    }
+                        $html .= '</div></div>'; // Close grid and sentiment-analysis
 
-    private function getStyles() {
-        return '<style>
-            .sentiment-analysis-wrapper {
-                margin: 10px 0;
-                padding: 15px;
-                border: 1px solid #e0e0e0;
-                border-radius: 6px;
-                background: white;
-            }
-            .sentiment-analysis {
-                font-family: Arial, sans-serif;
-                max-width: 600px;
-                margin: 10px 0;
-            }
-            .sentiment-overall {
-                padding: 12px;
-                margin-bottom: 15px;
-                background: #f8f9fa;
-                border-radius: 6px;
-                border: 1px solid #e9ecef;
-            }
-            .sentiment-item {
-                margin: 12px 0;
-            }
-            .sentiment-label {
-                font-size: 14px;
-                margin-bottom: 6px;
-                color: #495057;
-                font-weight: 500;
-            }
-            .sentiment-bar-container {
-                position: relative;
-                background: #f8f9fa;
-                height: 24px;
-                border-radius: 12px;
-                overflow: hidden;
-                border: 1px solid #e9ecef;
-            }
-            .sentiment-bar {
-                height: 100%;
-                transition: width 0.3s ease;
-                border-radius: 12px;
-            }
-            .sentiment-score {
-                position: absolute;
-                right: 10px;
-                top: 50%;
-                transform: translateY(-50%);
-                color: #212529;
-                font-weight: 600;
-                font-size: 12px;
-                text-shadow: 0 0 2px rgba(255,255,255,0.8);
-            }
-        </style>';
-    }
-}
+                        return $html . $this->getStyles();
+                    }
+
+                    private function getStyles() {
+                        return '<style>
+                            .sentiment-analysis-wrapper {
+                                margin: 10px 0;
+                                padding: 15px;
+                                border: 1px solid #e0e0e0;
+                                border-radius: 6px;
+                                background: white;
+                            }
+                            .sentiment-analysis {
+                                font-family: Arial, sans-serif;
+                                width: 100%;
+                                margin: 10px 0;
+                            }
+                            .sentiment-overall {
+                                padding: 8px 12px;
+                                margin-bottom: 12px;
+                                background: #f8f9fa;
+                                border-radius: 6px;
+                                border: 1px solid #e9ecef;
+                            }
+                            .sentiment-grid {
+                                display: grid;
+                                grid-template-columns: repeat(3, 1fr);
+                                gap: 12px;
+                                padding: 0 4px;
+                            }
+                            .sentiment-item {
+                                min-width: 0; /* Helps with text overflow */
+                            }
+                            .sentiment-label {
+                                font-size: 13px;
+                                margin-bottom: 4px;
+                                color: #495057;
+                                font-weight: 500;
+                                white-space: nowrap;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                            }
+                            .sentiment-bar-container {
+                                position: relative;
+                                background: #f8f9fa;
+                                height: 20px;
+                                border-radius: 10px;
+                                overflow: hidden;
+                                border: 1px solid #e9ecef;
+                            }
+                            .sentiment-bar {
+                                height: 100%;
+                                transition: width 0.3s ease;
+                                border-radius: 10px;
+                            }
+                            .sentiment-score {
+                                position: absolute;
+                                right: 8px;
+                                top: 50%;
+                                transform: translateY(-50%);
+                                color: #212529;
+                                font-weight: 600;
+                                font-size: 11px;
+                                text-shadow: 0 0 2px rgba(255,255,255,0.8);
+                            }
+
+                            /* Responsive grid */
+                            @media (max-width: 1200px) {
+                                .sentiment-grid {
+                                    grid-template-columns: repeat(2, 1fr);
+                                }
+                            }
+                            @media (max-width: 768px) {
+                                .sentiment-grid {
+                                    grid-template-columns: 1fr;
+                                }
+                            }
+                        </style>';
+                    }
+                }
