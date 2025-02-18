@@ -400,3 +400,45 @@ function makeApiRequest($url, $headers, $data) {
 
     return $result;
 }
+
+// Read the raw POST data
+$json = file_get_contents('php://input');
+logError("Received request", ['raw_input' => $json]);
+
+// Decode JSON request
+$data = json_decode($json, true);
+if (!$data) {
+    logError("JSON decode failed", [
+        'error' => json_last_error_msg(),
+        'input' => $json
+    ]);
+    http_response_code(400);
+    echo json_encode(['error' => 'Invalid JSON']);
+    exit;
+}
+
+logError("Processing request", [
+    'model' => $data['model'] ?? 'not set',
+    'max_tokens' => $data['max_tokens'] ?? 'not set',
+    'provider' => $data['provider'] ?? 'not set',
+    'content_length' => strlen($data['content'] ?? '')
+]);
+
+try {
+    $result = rewriteContent(
+        $data['content'] ?? '',
+        $data['model'] ?? 'gpt-4o',
+        $data['max_tokens'] ?? 16384,
+        $data['provider'] ?? 'openai'
+    );
+
+    echo json_encode(['content' => $result]);
+} catch (Exception $e) {
+    logError("Exception occurred", [
+        'message' => $e->getMessage(),
+        'trace' => $e->getTraceAsString()
+    ]);
+
+    http_response_code(500);
+    echo json_encode(['error' => $e->getMessage()]);
+}
