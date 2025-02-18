@@ -1,160 +1,258 @@
+<?php
 function rewriteContent($content, $model = 'gpt-4o', $max_tokens = 16384, $provider = 'openai') {
-    // Get API keys from environment
-    $openai_key = getenv('OPENAI_API_KEY');
-    $groq_key = getenv('GROQ_API_KEY');
+    // Validate and get API key
+    $api_key = getProviderApiKey($provider);
 
-    // Determine if this is a Groq model
-    $is_groq = isset($_POST['provider']) && $_POST['provider'] === 'groq';
+    // Get provider-specific configuration
+    $config = getProviderConfig($provider, $model);
 
-    $api_key = $is_groq ? $groq_key : $openai_key;
-    $base_url = $is_groq ? 'https://api.groq.com/openai/v1/chat/completions' : 'https://api.openai.com/v1/chat/completions';
+    // Calculate token limit
+    $token_limit = calculateTokenLimit($content, $max_tokens);
 
-    if (!$api_key) {
-        logError(($is_groq ? "Groq" : "OpenAI") . " API key not found in environment");
-        throw new Exception("API key not configured");
+    try {
+        // Dispatch to provider-specific handler
+        switch ($provider) {
+            case 'openai':
+                return handleOpenAIRequest($content, $model, $token_limit, $api_key, $config);
+            case 'anthropic':
+                return handleAnthropicRequest($content, $model, $token_limit, $api_key, $config);
+            case 'groq':
+                return handleGroqRequest($content, $model, $token_limit, $api_key, $config);
+            default:
+                throw new Exception("Unsupported provider: " . $provider);
+        }
+    } catch (Exception $e) {
+        logError("Exception occurred", [
+            'message' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+        throw $e;
+    }
+}
+
+function getProviderApiKey($provider) {
+    $api_keys = [
+        'openai' => getenv('OPENAI_API_KEY'),
+        'groq' => getenv('GROQ_API_KEY'),
+        'anthropic' => getenv('ANTHROPIC_API_KEY')
+    ];
+
+    if (!isset($api_keys[$provider])) {
+        throw new Exception("Invalid provider");
     }
 
-    // Model-specific configurations
-    $model_configs = [
-        'o1-mini' => [
-            'supports_system_message' => false,
-            'token_param_name' => 'max_completion_tokens',
-            'supports_temperature' => false
+    if (empty($api_keys[$provider])) {
+        throw new Exception("API key not configured for " . $provider);
+    }
+
+    return $api_keys[$provider];
+}
+
+function getProviderConfig($provider, $model) {
+    $base_configs = [
+        'openai' => [
+            'base_url' => 'https://api.openai.com/v1/chat/completions',
+            'auth_header' => 'Bearer'
         ],
-        // Add other models as needed
-        'default' => [
-            'supports_system_message' => true,
-            'token_param_name' => 'max_tokens',
-            'supports_temperature' => true
+        'groq' => [
+            'base_url' => 'https://api.groq.com/openai/v1/chat/completions',
+            'auth_header' => 'Bearer'
+        ],
+        'anthropic' => [
+            'base_url' => 'https://api.anthropic.com/v1/messages',
+            'auth_header' => 'x-api-key'
         ]
     ];
 
-    $model_config = $model_configs[$model] ?? $model_configs['default'];
-
-    $system_content = 'You are an expert encyclopedia editor. Your task is to rewrite content while maintaining complete factual accuracy. Do not add information, remove details, or make assumptions. Focus on improving clarity, structure, and academic tone while preserving the exact meaning and all specific details from the source material. The output should be at least as detailed as the input.';
-    
-    $prompt = "Rewrite the following text in an authoritative encyclopedia style. Maintain absolute fidelity to the source material - do not add, remove, or modify any factual claims. Focus on clarity, precision, and academic tone while preserving all original information and context. The output length should match or exceed the input length while maintaining all details. Here is the content to rewrite:\n\n";
-
-    // Calculate approximate input tokens (rough estimate: 4 chars per token)
-    $estimated_input_tokens = ceil((strlen($prompt) + strlen($content)) / 4);
-
-    // Set max_tokens to be 2x the input length to ensure we get full output
-    // Add buffer for system message tokens
-    $token_limit = $estimated_input_tokens * 2 + 1000;
-
-    // Cap at model's maximum output length
-    $token_limit = min($token_limit, intval($max_tokens));
-
-    // Prepare messages based on model configuration
-    $messages = [];
-    if ($model_config['supports_system_message']) {
-        $messages[] = [
-            'role' => 'system',
-            'content' => $system_content
-        ];
-        $messages[] = [
-            'role' => 'user',
-            'content' => $prompt . $content
-        ];
-    } else {
-        // For models that don't support system messages, combine system content with user prompt
-        $messages[] = [
-            'role' => 'user',
-            'content' => $system_content . "\n\n" . $prompt . $content
-        ];
+    if (!isset($base_configs[$provider])) {
+        throw new Exception("Invalid provider configuration");
     }
 
+    return $base_configs[$provider];
+}
+
+function calculateTokenLimit($content, $max_tokens) {
+    $estimated_input_tokens = ceil((strlen($content) + 500) / 4); // Add buffer for system/user message
+    return min($estimated_input_tokens * 2 + 1000, intval($max_tokens));
+}
+
+function handleGroqRequest($content, $model, $token_limit, $api_key, $config) {
+    // Prepare headers
+    $headers = [
+        'Content-Type: application/json',
+        "{$config['auth_header']}: {$api_key}"
+    ];
+
+    // Prepare messages
+    $messages = [
+        [
+            'role' => 'system',
+            'content' => 'You are an expert encyclopedia editor. Your task is to rewrite content while maintaining complete factual accuracy. Do not add information, remove details, or make assumptions. Focus on improving clarity, structure, and academic tone while preserving the exact meaning and all specific details from the source material. The output should be at least as detailed as the input.'
+        ],
+        [
+            'role' => 'user',
+            'content' => "Rewrite the following text in an authoritative encyclopedia style. Your output MUST be equal to or longer than the input text - do not condense or summarize. Expand explanations where appropriate while maintaining absolute factual accuracy. Keep every single detail, data point, and nuance from the source. Structure the content with improved clarity and formal academic tone, but never sacrifice completeness for conciseness. You should elaborate on concepts where it adds clarity, use precise language, and maintain comprehensive coverage of all points in the original text. Here is the content to rewrite:\n\n" . $content
+        ]
+    ];
+
+    // Prepare request data
     $data = [
         'model' => $model,
         'messages' => $messages,
+        'temperature' => 0.3,
+        'max_tokens' => $token_limit
     ];
 
-    // Add temperature only if supported
-    if ($model_config['supports_temperature']) {
-        $data['temperature'] = 0.3;
+    logError("Groq Request Configuration", [
+        'url' => $config['base_url'],
+        'model' => $model,
+        'token_limit' => $token_limit,
+        'data' => $data
+    ]);
+
+    // Make request
+    $response = makeApiRequest($config['base_url'], $headers, $data);
+
+    // Parse Groq response
+    if (!isset($response['choices'][0]['message']['content'])) {
+        logError("Invalid Groq response structure", ['response' => $response]);
+        throw new Exception("Invalid response structure from Groq API");
     }
 
-    // Add the appropriate token parameter based on model configuration
-    $data[$model_config['token_param_name']] = $token_limit;
+    return $response['choices'][0]['message']['content'];
+}
 
-    // Log the API request configuration
-    logError("API Request Configuration", [
-        'provider' => $provider,
-        'model' => $model,
-        'token_param' => $model_config['token_param_name'],
-        'token_limit' => $token_limit,
-        'temperature_supported' => $model_config['supports_temperature'],
-        'base_url' => $base_url,
-        'content_length' => strlen($content),
-        'request_data' => $data
-    ]);
-
-    $ch = curl_init($base_url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+function handleAnthropicRequest($content, $model, $token_limit, $api_key, $config) {
+    // Prepare headers
+    $headers = [
         'Content-Type: application/json',
-        'Authorization: Bearer ' . $api_key
+        "{$config['auth_header']}: {$api_key}",
+        'anthropic-version: 2023-06-01'
+    ];
+
+    // Prepare messages (Anthropic format)
+    $data = [
+        'model' => $model,
+        'max_tokens' => $token_limit,
+        'messages' => [
+            [
+                'role' => 'user',
+                'content' => "You are an expert encyclopedia editor. Rewrite the following content while maintaining complete factual accuracy. Do not add information, remove details, or make assumptions. Focus on improving clarity, structure, and academic tone while preserving the exact meaning and all specific details.\n\n" . $content
+            ]
+        ]
+    ];
+
+    logError("Anthropic Request Configuration", [
+        'url' => $config['base_url'],
+        'model' => $model,
+        'token_limit' => $token_limit,
+        'data' => $data
     ]);
 
-    // Add these for debugging
-    curl_setopt($ch, CURLOPT_VERBOSE, true);
-    $verbose = fopen('php://temp', 'w+');
-    curl_setopt($ch, CURLOPT_STDERR, $verbose);
+    // Make request
+    $response = makeApiRequest($config['base_url'], $headers, $data);
+
+    // Parse Anthropic response
+    if (!isset($response['content'][0]['text'])) {
+        logError("Invalid Anthropic response structure", ['response' => $response]);
+        throw new Exception("Invalid response structure from Anthropic API");
+    }
+
+    return $response['content'][0]['text'];
+}
+
+function handleOpenAIRequest($content, $model, $token_limit, $api_key, $config) {
+    // Prepare headers
+    $headers = [
+        'Content-Type: application/json',
+        "{$config['auth_header']}: {$api_key}"
+    ];
+
+    // Prepare messages
+    $messages = [
+        [
+            'role' => 'system',
+            'content' => 'You are an expert encyclopedia editor. Your task is to rewrite content while maintaining complete factual accuracy. Do not add information, remove details, or make assumptions. Focus on improving clarity, structure, and academic tone while preserving the exact meaning and all specific details from the source material. The output should be at least as detailed as the input.'
+        ],
+        [
+            'role' => 'user',
+            'content' => "Rewrite the following text in an authoritative encyclopedia style. Your output MUST be equal to or longer than the input text - do not condense or summarize. Expand explanations where appropriate while maintaining absolute factual accuracy. Keep every single detail, data point, and nuance from the source. Structure the content with improved clarity and formal academic tone, but never sacrifice completeness for conciseness. You should elaborate on concepts where it adds clarity, use precise language, and maintain comprehensive coverage of all points in the original text. Here is the content to rewrite:\n\n" . $content
+        ]
+    ];
+
+    // Prepare request data
+    $data = [
+        'model' => $model,
+        'messages' => $messages,
+        'temperature' => 0.3,
+        'max_tokens' => $token_limit
+    ];
+
+    logError("OpenAI Request Configuration", [
+        'url' => $config['base_url'],
+        'model' => $model,
+        'token_limit' => $token_limit,
+        'data' => $data
+    ]);
+
+    // Make request
+    $response = makeApiRequest($config['base_url'], $headers, $data);
+
+    // Parse OpenAI response
+    if (!isset($response['choices'][0]['message']['content'])) {
+        logError("Invalid OpenAI response structure", ['response' => $response]);
+        throw new Exception("Invalid response structure from OpenAI API");
+    }
+
+    return $response['choices'][0]['message']['content'];
+}
+
+function makeApiRequest($url, $headers, $data) {
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => json_encode($data),
+        CURLOPT_HTTPHEADER => $headers,
+        CURLOPT_TIMEOUT => 30
+    ]);
 
     $response = curl_exec($ch);
     $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-    // Get CURL errors if any
+    // Handle CURL errors
     if (curl_errno($ch)) {
-        $curl_error = curl_error($ch);
-        logError("CURL Error", [
-            'error' => $curl_error,
-            'errno' => curl_errno($ch)
-        ]);
-        throw new Exception("CURL Error: " . $curl_error);
+        $error = curl_error($ch);
+        curl_close($ch);
+        logError("CURL Error", ['error' => $error]);
+        throw new Exception("API request failed: " . $error);
     }
-
-    // Log verbose output
-    rewind($verbose);
-    $verboseLog = stream_get_contents($verbose);
-    logError("CURL Verbose Log: " . $verboseLog);
-
-    // Log response for debugging
-    logError("API Response: " . $response);
-    logError("HTTP Status: " . $http_status);
 
     curl_close($ch);
 
+    // Handle HTTP errors
     if ($http_status !== 200) {
-        logError("API request failed with status " . $http_status);
+        logError("API Error Response", [
+            'status' => $http_status,
+            'response' => $response
+        ]);
+
         $error_message = "API request failed";
         if ($response) {
             $error_data = json_decode($response, true);
-            if ($error_data && isset($error_data['error'])) {
+            if ($error_data && isset($error_data['error']['message'])) {
                 $error_message .= ": " . $error_data['error']['message'];
             }
         }
-        logError("API Error", [
-            'status' => $http_status,
-            'message' => $error_message,
-            'response' => $response
-        ]);
         throw new Exception($error_message);
     }
 
+    // Parse response
     $result = json_decode($response, true);
-    if (!$result || !isset($result['choices'][0]['message']['content'])) {
-        logError("Invalid API response structure: " . print_r($result, true));
-        throw new Exception("Invalid API response");
+    if (!$result) {
+        logError("Invalid JSON response", ['response' => $response]);
+        throw new Exception("Invalid API response format");
     }
 
-    // Compare input and output lengths for debugging
-    $input_length = strlen($content);
-    $output_length = strlen($result['choices'][0]['message']['content']);
-    logError("Input length: " . $input_length . " chars");
-    logError("Output length: " . $output_length . " chars");
-
-    return $result['choices'][0]['message']['content'];
+    return $result;
 }
