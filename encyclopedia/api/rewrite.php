@@ -1,4 +1,37 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('log_errors', 1);
+error_reporting(E_ALL);
+
+function logError($message, $data = null) {
+    $log_message = "[" . date('Y-m-d H:i:s') . "] Rewrite API Error: " . $message;
+    if ($data) {
+        $log_message .= "\nData: " . print_r($data, true);
+    }
+
+    // Try multiple logging methods
+    error_log($log_message); // Standard error_log
+
+    // Also log to a specific file we can easily find
+    $specific_log = __DIR__ . '/rewrite_api.log';
+    file_put_contents($specific_log, $log_message . "\n", FILE_APPEND);
+
+    // Force flush the PHP-FPM log buffer
+    if (function_exists('fastcgi_finish_request')) {
+        fastcgi_finish_request();
+    }
+}
+
+// Test logging immediately
+logError("Logging test from rewrite.php startup", [
+    'time' => date('Y-m-d H:i:s'),
+    'php_version' => PHP_VERSION,
+    'sapi' => php_sapi_name(),
+    'error_log_setting' => ini_get('error_log'),
+    'log_errors_setting' => ini_get('log_errors'),
+    'error_reporting_setting' => ini_get('error_reporting')
+]);
+
 function rewriteContent($content, $model = 'gpt-4o', $max_tokens = 16384, $provider = 'openai') {
     // Validate and get API key
     $api_key = getProviderApiKey($provider);
