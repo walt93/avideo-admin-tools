@@ -33,13 +33,16 @@ function rewriteContent($content, $model = 'gpt-4o', $max_tokens = 16384, $provi
     // Model-specific configurations
     $model_configs = [
         'o1-mini' => [
-            'supports_system_message' => false
+            'supports_system_message' => false,
+            'token_param_name' => 'max_completion_tokens'
         ],
         // Add other models as needed
         'default' => [
-            'supports_system_message' => true
+            'supports_system_message' => true,
+            'token_param_name' => 'max_tokens'
         ]
     ];
+
     $model_config = $model_configs[$model] ?? $model_configs['default'];
 
     // Log the API request configuration
@@ -60,10 +63,10 @@ function rewriteContent($content, $model = 'gpt-4o', $max_tokens = 16384, $provi
 
     // Set max_tokens to be 2x the input length to ensure we get full output
     // Add buffer for system message tokens
-    $max_tokens = $estimated_input_tokens * 2 + 1000;
+    $token_limit = $estimated_input_tokens * 2 + 1000;
 
-    // Cap at the model's maximum output length
-    $max_tokens = min($max_tokens, intval($max_tokens));
+    // Cap at model's maximum output length
+    $token_limit = min($token_limit, intval($max_tokens));
 
     // Prepare messages based on model configuration
     $messages = [];
@@ -88,10 +91,11 @@ function rewriteContent($content, $model = 'gpt-4o', $max_tokens = 16384, $provi
         'model' => $model,
         'messages' => $messages,
         'temperature' => 0.3,
-        'max_tokens' => $max_tokens
     ];
+    // Add the appropriate token parameter based on model configuration
+    $data[$model_config['token_param_name']] = $token_limit;
 
-    $ch = curl_init('https://api.openai.com/v1/chat/completions');
+    $ch = curl_init($base_url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
