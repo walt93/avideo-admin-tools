@@ -144,6 +144,29 @@ header('Content-Type: application/json');
          'request_data' => $data
      ]);
 
+    // Add this right before the curl_init call
+    if ($provider === 'groq') {
+        logError("Groq API Call Debug", [
+            'api_key_exists' => !empty($api_key),
+            'api_key_length' => strlen($api_key),
+            'api_key_prefix' => substr($api_key, 0, 4),
+            'url' => $provider_config['base_url'],
+            'headers' => [
+                'Content-Type: application/json',
+                'Authorization: Bearer ' . substr($api_key, 0, 4) . '...'
+            ],
+            'request_data' => array_merge($data, ['model' => $model])
+        ]);
+
+        // Test the exact curl command
+        $curl_debug = "curl -X POST " . $provider_config['base_url'] . " \\\n" .
+                     "  -H 'Authorization: Bearer " . substr($api_key, 0, 4) . "...' \\\n" .
+                     "  -H 'Content-Type: application/json' \\\n" .
+                     "  -d '" . json_encode($data, JSON_PRETTY_PRINT) . "'";
+
+        logError("Equivalent curl command", $curl_debug);
+    }
+
      $ch = curl_init($provider_config['base_url']);
      curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
      curl_setopt($ch, CURLOPT_POST, true);
