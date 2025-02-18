@@ -33,22 +33,6 @@ logError("Logging test from rewrite.php startup", [
     'error_reporting_setting' => ini_get('error_reporting')
 ]);
 
-// Update the logError function to write to a specific file
-function logError($message, $data = null) {
-    $log_message = date('Y-m-d H:i:s') . " - Rewrite API: " . $message;
-    if ($data) {
-        $log_message .= "\nData: " . print_r($data, true);
-    }
-    $log_message .= "\n----------------------------------------\n";
-
-    // Write to a specific file in the api directory
-    file_put_contents(
-        __DIR__ . '/rewrite_debug.log',
-        $log_message,
-        FILE_APPEND
-    );
-}
-
 header('Content-Type: application/json');
 
 
