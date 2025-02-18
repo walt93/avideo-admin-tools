@@ -1,25 +1,37 @@
 <?php
-// Add this to the top of rewrite.php
+// At the top of rewrite.php
 ini_set('display_errors', 1);
 ini_set('log_errors', 1);
 error_reporting(E_ALL);
 
-// Check logging configuration
-$logging_info = [
-    'error_log_path' => ini_get('error_log'),
-    'display_errors' => ini_get('display_errors'),
-    'log_errors' => ini_get('log_errors'),
-    'error_reporting' => ini_get('error_reporting'),
-    'current_error_reporting' => error_reporting()
-];
+function logError($message, $data = null) {
+    $log_message = "[" . date('Y-m-d H:i:s') . "] Rewrite API Error: " . $message;
+    if ($data) {
+        $log_message .= "\nData: " . print_r($data, true);
+    }
 
-// Try writing to different potential log locations
-error_log("Test message 1 - default error_log()", 0);
-error_log("Test message 2 - explicit file", 3, __DIR__ . '/debug.log');
-error_log("Test message 3 - syslog", 0);
+    // Try multiple logging methods
+    error_log($log_message); // Standard error_log
 
-// Log the configuration
-error_log("Logging configuration: " . print_r($logging_info, true));
+    // Also log to a specific file we can easily find
+    $specific_log = __DIR__ . '/rewrite_api.log';
+    file_put_contents($specific_log, $log_message . "\n", FILE_APPEND);
+
+    // Force flush the PHP-FPM log buffer
+    if (function_exists('fastcgi_finish_request')) {
+        fastcgi_finish_request();
+    }
+}
+
+// Test logging immediately
+logError("Logging test from rewrite.php startup", [
+    'time' => date('Y-m-d H:i:s'),
+    'php_version' => PHP_VERSION,
+    'sapi' => php_sapi_name(),
+    'error_log_setting' => ini_get('error_log'),
+    'log_errors_setting' => ini_get('log_errors'),
+    'error_reporting_setting' => ini_get('error_reporting')
+]);
 
 // Update the logError function to write to a specific file
 function logError($message, $data = null) {
