@@ -13,11 +13,16 @@ class AIModelRouter {
         $this->initializeOpenAIModelConfigs();
 
         // Test logging
-        $this->logger->logError("AIModelRouter initialized", [
+        $this->log("AIModelRouter initialized", [
             'time' => date('Y-m-d H:i:s'),
             'php_version' => PHP_VERSION,
             'sapi' => php_sapi_name()
         ]);
+    }
+
+    // Public method to access logging functionality
+    public function log($message, $data = null) {
+        $this->logger->logError($message, $data);
     }
 
     private function initializeLogger($logDirectory) {
@@ -97,7 +102,7 @@ class AIModelRouter {
     }
 
     public function rewriteContent($content, $systemPrompt, $userPrompt, $model = 'gpt-4o', $max_tokens = 16384, $provider = 'openai') {
-        $this->logger->logError("Starting rewrite request", [
+        $this->log("Starting rewrite request", [
             'content_length' => strlen($content),
             'model' => $model,
             'max_tokens' => $max_tokens,
@@ -118,7 +123,7 @@ class AIModelRouter {
                     throw new Exception("Unsupported provider: " . $provider);
             }
         } catch (Exception $e) {
-            $this->logger->logError("Exception in rewriteContent", [
+            $this->log("Exception in rewriteContent", [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -144,7 +149,7 @@ class AIModelRouter {
     }
 
     private function handleOpenAIRequest($content, $systemPrompt, $userPrompt, $model, $max_tokens, $api_key) {
-        $this->logger->logError("Handling OpenAI request", ['model' => $model]);
+        $this->log("Handling OpenAI request", ['model' => $model]);
 
         if (!isset($this->openAIModelConfigs[$model])) {
             throw new Exception("Unsupported OpenAI model: " . $model);
@@ -189,7 +194,7 @@ class AIModelRouter {
     }
 
     private function handleGroqRequest($content, $systemPrompt, $userPrompt, $model, $max_tokens, $api_key) {
-        $this->logger->logError("Handling Groq request", ['model' => $model]);
+        $this->log("Handling Groq request", ['model' => $model]);
 
         $headers = [
             'Content-Type: application/json',
@@ -223,7 +228,7 @@ class AIModelRouter {
     }
 
     private function handleAnthropicRequest($content, $systemPrompt, $userPrompt, $model, $max_tokens, $api_key) {
-        $this->logger->logError("Handling Anthropic request", ['model' => $model]);
+        $this->log("Handling Anthropic request", ['model' => $model]);
 
         $headers = [
             'Content-Type: application/json',
@@ -251,7 +256,7 @@ class AIModelRouter {
     }
 
     private function makeAPIRequest($url, $headers, $data, $responseKey) {
-        $this->logger->logError("Making API request", [
+        $this->log("Making API request", [
             'url' => $url,
             'headers' => array_map(function($header) {
                 return preg_replace('/Bearer \S+|x-api-key: \S+/', '[REDACTED]', $header);
@@ -270,7 +275,7 @@ class AIModelRouter {
         $response = curl_exec($ch);
         $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-        $this->logger->logError("API response received", [
+        $this->log("API response received", [
             'status' => $http_status,
             'response_length' => strlen($response)
         ]);
@@ -278,14 +283,14 @@ class AIModelRouter {
         if (curl_errno($ch)) {
             $error = curl_error($ch);
             curl_close($ch);
-            $this->logger->logError("CURL Error", ['error' => $error]);
+            $this->log("CURL Error", ['error' => $error]);
             throw new Exception("API request failed: " . $error);
         }
 
         curl_close($ch);
 
         if ($http_status !== 200) {
-            $this->logger->logError("API Error Response", [
+            $this->log("API Error Response", [
                 'status' => $http_status,
                 'response' => $response
             ]);
@@ -302,7 +307,7 @@ class AIModelRouter {
 
         $result = json_decode($response, true);
         if (!$result) {
-            $this->logger->logError("JSON decode failed", [
+            $this->log("JSON decode failed", [
                 'json_error' => json_last_error_msg(),
                 'response' => $response
             ]);
@@ -314,7 +319,7 @@ class AIModelRouter {
         $value = $result;
         foreach ($keys as $key) {
             if (!isset($value[$key])) {
-                $this->logger->logError("Invalid response structure", ['response' => $result]);
+                $this->log("Invalid response structure", ['response' => $result]);
                 throw new Exception("Invalid API response structure");
             }
             $value = $value[$key];
