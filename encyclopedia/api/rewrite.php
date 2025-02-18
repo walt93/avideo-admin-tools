@@ -1,15 +1,40 @@
 <?php
-// Enable error reporting
+// Add this to the top of rewrite.php
 ini_set('display_errors', 1);
+ini_set('log_errors', 1);
 error_reporting(E_ALL);
 
-// Set up error logging
+// Check logging configuration
+$logging_info = [
+    'error_log_path' => ini_get('error_log'),
+    'display_errors' => ini_get('display_errors'),
+    'log_errors' => ini_get('log_errors'),
+    'error_reporting' => ini_get('error_reporting'),
+    'current_error_reporting' => error_reporting()
+];
+
+// Try writing to different potential log locations
+error_log("Test message 1 - default error_log()", 0);
+error_log("Test message 2 - explicit file", 3, __DIR__ . '/debug.log');
+error_log("Test message 3 - syslog", 0);
+
+// Log the configuration
+error_log("Logging configuration: " . print_r($logging_info, true));
+
+// Update the logError function to write to a specific file
 function logError($message, $data = null) {
-    $log_message = "Rewrite API Error: " . $message;
+    $log_message = date('Y-m-d H:i:s') . " - Rewrite API: " . $message;
     if ($data) {
         $log_message .= "\nData: " . print_r($data, true);
     }
-    error_log($log_message);
+    $log_message .= "\n----------------------------------------\n";
+
+    // Write to a specific file in the api directory
+    file_put_contents(
+        __DIR__ . '/rewrite_debug.log',
+        $log_message,
+        FILE_APPEND
+    );
 }
 
 header('Content-Type: application/json');

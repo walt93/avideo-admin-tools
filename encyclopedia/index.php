@@ -7,9 +7,6 @@ error_reporting(E_ALL);
 function debug_log($message) {
     error_log("DEBUG: " . print_r($message, true));
 }
-function logError($message) {
-    error_log("DEBUG: " . print_r($message, true));
-}
 
 try {
     require_once __DIR__ . '/database.php';
