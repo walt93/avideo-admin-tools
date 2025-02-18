@@ -23,6 +23,7 @@
         <div class="content-header">
              <label for="content">Content:</label>
              <div class="rewrite-controls">
+                 <button type="button" id="sentimentBtn" class="sentiment-btn">🎯 Sentiment</button>
                  <button type="button" id="rewriteBtn" class="rewrite-btn">🤖 Rewrite</button>
                  <div class="model-selector">
                      <button type="button" id="modelSelectBtn" class="model-select-btn">
@@ -77,6 +78,12 @@
                 <span class="stat-divider">|</span>
                 <span id="contentCharCount">0 characters</span>
             </div>
+            <div id="contentSentimentSection" class="sentiment-section" style="display: none;">
+                <div class="sentiment-analysis-wrapper">
+                    <h3>Content Sentiment Analysis</h3>
+                    <div id="contentSentimentResults"></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -88,6 +95,12 @@
                 <span id="aiWordCount">0 words</span>
                 <span class="stat-divider">|</span>
                 <span id="aiCharCount">0 characters</span>
+            </div>
+            <div id="rewriteSentimentSection" class="sentiment-section" style="display: none;">
+                <div class="sentiment-analysis-wrapper">
+                    <h3>Rewrite Sentiment Analysis</h3>
+                    <div id="rewriteSentimentResults"></div>
+                </div>
             </div>
         </div>
         <button type="button" id="useAiBtn" class="use-ai-btn">Use AI Rewrite</button>

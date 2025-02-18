@@ -246,5 +246,35 @@ class Entry {
             ]
         ];
     }
+
+    public function saveSentimentAnalysis($entryId, $sentimentData) {
+        return $this->db->query(
+            "UPDATE entries
+             SET sentiment_analysis = :sentiment
+             WHERE id = :id",
+            [
+                ':sentiment' => $sentimentData,
+                ':id' => $entryId
+            ]
+        );
+    }
+
+    public function renderSentimentButton() {
+        return '<button type="button" class="sentiment-btn">
+            <span class="emoji">🎯</span> Sentiment
+        </button>';
+    }
+
+    public function getSentimentAnalysis($entryId) {
+        $result = $this->db->query(
+            "SELECT sentiment_analysis
+             FROM entries
+             WHERE id = :id",
+            [':id' => $entryId]
+        )->fetch();
+
+        return $result ? $result['sentiment_analysis'] : null;
+    }
+
 }
 
