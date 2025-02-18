@@ -323,3 +323,100 @@
         aiSection.style.display = 'none';
     });
 </script>
+<script>
+async function analyzeSentiment(content, entryId = null, targetElement, statusElement = null) {
+    try {
+        console.log('Starting sentiment analysis...');
+        const selectedModel = localStorage.getItem('selectedModel') || 'gpt-4o';
+        const selectedTokens = parseInt(localStorage.getItem('selectedTokens') || '16384');
+        const provider = document.querySelector(`.model-option[data-model="${selectedModel}"]`)?.dataset.provider || 'openai';
+
+        if (statusElement) {
+            statusElement.textContent = '🎯 Analyzing sentiment...';
+        }
+
+        console.log('Sending request to analyze_sentiment.php...');
+        const response = await fetch('api/analyze_sentiment.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                content: content,
+                entry_id: entryId,
+                model: selectedModel,
+                max_tokens: selectedTokens,
+                provider: provider
+            })
+        });
+
+        console.log('Response received:', response.status);
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('API error:', errorData);
+            throw new Error(errorData.error || 'Unknown error occurred');
+        }
+
+        const result = await response.json();
+        console.log('Analysis result:', result);
+
+        const sentimentSection = targetElement.closest('.sentiment-section');
+        sentimentSection.style.display = 'block';
+
+        // Create a new SentimentAnalysis instance and render
+        const analyzer = new SentimentAnalysis(result.sentiment_data);
+        targetElement.innerHTML = analyzer.render();
+
+        return result;
+    } catch (error) {
+        console.error('Sentiment analysis error:', error);
+        alert('Error during sentiment analysis: ' + error.message);
+        return null;
+    } finally {
+        if (statusElement) {
+            statusElement.textContent = '';
+        }
+    }
+}
+
+// Update the sentiment button click handler
+document.getElementById('sentimentBtn').addEventListener('click', async function() {
+    console.log('Sentiment button clicked');
+    const contentArea = document.getElementById('content');
+    const entryId = document.querySelector('input[name="id"]')?.value;
+    const resultsDiv = document.getElementById('contentSentimentResults');
+    const overlay = document.getElementById('rewriteOverlay');
+
+    if (!overlay.querySelector('.overlay-message')) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'overlay-message';
+        overlay.appendChild(messageDiv);
+    }
+
+    const statusDiv = overlay.querySelector('.status-text') ||
+                     document.createElement('div');
+    statusDiv.className = 'status-text';
+
+    if (!overlay.querySelector('.status-text')) {
+        overlay.querySelector('.overlay-message').appendChild(statusDiv);
+    }
+
+    overlay.style.display = 'flex';
+
+    try {
+        console.log('Starting analysis...');
+        await analyzeSentiment(
+            contentArea.value,
+            entryId,
+            resultsDiv,
+            statusDiv
+        );
+        console.log('Analysis complete');
+    } catch (error) {
+        console.error('Error in click handler:', error);
+    } finally {
+        overlay.style.display = 'none';
+    }
+});
+</script>

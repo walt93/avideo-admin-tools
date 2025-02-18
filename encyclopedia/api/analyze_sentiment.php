@@ -4,17 +4,23 @@ ini_set('display_errors', 1);
 ini_set('log_errors', 1);
 error_reporting(E_ALL);
 
-require_once '../models/Entry.php';
-require_once '../AIModelRouter.php';
+require_once __DIR__ . '/../models/Entry.php';
+require_once __DIR__ . '/../models/SentimentAnalysis.php';
+require_once __DIR__ . '/AIModelRouter.php';
 
 $router = new AIModelRouter(__DIR__);
 $entry = new Entry();
 
 // Read the raw POST data
 $json = file_get_contents('php://input');
-$data = json_decode($json, true);
+$router->log("Received request", ['raw_input' => $json]);
 
+$data = json_decode($json, true);
 if (!$data) {
+    $router->log("JSON decode failed", [
+        'error' => json_last_error_msg(),
+        'input' => $json
+    ]);
     http_response_code(400);
     echo json_encode(['error' => 'Invalid JSON']);
     exit;
@@ -41,6 +47,12 @@ try {
         }
     }
 
+    $router->log("Sending to AI model", [
+        'content_length' => strlen($data['content'] ?? ''),
+        'prompt_length' => strlen($prompt),
+        'model' => $data['model'] ?? 'gpt-4o'
+    ]);
+
     // Get the analysis from the AI model
     $result = $router->rewriteContent(
         $data['content'] ?? '',
@@ -51,8 +63,9 @@ try {
         $data['provider'] ?? 'openai'
     );
 
+    $router->log("Received AI response", ['response_length' => strlen($result)]);
+
     // Create a new SentimentAnalysis instance
-    require_once '../SentimentAnalysis.php';
     $analyzer = new SentimentAnalysis();
 
     // Parse the XML and convert to JSON
@@ -62,6 +75,11 @@ try {
     if (isset($data['entry_id'])) {
         $entry->saveSentimentAnalysis($data['entry_id'], $jsonData);
     }
+
+    $router->log("Analysis complete", [
+        'json_data' => $jsonData,
+        'entry_id' => $data['entry_id'] ?? null
+    ]);
 
     // Return both the raw XML and parsed JSON
     echo json_encode([
