@@ -34,9 +34,9 @@
                         <div class="model-section">OpenAI</div>
                         <div class="model-option" data-model="gpt-4o" data-tokens="16384">GPT-4o (128K/16K)</div>
                         <div class="model-option" data-model="gpt-4o-mini" data-tokens="16384">GPT-4o Mini (128K/16K)</div>
-                        <div class="model-option" data-model="o1" data-tokens="100000">GPT-4 o1 (200K/100K)</div>
+                 <!--   <div class="model-option" data-model="o1" data-tokens="100000">GPT-4 o1 (200K/100K)</div> -->
                         <div class="model-option" data-model="o1-mini" data-tokens="65536">GPT-4 o1 Mini (128K/65K)</div>
-                        <div class="model-option" data-model="o3-mini" data-tokens="100000">GPT-4 o3 Mini (200K/100K)</div>
+                 <!--   <div class="model-option" data-model="o3-mini" data-tokens="100000">GPT-4 o3 Mini (200K/100K)</div> -->
                         <div class="model-option" data-model="o1-preview" data-tokens="32768">GPT-4 o1 Preview (128K/32K)</div>
 
                         <div class="model-separator"></div>

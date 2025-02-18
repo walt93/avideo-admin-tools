@@ -37,6 +37,11 @@ function rewriteContent($content, $model = 'gpt-4o', $max_tokens = 16384, $provi
             'token_param_name' => 'max_completion_tokens',
             'supports_temperature' => false
         ],
+        'o1-preview' => [
+            'supports_system_message' => false,
+            'token_param_name' => 'max_completion_tokens',
+            'supports_temperature' => false
+        ],
         // Add other models as needed
         'default' => [
             'supports_system_message' => true,
