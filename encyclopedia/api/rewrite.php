@@ -30,6 +30,18 @@ function rewriteContent($content, $model = 'gpt-4o', $max_tokens = 16384, $provi
         throw new Exception("API key not configured");
     }
 
+    // Model-specific configurations
+    $model_configs = [
+        'o1-mini' => [
+            'supports_system_message' => false
+        ],
+        // Add other models as needed
+        'default' => [
+            'supports_system_message' => true
+        ]
+    ];
+    $model_config = $model_configs[$model] ?? $model_configs['default'];
+
     // Log the API request configuration
     logError("API Request Configuration", [
         'provider' => $provider,
@@ -38,6 +50,8 @@ function rewriteContent($content, $model = 'gpt-4o', $max_tokens = 16384, $provi
         'base_url' => $base_url,
         'content_length' => strlen($content)
     ]);
+
+    $system_content = 'You are an expert encyclopedia editor. Your task is to rewrite content while maintaining complete factual accuracy. Do not add information, remove details, or make assumptions. Focus on improving clarity, structure, and academic tone while preserving the exact meaning and all specific details from the source material. The output should be at least as detailed as the input.';
 
     $prompt = "Rewrite the following text in an authoritative encyclopedia style. Maintain absolute fidelity to the source material - do not add, remove, or modify any factual claims. Focus on clarity, precision, and academic tone while preserving all original information and context. The output length should match or exceed the input length while maintaining all details. Here is the content to rewrite:\n\n";
 
@@ -48,23 +62,33 @@ function rewriteContent($content, $model = 'gpt-4o', $max_tokens = 16384, $provi
     // Add buffer for system message tokens
     $max_tokens = $estimated_input_tokens * 2 + 1000;
 
-    // Cap at GPT-4o's maximum output length
-    $max_tokens = min($max_tokens, 16384);
+    // Cap at the model's maximum output length
+    $max_tokens = min($max_tokens, intval($max_tokens));
+
+    // Prepare messages based on model configuration
+    $messages = [];
+    if ($model_config['supports_system_message']) {
+        $messages[] = [
+            'role' => 'system',
+            'content' => $system_content
+        ];
+        $messages[] = [
+            'role' => 'user',
+            'content' => $prompt . $content
+        ];
+    } else {
+        // For models that don't support system messages, combine system content with user prompt
+        $messages[] = [
+            'role' => 'user',
+            'content' => $system_content . "\n\n" . $prompt . $content
+        ];
+    }
 
     $data = [
         'model' => $model,
-        'messages' => [
-            [
-                'role' => 'system',
-                'content' => 'You are an expert encyclopedia editor. Your task is to rewrite content while maintaining complete factual accuracy. Do not add information, remove details, or make assumptions. Focus on improving clarity, structure, and academic tone while preserving the exact meaning and all specific details from the source material. The output should be at least as detailed as the input.'
-            ],
-            [
-                'role' => 'user',
-                'content' => $prompt . $content
-            ]
-        ],
+        'messages' => $messages,
         'temperature' => 0.3,
-        'max_tokens' => min($max_tokens, intval($max_tokens))
+        'max_tokens' => $max_tokens
     ];
 
     $ch = curl_init('https://api.openai.com/v1/chat/completions');
