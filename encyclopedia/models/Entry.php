@@ -1,4 +1,6 @@
 <?php
+require_once dirname(__DIR__) . '/database.php';
+
 class Entry {
     private $db;
     private $items_per_page = 20;
