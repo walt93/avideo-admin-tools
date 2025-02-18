@@ -41,6 +41,12 @@
 
                         <div class="model-separator"></div>
 
+                        <!-- Anthropic Models -->
+                        <div class="model-section">Anthropic</div>
+                        <div class="model-option" data-model="claude-3-5-sonnet-20241022" data-tokens="200000" data-provider="anthropic">Claude 3.5 Sonnet (200K)</div>
+                        <div class="model-option" data-model="claude-3-5-haiku-20241022" data-tokens="200000" data-provider="anthropic">Claude 3.5 Haiku (200K)</div>
+                        <div class="model-separator"></div>
+
                         <!-- Groq Production Models -->
                         <div class="model-section">Groq Production</div>
                         <div class="model-option" data-model="gemma2-9b-it" data-tokens="8192" data-provider="groq">Gemma-2 9B (8K/8K)</div>

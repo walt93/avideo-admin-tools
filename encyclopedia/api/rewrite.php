@@ -14,172 +14,198 @@ function logError($message, $data = null) {
 
 header('Content-Type: application/json');
 
-function rewriteContent($content, $model = 'gpt-4o', $max_tokens = 16384, $provider = 'openai') {
-    // Get API keys from environment
-    $openai_key = getenv('OPENAI_API_KEY');
-    $groq_key = getenv('GROQ_API_KEY');
 
-    // Determine if this is a Groq model
-    $is_groq = isset($_POST['provider']) && $_POST['provider'] === 'groq';
+ function rewriteContent($content, $model = 'gpt-4o', $max_tokens = 16384, $provider = 'openai') {
+     // Get API keys from environment
+     $openai_key = getenv('OPENAI_API_KEY');
+     $groq_key = getenv('GROQ_API_KEY');
+     $anthropic_key = getenv('ANTHROPIC_API_KEY');
 
-    $api_key = $is_groq ? $groq_key : $openai_key;
-    $base_url = $is_groq ? 'https://api.groq.com/openai/v1/chat/completions' : 'https://api.openai.com/v1/chat/completions';
+     // Determine provider and API details
+     $api_config = [
+         'openai' => [
+             'key' => $openai_key,
+             'base_url' => 'https://api.openai.com/v1/chat/completions',
+             'auth_header' => 'Bearer'
+         ],
+         'groq' => [
+             'key' => $groq_key,
+             'base_url' => 'https://api.groq.com/openai/v1/chat/completions',
+             'auth_header' => 'Bearer'
+         ],
+         'anthropic' => [
+             'key' => $anthropic_key,
+             'base_url' => 'https://api.anthropic.com/v1/messages',
+             'auth_header' => 'x-api-key'
+         ]
+     ];
 
-    if (!$api_key) {
-        logError(($is_groq ? "Groq" : "OpenAI") . " API key not found in environment");
-        throw new Exception("API key not configured");
-    }
+     $is_anthropic = $provider === 'anthropic';
+     $provider_config = $api_config[$provider] ?? $api_config['openai'];
 
-    // Model-specific configurations
-    $model_configs = [
-        'o1-mini' => [
-            'supports_system_message' => false,
-            'token_param_name' => 'max_completion_tokens',
-            'supports_temperature' => false
-        ],
+     if (!$provider_config['key']) {
+         logError("API key not found for provider: " . $provider);
+         throw new Exception("API key not configured");
+     }
+
+     // Model-specific configurations
+     $model_configs = [
+         'o1-mini' => [
+             'supports_system_message' => false,
+             'token_param_name' => 'max_completion_tokens',
+             'supports_temperature' => false
+         ],
         'o1-preview' => [
             'supports_system_message' => false,
             'token_param_name' => 'max_completion_tokens',
             'supports_temperature' => false
         ],
-        // Add other models as needed
-        'default' => [
-            'supports_system_message' => true,
-            'token_param_name' => 'max_tokens',
-            'supports_temperature' => true
-        ]
-    ];
+        'claude-3-5-sonnet-20241022' => [
+             'provider' => 'anthropic',
+             'supports_system_message' => true,
+             'token_param_name' => 'max_tokens',
+             'supports_temperature' => true
+         ],
+         'claude-3-5-haiku-20241022' => [
+             'provider' => 'anthropic',
+             'supports_system_message' => true,
+             'token_param_name' => 'max_tokens',
+             'supports_temperature' => true
+         ],
+         'default' => [
+             'supports_system_message' => true,
+             'token_param_name' => 'max_tokens',
+             'supports_temperature' => true
+         ]
+     ];
 
-    $model_config = $model_configs[$model] ?? $model_configs['default'];
+     $model_config = $model_configs[$model] ?? $model_configs['default'];
 
-    $system_content = 'You are an expert encyclopedia editor. Your task is to rewrite content while maintaining complete factual accuracy. Do not add information, remove details, or make assumptions. Focus on improving clarity, structure, and academic tone while preserving the exact meaning and all specific details from the source material. The output should be at least as detailed as the input.';
+     $system_content = 'You are an expert encyclopedia editor. Your task is to rewrite content while maintaining complete factual accuracy. Do not add information, remove details, or make assumptions. Focus on improving clarity, structure, and academic tone while preserving the exact meaning and all specific details from the source material. The output should be at least as detailed as the input.';
 
-    $prompt = "Rewrite the following text in an authoritative encyclopedia style. Maintain absolute fidelity to the source material - do not add, remove, or modify any factual claims. Focus on clarity, precision, and academic tone while preserving all original information and context. The output length should match or exceed the input length while maintaining all details. Here is the content to rewrite:\n\n";
+     $prompt = "Rewrite the following text in an authoritative encyclopedia style. Your output MUST be equal to or longer than the input text - do not condense or summarize. Expand explanations where appropriate while maintaining absolute factual accuracy. Keep every single detail, data point, and nuance from the source. Structure the content with improved clarity and formal academic tone, but never sacrifice completeness for conciseness. You should elaborate on concepts where it adds clarity, use precise language, and maintain comprehensive coverage of all points in the original text. Here is the content to rewrite:\n\n";
 
-    // Calculate approximate input tokens (rough estimate: 4 chars per token)
-    $estimated_input_tokens = ceil((strlen($prompt) + strlen($content)) / 4);
+     // Calculate approximate input tokens (rough estimate: 4 chars per token)
+     $estimated_input_tokens = ceil((strlen($prompt) + strlen($content)) / 4);
+     $token_limit = min($estimated_input_tokens * 2 + 1000, intval($max_tokens));
 
-    // Set max_tokens to be 2x the input length to ensure we get full output
-    // Add buffer for system message tokens
-    $token_limit = $estimated_input_tokens * 2 + 1000;
+     // Prepare the request data based on provider
+     if ($is_anthropic) {
+         $data = [
+             'model' => $model,
+             'system' => $system_content,
+             'messages' => [
+                 [
+                     'role' => 'user',
+                     'content' => $prompt . $content
+                 ]
+             ],
+             'max_tokens' => $token_limit
+         ];
+         if ($model_config['supports_temperature']) {
+             $data['temperature'] = 0.3;
+         }
+     } else {
+         // OpenAI/Groq style request
+         $messages = [];
+         if ($model_config['supports_system_message']) {
+             $messages[] = [
+                 'role' => 'system',
+                 'content' => $system_content
+             ];
+             $messages[] = [
+                 'role' => 'user',
+                 'content' => $prompt . $content
+             ];
+         } else {
+             $messages[] = [
+                 'role' => 'user',
+                 'content' => $system_content . "\n\n" . $prompt . $content
+             ];
+         }
 
-    // Cap at model's maximum output length
-    $token_limit = min($token_limit, intval($max_tokens));
+         $data = [
+             'model' => $model,
+             'messages' => $messages
+         ];
 
-    // Prepare messages based on model configuration
-    $messages = [];
-    if ($model_config['supports_system_message']) {
-        $messages[] = [
-            'role' => 'system',
-            'content' => $system_content
-        ];
-        $messages[] = [
-            'role' => 'user',
-            'content' => $prompt . $content
-        ];
-    } else {
-        // For models that don't support system messages, combine system content with user prompt
-        $messages[] = [
-            'role' => 'user',
-            'content' => $system_content . "\n\n" . $prompt . $content
-        ];
-    }
+         if ($model_config['supports_temperature']) {
+             $data['temperature'] = 0.3;
+         }
 
-    $data = [
-        'model' => $model,
-        'messages' => $messages,
-    ];
+         $data[$model_config['token_param_name']] = $token_limit;
+     }
 
-    // Add temperature only if supported
-    if ($model_config['supports_temperature']) {
-        $data['temperature'] = 0.3;
-    }
+     // Log the API request configuration
+     logError("API Request Configuration", [
+         'provider' => $provider,
+         'model' => $model,
+         'base_url' => $provider_config['base_url'],
+         'request_data' => $data
+     ]);
 
-    // Add the appropriate token parameter based on model configuration
-    $data[$model_config['token_param_name']] = $token_limit;
+     $ch = curl_init($provider_config['base_url']);
+     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+     curl_setopt($ch, CURLOPT_POST, true);
+     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+     curl_setopt($ch, CURLOPT_HTTPHEADER, [
+         'Content-Type: application/json',
+         $provider_config['auth_header'] . ': ' . $provider_config['key']
+     ]);
 
-    // Log the API request configuration
-    logError("API Request Configuration", [
-        'provider' => $provider,
-        'model' => $model,
-        'token_param' => $model_config['token_param_name'],
-        'token_limit' => $token_limit,
-        'temperature_supported' => $model_config['supports_temperature'],
-        'base_url' => $base_url,
-        'content_length' => strlen($content),
-        'request_data' => $data
-    ]);
+     if ($is_anthropic) {
+         curl_setopt($ch, CURLOPT_HTTPHEADER, array_merge([
+             'anthropic-version: 2023-06-01',
+             'Content-Type: application/json',
+         ], [
+             $provider_config['auth_header'] . ': ' . $provider_config['key']
+         ]));
+     }
 
-    $ch = curl_init($base_url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Content-Type: application/json',
-        'Authorization: Bearer ' . $api_key
-    ]);
+     $response = curl_exec($ch);
+     $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
+     // Handle errors and response processing
+     if (curl_errno($ch)) {
+         $curl_error = curl_error($ch);
+         logError("CURL Error", [
+             'error' => $curl_error,
+             'errno' => curl_errno($ch)
+         ]);
+         throw new Exception("CURL Error: " . $curl_error);
+     }
 
-    // Add these for debugging
-    curl_setopt($ch, CURLOPT_VERBOSE, true);
-    $verbose = fopen('php://temp', 'w+');
-    curl_setopt($ch, CURLOPT_STDERR, $verbose);
+     curl_close($ch);
 
-    $response = curl_exec($ch);
-    $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+     if ($http_status !== 200) {
+         logError("API request failed with status " . $http_status);
+         $error_message = "API request failed";
+         if ($response) {
+             $error_data = json_decode($response, true);
+             if ($error_data && isset($error_data['error'])) {
+                 $error_message .= ": " . $error_data['error']['message'];
+             }
+         }
+         throw new Exception($error_message);
+     }
 
-    // Get CURL errors if any
-    if (curl_errno($ch)) {
-        $curl_error = curl_error($ch);
-        logError("CURL Error", [
-            'error' => $curl_error,
-            'errno' => curl_errno($ch)
-        ]);
-        throw new Exception("CURL Error: " . $curl_error);
-    }
+     $result = json_decode($response, true);
 
-    // Log verbose output
-    rewind($verbose);
-    $verboseLog = stream_get_contents($verbose);
-    logError("CURL Verbose Log: " . $verboseLog);
-
-    // Log response for debugging
-    logError("API Response: " . $response);
-    logError("HTTP Status: " . $http_status);
-
-    curl_close($ch);
-
-    if ($http_status !== 200) {
-        logError("API request failed with status " . $http_status);
-        $error_message = "API request failed";
-        if ($response) {
-            $error_data = json_decode($response, true);
-            if ($error_data && isset($error_data['error'])) {
-                $error_message .= ": " . $error_data['error']['message'];
-            }
-        }
-        logError("API Error", [
-            'status' => $http_status,
-            'message' => $error_message,
-            'response' => $response
-        ]);
-        throw new Exception($error_message);
-    }
-
-    $result = json_decode($response, true);
-    if (!$result || !isset($result['choices'][0]['message']['content'])) {
-        logError("Invalid API response structure: " . print_r($result, true));
-        throw new Exception("Invalid API response");
-    }
-
-    // Compare input and output lengths for debugging
-    $input_length = strlen($content);
-    $output_length = strlen($result['choices'][0]['message']['content']);
-    logError("Input length: " . $input_length . " chars");
-    logError("Output length: " . $output_length . " chars");
-
-    return $result['choices'][0]['message']['content'];
-}
+     // Handle different response formats
+     if ($is_anthropic) {
+         if (!$result || !isset($result['content'][0]['text'])) {
+             logError("Invalid Anthropic API response structure: " . print_r($result, true));
+             throw new Exception("Invalid API response");
+         }
+         return $result['content'][0]['text'];
+     } else {
+         if (!$result || !isset($result['choices'][0]['message']['content'])) {
+             logError("Invalid API response structure: " . print_r($result, true));
+             throw new Exception("Invalid API response");
+         }
+         return $result['choices'][0]['message']['content'];
+     }
+ }
 
 // Handle POST request
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
