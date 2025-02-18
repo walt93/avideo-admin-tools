@@ -96,14 +96,17 @@
                 <span class="stat-divider">|</span>
                 <span id="aiCharCount">0 characters</span>
             </div>
-            <div id="rewriteSentimentSection" class="sentiment-section" style="display: none;">
-                <div class="sentiment-analysis-wrapper">
-                    <h3>Rewrite Sentiment Analysis</h3>
-                    <div id="rewriteSentimentResults"></div>
-                </div>
+        </div>
+        <div class="rewrite-controls">
+            <button type="button" id="rewriteSentimentBtn" class="sentiment-btn">🎯 Sentiment</button>
+            <button type="button" id="useAiBtn" class="use-ai-btn">Use AI Rewrite</button>
+        </div>
+        <div id="rewriteSentimentSection" class="sentiment-section" style="display: none;">
+            <div class="sentiment-analysis-wrapper">
+                <h3>Rewrite Sentiment Analysis</h3>
+                <div id="rewriteSentimentResults"></div>
             </div>
         </div>
-        <button type="button" id="useAiBtn" class="use-ai-btn">Use AI Rewrite</button>
     </div>
 
     <div class="form-group">
@@ -414,6 +417,34 @@ document.getElementById('sentimentBtn').addEventListener('click', async function
         console.log('Analysis complete');
     } catch (error) {
         console.error('Error in click handler:', error);
+    } finally {
+        overlay.style.display = 'none';
+    }
+});
+</script>
+<script>
+// Add sentiment button handler for rewrite
+document.getElementById('rewriteSentimentBtn').addEventListener('click', async function() {
+    const aiRewrite = document.getElementById('aiRewrite');
+    const resultsDiv = document.getElementById('rewriteSentimentResults');
+    const overlay = document.getElementById('rewriteOverlay');
+    const statusDiv = overlay.querySelector('.status-text') ||
+                     document.createElement('div');
+
+    if (!overlay.querySelector('.status-text')) {
+        statusDiv.className = 'status-text';
+        overlay.querySelector('.overlay-message').appendChild(statusDiv);
+    }
+
+    overlay.style.display = 'flex';
+
+    try {
+        await analyzeSentiment(
+            aiRewrite.value,
+            null,
+            resultsDiv,
+            statusDiv
+        );
     } finally {
         overlay.style.display = 'none';
     }
