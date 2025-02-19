@@ -49,7 +49,7 @@ class SentimentAnalysis {
 
         $html = '<div class="sentiment-analysis">';
 
-        // Overall sentiment first in its own row
+        // Always render overall sentiment first if it exists
         if (isset($this->data['sentiment'])) {
             $overallScore = $this->data['sentiment'];
             $overallColor = $this->getScoreColor($overallScore);
@@ -72,10 +72,15 @@ class SentimentAnalysis {
         // Start grid container for topics
         $html .= '<div class="sentiment-grid">';
 
-        // Then other topics
-        foreach ($this->data as $topic => $score) {
+        // Sort other topics alphabetically
+        $topics = array_keys($this->data);
+        sort($topics);
+
+        // Then render other topics in sorted order
+        foreach ($topics as $topic) {
             if ($topic === 'sentiment') continue;
 
+            $score = $this->data[$topic];
             $color = $this->getScoreColor($score);
             $width = $this->getScoreWidth($score);
 
