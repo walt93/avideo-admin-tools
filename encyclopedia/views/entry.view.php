@@ -160,7 +160,10 @@
 </form>
 
 <div id="rewriteOverlay" class="rewrite-overlay">
-    🤖 AI Rewriting in Progress...
+    <div class="overlay-message">
+        <div class="spinner"></div>
+        <div class="status-text"></div>
+    </div>
 </div>
 
 <script>
@@ -426,14 +429,24 @@ document.getElementById('sentimentBtn').addEventListener('click', async function
     const contentArea = document.getElementById('content');
     const resultsDiv = document.getElementById('contentSentimentResults');
     const overlay = document.getElementById('rewriteOverlay');
-    const statusDiv = overlay.querySelector('.status-text') ||
-                     document.createElement('div');
 
-    if (!overlay.querySelector('.status-text')) {
+    // Ensure overlay has the correct structure
+    if (!overlay.querySelector('.overlay-message')) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'overlay-message';
+
+        const spinner = document.createElement('div');
+        spinner.className = 'spinner';
+        messageDiv.appendChild(spinner);
+
+        const statusDiv = document.createElement('div');
         statusDiv.className = 'status-text';
-        overlay.querySelector('.overlay-message').appendChild(statusDiv);
+        messageDiv.appendChild(statusDiv);
+
+        overlay.appendChild(messageDiv);
     }
 
+    const statusDiv = overlay.querySelector('.status-text');
     overlay.style.display = 'flex';
 
     try {
@@ -455,14 +468,24 @@ document.getElementById('rewriteSentimentBtn').addEventListener('click', async f
     const aiRewrite = document.getElementById('aiRewrite');
     const resultsDiv = document.getElementById('rewriteSentimentResults');
     const overlay = document.getElementById('rewriteOverlay');
-    const statusDiv = overlay.querySelector('.status-text') ||
-                     document.createElement('div');
 
-    if (!overlay.querySelector('.status-text')) {
+    // Ensure overlay has the correct structure
+    if (!overlay.querySelector('.overlay-message')) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'overlay-message';
+
+        const spinner = document.createElement('div');
+        spinner.className = 'spinner';
+        messageDiv.appendChild(spinner);
+
+        const statusDiv = document.createElement('div');
         statusDiv.className = 'status-text';
-        overlay.querySelector('.overlay-message').appendChild(statusDiv);
+        messageDiv.appendChild(statusDiv);
+
+        overlay.appendChild(messageDiv);
     }
 
+    const statusDiv = overlay.querySelector('.status-text');
     overlay.style.display = 'flex';
 
     try {
