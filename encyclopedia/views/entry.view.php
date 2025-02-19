@@ -98,8 +98,12 @@
             </div>
         </div>
         <div class="rewrite-controls">
-            <button type="button" id="rewriteSentimentBtn" class="sentiment-btn">🎯 Sentiment</button>
-            <button type="button" id="useAiBtn" class="use-ai-btn">Use AI Rewrite</button>
+            <button type="button" id="rewriteSentimentBtn" class="action-button" disabled>
+                <span class="emoji">🎯</span> Sentiment
+            </button>
+            <button type="button" id="useAiBtn" class="action-button">
+                <span class="emoji">✔️</span> Use AI Rewrite
+            </button>
         </div>
         <div id="rewriteSentimentSection" class="sentiment-section" style="display: none;">
             <div class="sentiment-analysis-wrapper">
@@ -108,6 +112,7 @@
             </div>
         </div>
     </div>
+
 
     <div class="form-group">
         <label for="source_book">Source:</label>
@@ -181,10 +186,13 @@
     });
 
     // Store source book in local storage on form submission
-    document.querySelector('form').addEventListener('submit', function() {
-        const sourceBook = document.getElementById('source_book').value;
-        if (sourceBook) {
-            localStorage.setItem('lastUsedSourceBook', sourceBook);
+    document.querySelector('form').addEventListener('submit', function(e) {
+        if (sentimentState.originalSentiment) {
+            const sentimentInput = document.createElement('input');
+            sentimentInput.type = 'hidden';
+            sentimentInput.name = 'sentiment_analysis';
+            sentimentInput.value = JSON.stringify(sentimentState.originalSentiment);
+            this.appendChild(sentimentInput);
         }
     });
 
@@ -316,18 +324,34 @@
     document.getElementById('useAiBtn').addEventListener('click', function() {
         const contentArea = document.getElementById('content');
         const aiRewrite = document.getElementById('aiRewrite');
+        const contentSentiment = document.getElementById('contentSentimentResults');
+        const rewriteSentiment = document.getElementById('rewriteSentimentResults');
         const aiSection = document.getElementById('aiRewriteSection');
 
-        // Copy AI rewrite to content area
+        // Copy rewritten content
         contentArea.value = aiRewrite.value;
         updateStats(contentArea.value, 'contentWordCount', 'contentCharCount');
+
+        // Copy sentiment analysis if it exists
+        if (sentimentState.rewriteSentiment) {
+            sentimentState.originalSentiment = sentimentState.rewriteSentiment;
+            contentSentiment.innerHTML = rewriteSentiment.innerHTML;
+            document.getElementById('contentSentimentSection').style.display = 'block';
+        }
 
         // Hide AI section
         aiSection.style.display = 'none';
     });
 </script>
 <script>
-async function analyzeSentiment(content, entryId = null, targetElement, statusElement = null) {
+const sentimentState = {
+    originalSentiment: null,
+    rewriteSentiment: null,
+    topicsList: []
+};
+
+// Update analyzeSentiment to store results
+async function analyzeSentiment(content, entryId = null, targetElement, statusElement = null, isRewrite = false) {
     try {
         console.log('Starting sentiment analysis...');
         const selectedModel = localStorage.getItem('selectedModel') || 'gpt-4o';
@@ -338,36 +362,50 @@ async function analyzeSentiment(content, entryId = null, targetElement, statusEl
             statusElement.textContent = '🎯 Analyzing sentiment...';
         }
 
-        console.log('Sending request to analyze_sentiment.php...');
-        const response = await fetch('api/analyze_sentiment.php', {
+        // Determine which API endpoint to use
+        const endpoint = isRewrite ? 'api/analyze_sentiment_check.php' : 'api/analyze_sentiment.php';
+        const payload = {
+            content: content,
+            model: selectedModel,
+            max_tokens: selectedTokens,
+            provider: provider
+        };
+
+        // Add topics list for rewrite analysis
+        if (isRewrite && sentimentState.topicsList.length > 0) {
+            payload.topics = sentimentState.topicsList;
+        }
+
+        const response = await fetch(endpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                content: content,
-                entry_id: entryId,
-                model: selectedModel,
-                max_tokens: selectedTokens,
-                provider: provider
-            })
+            body: JSON.stringify(payload)
         });
-
-        console.log('Response received:', response.status);
 
         if (!response.ok) {
             const errorData = await response.json();
-            console.error('API error:', errorData);
             throw new Error(errorData.error || 'Unknown error occurred');
         }
 
         const result = await response.json();
         console.log('Analysis result:', result);
 
+        // Store results in state
+        if (!isRewrite) {
+            sentimentState.originalSentiment = result.sentiment_data;
+            sentimentState.topicsList = Object.keys(result.sentiment_data)
+                .filter(key => key !== 'sentiment');
+            // Enable rewrite sentiment button
+            document.getElementById('rewriteSentimentBtn').disabled = false;
+        } else {
+            sentimentState.rewriteSentiment = result.sentiment_data;
+        }
+
+        // Update UI
         const sentimentSection = targetElement.closest('.sentiment-section');
         sentimentSection.style.display = 'block';
-
-        // Use the rendered HTML from the server
         targetElement.innerHTML = result.html;
 
         return result;
@@ -384,39 +422,28 @@ async function analyzeSentiment(content, entryId = null, targetElement, statusEl
 
 // Update the sentiment button click handler
 document.getElementById('sentimentBtn').addEventListener('click', async function() {
-    console.log('Sentiment button clicked');
+    console.log('Original sentiment button clicked');
     const contentArea = document.getElementById('content');
-    const entryId = document.querySelector('input[name="id"]')?.value;
     const resultsDiv = document.getElementById('contentSentimentResults');
     const overlay = document.getElementById('rewriteOverlay');
-
-    if (!overlay.querySelector('.overlay-message')) {
-        const messageDiv = document.createElement('div');
-        messageDiv.className = 'overlay-message';
-        overlay.appendChild(messageDiv);
-    }
-
     const statusDiv = overlay.querySelector('.status-text') ||
                      document.createElement('div');
-    statusDiv.className = 'status-text';
 
     if (!overlay.querySelector('.status-text')) {
+        statusDiv.className = 'status-text';
         overlay.querySelector('.overlay-message').appendChild(statusDiv);
     }
 
     overlay.style.display = 'flex';
 
     try {
-        console.log('Starting analysis...');
         await analyzeSentiment(
             contentArea.value,
-            entryId,
+            null,
             resultsDiv,
-            statusDiv
+            statusDiv,
+            false
         );
-        console.log('Analysis complete');
-    } catch (error) {
-        console.error('Error in click handler:', error);
     } finally {
         overlay.style.display = 'none';
     }
@@ -443,7 +470,8 @@ document.getElementById('rewriteSentimentBtn').addEventListener('click', async f
             aiRewrite.value,
             null,
             resultsDiv,
-            statusDiv
+            statusDiv,
+            true
         );
     } finally {
         overlay.style.display = 'none';
