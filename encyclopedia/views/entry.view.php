@@ -499,3 +499,58 @@ document.getElementById('rewriteSentimentBtn').addEventListener('click', async f
     }
 });
 </script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Document loaded');
+        const rewriteBtn = document.getElementById('rewriteBtn');
+        console.log('Rewrite button:', rewriteBtn);
+
+        if (rewriteBtn) {
+            rewriteBtn.addEventListener('click', async function() {
+                console.log('Rewrite button clicked');
+                const contentArea = document.getElementById('content');
+                console.log('Content length:', contentArea.value.length);
+
+                const selectedModel = localStorage.getItem('selectedModel') || 'gpt-4o';
+                const selectedTokens = parseInt(localStorage.getItem('selectedTokens') || '16384');
+                const provider = document.querySelector(`.model-option[data-model="${selectedModel}"]`)?.dataset.provider || 'openai';
+
+                console.log('Making request with:', {
+                    model: selectedModel,
+                    tokens: selectedTokens,
+                    provider: provider
+                });
+
+                try {
+                    const response = await fetch('api/rewrite.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            content: contentArea.value,
+                            model: selectedModel,
+                            max_tokens: selectedTokens,
+                            provider: provider
+                        })
+                    });
+
+                    console.log('Response received:', response);
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    // Rest of your streaming code...
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Error during rewrite: ' + error.message);
+                }
+            });
+            console.log('Click handler attached');
+        } else {
+            console.error('Rewrite button not found!');
+        }
+    });
+</script>
