@@ -1,4 +1,7 @@
 <?php
+// Disable output buffering
+if (ob_get_level()) ob_end_clean();
+
 ini_set('display_errors', 1);
 ini_set('log_errors', 1);
 error_reporting(E_ALL);
@@ -30,7 +33,19 @@ if (!$data) {
 }
 
 try {
-    $result = $router->rewriteContent(
+    // Set streaming headers
+    header('Content-Type: text/event-stream');
+    header('Cache-Control: no-cache');
+    header('Connection: keep-alive');
+    header('X-Accel-Buffering: no'); // Disable nginx buffering
+
+    // If using FastCGI, send initial response
+    if (function_exists('fastcgi_finish_request')) {
+        fastcgi_finish_request();
+    }
+
+    // The rewriteContent method will now handle streaming the response
+    $router->rewriteContent(
         $data['content'] ?? '',
         $systemPrompt,
         $userPrompt,
@@ -39,13 +54,12 @@ try {
         $data['provider'] ?? 'openai'
     );
 
-    echo json_encode(['content' => $result]);
 } catch (Exception $e) {
     $router->log("Exception occurred", [
         'message' => $e->getMessage(),
         'trace' => $e->getTraceAsString()
     ]);
 
-    http_response_code(500);
-    echo json_encode(['error' => $e->getMessage()]);
+    // Send error event
+    echo "data: " . json_encode(['error' => $e->getMessage()]) . "\n\n";
 }

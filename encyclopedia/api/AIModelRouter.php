@@ -263,22 +263,33 @@ class AIModelRouter {
             }, $headers)
         ]);
 
+        // Add streaming parameter to request data
+        $data['stream'] = true;
+
         $ch = curl_init($url);
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => json_encode($data),
             CURLOPT_HTTPHEADER => $headers,
-            CURLOPT_TIMEOUT => 30
+            CURLOPT_TIMEOUT => 0, // Remove timeout limit
+            CURLOPT_WRITEFUNCTION => function($ch, $data) use ($responseKey) {
+                $this->processStreamChunk($data, $responseKey);
+                echo $data; // Send chunk to client immediately
+                flush(); // Ensure output is sent
+                return strlen($data);
+            }
         ]);
+
+        // Start output buffering and send headers
+        ob_start();
+        header('Content-Type: text/event-stream');
+        header('Cache-Control: no-cache');
+        header('Connection: keep-alive');
+        header('X-Accel-Buffering: no'); // Disable nginx buffering
 
         $response = curl_exec($ch);
         $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-        $this->log("API response received", [
-            'status' => $http_status,
-            'response_length' => strlen($response)
-        ]);
 
         if (curl_errno($ch)) {
             $error = curl_error($ch);
@@ -288,43 +299,75 @@ class AIModelRouter {
         }
 
         curl_close($ch);
+        return ""; // Empty return since we've already streamed the response
+    }
 
-        if ($http_status !== 200) {
-            $this->log("API Error Response", [
-                'status' => $http_status,
-                'response' => $response
-            ]);
+    private function processStreamChunk($chunk, $responseKey) {
+        // Different handling based on provider
+        if (strpos($responseKey, 'choices.0.message.content') !== false) {
+            // OpenAI format
+            $lines = explode("\n", $chunk);
+            foreach ($lines as $line) {
+                if (empty(trim($line))) continue;
+                if ($line === "data: [DONE]") continue;
 
-            $error_message = "API request failed";
-            if ($response) {
-                $error_data = json_decode($response, true);
-                if ($error_data && isset($error_data['error']['message'])) {
-                    $error_message .= ": " . $error_data['error']['message'];
+                $json = json_decode(substr($line, 6), true); // Remove "data: " prefix
+                if ($json && isset($json['choices'][0]['delta']['content'])) {
+                    $text = $json['choices'][0]['delta']['content'];
+                    echo "data: " . json_encode(['content' => $text]) . "\n\n";
                 }
             }
-            throw new Exception($error_message);
-        }
-
-        $result = json_decode($response, true);
-        if (!$result) {
-            $this->log("JSON decode failed", [
-                'json_error' => json_last_error_msg(),
-                'response' => $response
-            ]);
-            throw new Exception("Invalid API response format");
-        }
-
-        // Parse response path
-        $keys = explode('.', $responseKey);
-        $value = $result;
-        foreach ($keys as $key) {
-            if (!isset($value[$key])) {
-                $this->log("Invalid response structure", ['response' => $result]);
-                throw new Exception("Invalid API response structure");
+        } elseif (strpos($responseKey, 'content.0.text') !== false) {
+            // Anthropic format
+            $json = json_decode($chunk, true);
+            if ($json && isset($json['delta']['text'])) {
+                echo "data: " . json_encode(['content' => $json['delta']['text']]) . "\n\n";
             }
-            $value = $value[$key];
         }
-
-        return $value;
     }
+
+// Update the frontend JavaScript to handle streaming
+    public function getStreamingJS() {
+        return "
+    async function streamContent(endpoint, data) {
+        try {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let content = '';
+
+            while (true) {
+                const {value, done} = await reader.read();
+                if (done) break;
+                
+                const chunk = decoder.decode(value);
+                const lines = chunk.split('\\n');
+                
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        try {
+                            const data = JSON.parse(line.slice(6));
+                            content += data.content;
+                            // Update UI with accumulated content
+                            document.getElementById('aiRewrite').value = content;
+                            updateStats(content, 'aiWordCount', 'aiCharCount');
+                        } catch (e) {
+                            console.error('Error parsing chunk:', e);
+                        }
+                    }
+                }
+            }
+            
+            return content;
+        } catch (error) {
+            throw new Error('Streaming failed: ' + error.message);
+        }
+    }";
 }

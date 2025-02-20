@@ -219,47 +219,45 @@
     <?php endif; ?>
 
     // Add rewrite functionality
+    <?php
+    // Include the streaming JS helper
+    $router = new AIModelRouter(__DIR__);
+    echo $router->getStreamingJS();
+    ?>
+
+    // Update the rewrite button handler
     document.getElementById('rewriteBtn').addEventListener('click', async function() {
         const contentArea = document.getElementById('content');
         const statusSelect = document.getElementById('status');
         const overlay = document.getElementById('rewriteOverlay');
         const aiSection = document.getElementById('aiRewriteSection');
         const aiRewrite = document.getElementById('aiRewrite');
+        const statusText = overlay.querySelector('.status-text');
 
         // Show overlay
         overlay.style.display = 'flex';
+        statusText.textContent = 'Generating content...';
 
         try {
             const selectedModel = localStorage.getItem('selectedModel') || 'gpt-4o';
             const selectedTokens = parseInt(localStorage.getItem('selectedTokens') || '16384');
             const provider = document.querySelector(`.model-option[data-model="${selectedModel}"]`)?.dataset.provider || 'openai';
 
-            const response = await fetch('api/rewrite.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    content: contentArea.value,
-                    model: selectedModel,
-                    max_tokens: selectedTokens,
-                    provider: provider
-                })
+            // Clear previous content
+            aiRewrite.value = '';
+
+            // Show AI section
+            aiSection.style.display = 'block';
+
+            // Start streaming
+            await streamContent('api/rewrite.php', {
+                content: contentArea.value,
+                model: selectedModel,
+                max_tokens: selectedTokens,
+                provider: provider
             });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Unknown error occurred');
-            }
-
-            const result = await response.json();
-
-            // Show AI rewrite section and update content
-            aiSection.style.display = 'block';
-            aiRewrite.value = result.content;
-            updateStats(result.content, 'aiWordCount', 'aiCharCount');
-
-            // Upgrade status (draft -> review -> published)
+            // Upgrade status
             if (statusSelect.value === 'draft') {
                 statusSelect.value = 'review';
             } else if (statusSelect.value === 'review') {
@@ -269,10 +267,10 @@
         } catch (error) {
             alert('Error during rewrite: ' + error.message);
         } finally {
-            // Hide overlay
             overlay.style.display = 'none';
         }
     });
+
 
     // Model selector functionality
     const modelSelector = document.querySelector('.model-selector');
