@@ -263,8 +263,16 @@ class AIModelRouter {
             }, $headers)
         ]);
 
-        // Add streaming parameter to request data
-        $data['stream'] = true;
+        $this->log("Request data before stream addition", ['data' => $data]);
+
+        // Add streaming parameter
+        if (strpos($url, 'openai.com') !== false) {
+            $data['stream'] = true;
+        } elseif (strpos($url, 'anthropic.com') !== false) {
+            $data['stream'] = true;
+        }
+
+        $this->log("Final request data", ['data' => $data]);
 
         $ch = curl_init($url);
         curl_setopt_array($ch, [
@@ -303,25 +311,47 @@ class AIModelRouter {
     }
 
     private function processStreamChunk($chunk, $responseKey) {
+        $this->log("Received chunk", ['chunk' => $chunk]);
+
         // Different handling based on provider
         if (strpos($responseKey, 'choices.0.message.content') !== false) {
             // OpenAI format
             $lines = explode("\n", $chunk);
             foreach ($lines as $line) {
+                $this->log("Processing line", ['line' => $line]);
+
                 if (empty(trim($line))) continue;
                 if ($line === "data: [DONE]") continue;
 
-                $json = json_decode(substr($line, 6), true); // Remove "data: " prefix
-                if ($json && isset($json['choices'][0]['delta']['content'])) {
-                    $text = $json['choices'][0]['delta']['content'];
-                    echo "data: " . json_encode(['content' => $text]) . "\n\n";
+                try {
+                    $json = json_decode(substr($line, 6), true); // Remove "data: " prefix
+                    $this->log("Parsed JSON", ['json' => $json]);
+
+                    if ($json && isset($json['choices'][0]['delta']['content'])) {
+                        $text = $json['choices'][0]['delta']['content'];
+                        $output = "data: " . json_encode(['content' => $text]) . "\n\n";
+                        $this->log("Sending output", ['output' => $output]);
+                        echo $output;
+                        flush();
+                    }
+                } catch (Exception $e) {
+                    $this->log("JSON parse error", ['error' => $e->getMessage()]);
                 }
             }
         } elseif (strpos($responseKey, 'content.0.text') !== false) {
             // Anthropic format
-            $json = json_decode($chunk, true);
-            if ($json && isset($json['delta']['text'])) {
-                echo "data: " . json_encode(['content' => $json['delta']['text']]) . "\n\n";
+            try {
+                $json = json_decode($chunk, true);
+                $this->log("Parsed Anthropic JSON", ['json' => $json]);
+
+                if ($json && isset($json['delta']['text'])) {
+                    $output = "data: " . json_encode(['content' => $json['delta']['text']]) . "\n\n";
+                    $this->log("Sending Anthropic output", ['output' => $output]);
+                    echo $output;
+                    flush();
+                }
+            } catch (Exception $e) {
+                $this->log("Anthropic JSON parse error", ['error' => $e->getMessage()]);
             }
         }
     }
@@ -329,8 +359,9 @@ class AIModelRouter {
 // Update the frontend JavaScript to handle streaming
     public function getStreamingJS() {
         return "
-    async function streamContent(endpoint, data) {
+        async function streamContent(endpoint, data) {
         try {
+            console.log('Starting stream request...');
             const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
@@ -338,22 +369,25 @@ class AIModelRouter {
                 },
                 body: JSON.stringify(data)
             });
-
+    
+            console.log('Response received:', response);
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
             let content = '';
-
+    
             while (true) {
                 const {value, done} = await reader.read();
                 if (done) break;
                 
                 const chunk = decoder.decode(value);
-                const lines = chunk.split('\\n');
+                console.log('Received chunk:', chunk); // Debug line
                 
+                const lines = chunk.split('\n');
                 for (const line of lines) {
                     if (line.startsWith('data: ')) {
                         try {
                             const data = JSON.parse(line.slice(6));
+                            console.log('Parsed data:', data); // Debug line
                             content += data.content;
                             // Update UI with accumulated content
                             document.getElementById('aiRewrite').value = content;
@@ -367,6 +401,7 @@ class AIModelRouter {
             
             return content;
         } catch (error) {
+            console.error('Streaming error:', error);
             throw new Error('Streaming failed: ' + error.message);
         }
     }";
